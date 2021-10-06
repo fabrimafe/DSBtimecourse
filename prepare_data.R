@@ -3,8 +3,8 @@
 ##################### LOAD DATA ########################################################################
 ########################################################################################################
 setwd("~/workspace/daniela")
-mydelay<-0
-#mydelay<-0.25
+#mydelay<-0
+mydelay<-0.25
 ntypes<-4
 library(tidyverse)
 #errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
@@ -22,7 +22,7 @@ mydata_l<-list()
 mydata.p_l<-list()
 #in addition CRTISO0h0 was edited manually by introducing 0 counts at time 0
 #
-for (mytarget_i in c("CRTISO.49and50bp","CRTISO","Psy1","PhyB2.1","PhyB2.2"))
+for (mytarget_i in c("CRTISO.49and50bp","CRTISO","Psy1","PhyB2.1","PhyB2.2","PhyB2.3"))
         {
         for (myinduction in c("gRNA","RNP"))
                 {
