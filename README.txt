@@ -17,6 +17,10 @@ write.table(file=paste0("~/workspace/daniela/error_matrices/error_matrix4_",igen
 #ps: now it is an additional argument -E, but I could make -e optional and when not given parsing -E in some default way
 #c) clean general scripts and files
 
+##########################################
+######### RUN OPTIMIZATION ###############
+##########################################
+
 MYINDUCTION=RNP
 for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
 for MYTARGET in Psy1 CRTISO CRTISO.49and50bp CRTISO0h CRTISO.49and50bp0h PhyB2.1 PhyB2.2 PhyB2.3 PhyB2.1m PhyB2.3m;do	 
@@ -42,7 +46,7 @@ done;done
 MYDELAY=''
 MYINDUCTION=RNP
 for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
-for MYTARGET in CRTISO0h CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do	 
+for MYTARGET in Psy1 CRTISO CRTISO.49and50bp;do #CRTISO0h CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do	 
 MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_E_errorsfromunbroken.txt
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
@@ -51,13 +55,161 @@ bsub -q new-long -J m -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000]
 done;done
 MYINDUCTION=gRNA
 for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
-for MYTARGET in CRTISO0h CRTISO.49and50bp0h;do	 
+for MYTARGET in Psy1 CRTISO CRTISO.49and50bp;do #CRTISO0h CRTISO.49and50bp0h;do	 
 MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_E_errorsfromunbroken.txt
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
 OUTPUT=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}
 bsub -q new-long -J m -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUT ${mymodel}
 done;done
+
+
+MYDELAY=''
+MYINDUCTION=RNP
+for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.2;do #CRTISO0h CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do
+MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' )
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_E_errorsfromunbroken.txt
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
+OUTPUTA=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
+OUTPUTB=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
+OUTPUTC=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
+bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel}
+bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel}
+bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel}
+done;done
+
+
+MYDELAY=''
+MYINDUCTION=RNP
+for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.2;do #CRTISO0h CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do
+MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' )
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_E_errorsfromunbroken.txt
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
+OUTPUT=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}
+OUTPUTA=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
+OUTPUTB=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
+OUTPUTC=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
+cat $OUTPUTA $OUTPUTB $OUTPUTC > $OUTPUT 
+done;done
+
+#######################################
+############## CALCULATE CI ###########
+#######################################
+for MYINDUCTION in gRNA RNP;do
+for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+for MYTARGET in Psy1 CRTISO CRTISO.49and50bp CRTISO0h CRTISO.49and50bp0h PhyB2.1 PhyB2.2 PhyB2.3 PhyB2.1m PhyB2.3m;do	 
+MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' )
+for MYDELAY in '_mydelay0.25' '';do
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_E_errorsfromunbroken.txt
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
+OUTPUT=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}
+#bsub -q new-long -J m -e ~/mylogs/m.e%J -o ~/mylogs/m.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUT ${mymodel}
+INPUT=${OUTPUT}.parsed.tsv
+if [ -f ${INPUT} ];then
+	echo $INPUT
+	cat ${OUTPUT} | sed 's/^\t\t/model\t/' | sed 's/^NA\t//' | awk 'BEGIN{count=0}{if ($1=="model"){count=count+1;if (count==1){print}} else print}' > ${INPUT}
+	bsub -q new-medium -J CI -e ~/mylogs/confint.e%J -o ~/mylogs/confint.o%J -R rusage[mem=24000] ./calculate_CI_v1.sh $INPUT $TIMECOURSE $ERRORMATRIX 500000
+fi
+done;done;done;done
+
+#some errors with modified PhyB, can't understand why. So less iterations.
+for MYINDUCTION in gRNA RNP;do
+for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+for MYTARGET in PhyB2.1m PhyB2.3m;do
+MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' )
+for MYDELAY in '_mydelay0.25' '';do
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_E_errorsfromunbroken.txt
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
+OUTPUT=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}
+#bsub -q new-long -J m -e ~/mylogs/m.e%J -o ~/mylogs/m.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUT ${mymodel}
+INPUT=${OUTPUT}.parsed.tsv
+if [ -f ${INPUT} ];then
+        echo $INPUT
+        cat ${OUTPUT} | sed 's/^\t\t/model\t/' | sed 's/^NA\t//' | awk 'BEGIN{count=0}{if ($1=="model"){count=count+1;if (count==1){print}} else print}' > ${INPUT}
+        bsub -q new-medium -J CI -e ~/mylogs/confint.e%J -o ~/mylogs/confint.o%J -R rusage[mem=24000] ./calculate_CI_v1.sh $INPUT $TIMECOURSE $ERRORMATRIX 20000
+fi
+done;done;done;done
+
+#for old calculations (results)
+for MYINDUCTION in gRNA RNP;do
+for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.1 PhyB2.2 PhyB2.3;do	 
+MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' )
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_E_errorsfromunbroken.txt
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
+OUTPUT=~/workspace/daniela/${mymodel}_${MYTARGET}_${MYINDUCTION}_optimization.tsv
+#bsub -q new-long -J m -e ~/mylogs/m.e%J -o ~/mylogs/m.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUT ${mymodel}
+INPUT=${OUTPUT}.parsed.tsv
+if [ -f ${OUTPUT} ];then
+	echo $INPUT
+cat ${OUTPUT} | sed 's/^\t\t\t\t/target\tinduction\tmodel\terror\t/g' | sed 's/^NA\t//' | awk 'BEGIN{count=0}{if ($1=="target"){count=count+1;if (count==1){print}} else print}' > ${INPUT}
+	bsub -q new-medium -J CI -e ~/mylogs/confint.e%J -o ~/mylogs/confint.o%J -R rusage[mem=24000] ./calculate_CI_v1.sh $INPUT $TIMECOURSE $ERRORMATRIX 500000
+fi
+done;done;done;
+#########################################
+############# PARSE IN A TABLE ##########
+#########################################
+
+for MYINDUCTION in gRNA RNP;do
+for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+for MYTARGET in Psy1 CRTISO CRTISO.49and50bp CRTISO0h CRTISO.49and50bp0h PhyB2.1 PhyB2.2 PhyB2.3 PhyB2.1m PhyB2.3m;do
+MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' )
+for MYDELAY in '_mydelay0.25' '';do
+if [ MYDELAY == '' ];then 
+	XDELAY=0; 
+elif [ MYDELAY == '_mydelay0.25' ];then
+	XDELAY=0.25
+fi	
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_E_errorsfromunbroken.txt
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
+OUTPUT=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}
+#bsub -q new-long -J m -e ~/mylogs/m.e%J -o ~/mylogs/m.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUT ${mymodel}
+INPUT=${OUTPUT}.parsed.CI
+if [ -f ${INPUT} ];then
+cat ${INPUT} | awk -v v1=$MYTARGET -v v2=$MYINDUCTION -v v3=$mymodel -v v4=$XDELAY -v OFS="\t" '{print v1,v2,v3,v4,$0}' >> ~/workspace/daniela/resultsv1/table_CI.tsv
+fi
+done;done;done;done
+
+
+#old calculations
+XDELAY=0
+for MYINDUCTION in gRNA RNP;do
+for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.1 PhyB2.2 PhyB2.3;do
+MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' )
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_E_errorsfromunbroken.txt
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
+OUTPUT=~/workspace/daniela/${mymodel}_${MYTARGET}_${MYINDUCTION}_optimization.tsv
+#bsub -q new-long -J m -e ~/mylogs/m.e%J -o ~/mylogs/m.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUT ${mymodel}
+INPUT=${OUTPUT}.parsed.CI
+if [ -f ${OUTPUT} ];then
+        echo $INPUT
+cat ${INPUT} | awk -v v1=$MYTARGET -v v2=$MYINDUCTION -v v3=$mymodel -v v4=$XDELAY -v OFS="\t" '{print v1,v2,v3,v4,$0}' >> ~/workspace/daniela/resultsv1/table_CI.tsv
+fi
+done;done;done;
+
+
+
+
+##################
+#### PLOTTING ####
+##################
+
+./plot_CI.v1.R -i ~/workspace/daniela/resultsv1/results_modelDSBs1i1_realimpnor11_gRNA_CRTISO0h.parsed.CI.RData -d ~/workspace/daniela/input_datasets/timecourse_gRNA_CRTISO0h.txt -E ~/workspace/daniela/error_matrices/error_matrix4_CRTISO_E_errorsfromunbroken.txt -m modelDSBs1i1_realimpnor11 -n 1000 -o temp
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
