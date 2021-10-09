@@ -490,13 +490,16 @@ for ( isim in 1:nsims)
 	bestmodels_t.cfitted.sims$curve_fitted<-bestmodels_t.cfitted.sims$curve_fitted*k11
 	if (isim==1) { bestmodels.cfitted.CI<-bestmodels_t.cfitted.sims } else { bestmodels.cfitted.CI<-rbind(bestmodels.cfitted.CI,bestmodels_t.cfitted.sims) }
         simsinCI[xsims[isim],1]<-k11
-	bestmodels_t.fitted.sims<-predict_models(simsinCI[isim,],ntypes=ntypes,nparms=nparms,nheaders=0,errormatrix=errormatrix,mymodel=get(mymodel)) #"E_errorsfromunbroken"
+	bestmodels_t.fitted.sims<-predict_models(simsinCI[xsims[isim],],ntypes=ntypes,nparms=nparms,nheaders=0,errormatrix=errormatrix,mymodel=get(mymodel)) #"E_errorsfromunbroken"
 	if (isim==1) { bestmodels.fitted.CI<-bestmodels_t.fitted.sims } else { bestmodels.fitted.CI<-rbind(bestmodels.fitted.CI,bestmodels_t.fitted.sims) }
+	#print(simsinCI[xsims[isim],])
+	#print(bestmodels_t.fitted.sims %>% filter(time==0))
+	#print(bestmodels_t.fitted.sims %>% filter(time==72))
         }
 bestmodels.fitted.CI<-bestmodels.fitted.CI %>% group_by(time,types) %>% summarise(lowCI=min(p),highCI=max(p)) %>% ungroup
 bestmodels.cfitted.CI<-bestmodels.cfitted.CI %>% group_by(time) %>% summarise(lowCI=min(curve_fitted),highCI=max(curve_fitted)) %>% ungroup
-    
-
+#print(bestmodels.fitted.CI)    
+#print(tail(bestmodels.fitted.CI))
 
 
 restemp<-res[[1]]
@@ -521,7 +524,8 @@ print(head(bestmodels.fitted))
 myplot <- bestmodels.fitted %>% ggplot(aes(x=time,y=p,colour=types)) + 
 xlim(0,72.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,6,12,24,36,48,72), limits=c(0,72.5))+
 geom_ribbon(aes(ymin = lowCI, ymax = highCI), alpha = 0.1 ,linetype="dotted")+ 
-geom_line()+geom_point(data=tidy.mydata0.p) 
+geom_line()+geom_point(data=tidy.mydata0.p)+
+theme_bw()  
 
 ggsave(myplot,filename=paste0(output_file,"_plot.trajectories.pdf"))
 

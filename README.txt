@@ -91,8 +91,9 @@ OUTPUT=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGE
 OUTPUTA=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
 OUTPUTB=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
 OUTPUTC=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
-cat $OUTPUTA $OUTPUTB $OUTPUTC > $OUTPUT 
+cat $OUTPUTA $OUTPUTB $OUTPUTC | awk 'BEGIN{count=0}{if ($1=="k11"){count=count+1;if (count==1){print}} else print}' > $OUTPUT 
 done;done
+
 
 #######################################
 ############## CALCULATE CI ###########
@@ -101,7 +102,7 @@ for MYINDUCTION in gRNA RNP;do
 for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
 for MYTARGET in Psy1 CRTISO CRTISO.49and50bp CRTISO0h CRTISO.49and50bp0h PhyB2.1 PhyB2.2 PhyB2.3 PhyB2.1m PhyB2.3m;do	 
 MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' )
-for MYDELAY in '_mydelay0.25' '';do
+for MYDELAY in '';do #'_mydelay0.25' '';do
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_E_errorsfromunbroken.txt
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
 OUTPUT=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}
@@ -110,7 +111,7 @@ INPUT=${OUTPUT}.parsed.tsv
 if [ -f ${INPUT} ];then
 	echo $INPUT
 	cat ${OUTPUT} | sed 's/^\t\t/model\t/' | sed 's/^NA\t//' | awk 'BEGIN{count=0}{if ($1=="model"){count=count+1;if (count==1){print}} else print}' > ${INPUT}
-	bsub -q new-medium -J CI -e ~/mylogs/confint.e%J -o ~/mylogs/confint.o%J -R rusage[mem=24000] ./calculate_CI_v1.sh $INPUT $TIMECOURSE $ERRORMATRIX 500000
+	bsub -q new-medium -J CI.2 -e ~/mylogs/confint.e%J -o ~/mylogs/confint.o%J -R rusage[mem=24000] ./calculate_CI_v1.sh $INPUT $TIMECOURSE $ERRORMATRIX 50000
 fi
 done;done;done;done
 
@@ -197,7 +198,7 @@ done;done;done;
 #### PLOTTING ####
 ##################
 
-./plot_CI.v1.R -i ~/workspace/daniela/resultsv1/results_modelDSBs1i1_realimpnor11_gRNA_CRTISO0h.parsed.CI.RData -d ~/workspace/daniela/input_datasets/timecourse_gRNA_CRTISO0h.txt -E ~/workspace/daniela/error_matrices/error_matrix4_CRTISO_E_errorsfromunbroken.txt -m modelDSBs1i1_realimpnor11 -n 1000 -o temp
+./plot_CI.v1.R -i ~/workspace/daniela/resultsv1/results_modelDSBs1i1_realimpnor11_gRNA_CRTISO0h.parsed.CI.RData -d ~/workspace/daniela/input_datasets/timecourse_gRNA_CRTISO0h.txt -E ~/workspace/daniela/error_matrices/error_matrix4_CRTISO_E_errorsfromunbroken.txt -m modelDSBs1i1_realimpnor11 -n 100 -o temp
 
 
 
