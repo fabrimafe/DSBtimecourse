@@ -353,9 +353,11 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
 		{
 		print("normalize k11 in terms of cutting flow")
 		maxk11_norm<-as.numeric(xxparams[["k11"]]*induction_curve_vectorized(6,xxparams[(length(nameparams)-3):(length(nameparams))])[1])
+		maxk12_norm<-as.numeric(xxparams[["k12"]]*induction_curve_vectorized(6,xxparams[(length(nameparams)-3):(length(nameparams))])[1])
 		for (ikk in 1:nrow(res))
 			{
 			res$k11[ikk]<-as.numeric(res$k11[ikk]*induction_curve_vectorized(6,res[ikk,(length(nameparams)-3):(length(nameparams))])[1])
+			res$k12[ikk]<-as.numeric(res$k12[ikk]*induction_curve_vectorized(6,res[ikk,(length(nameparams)-3):(length(nameparams))])[1])
 			#print(res$k11[ikk])
 			}
 		print("normalization of k11 done")
@@ -392,6 +394,7 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
           }
         }
         xxparams[which(nameparams=="k11")]<-maxk11_norm
+        xxparams[which(nameparams=="k12")]<-maxk12_norm
 	return(list(data.frame(max=xxparams,CIlow=minCI.unbiased.l,CIhigh=maxCI.unbiased.l,rate=nameparams),res))
         }
 }

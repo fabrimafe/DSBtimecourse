@@ -135,14 +135,15 @@ modelDSBs1i1_realimpnor11 <- function(t, y, parms,induction_c=induction_curve) {
 ################### DEFINE FUNCTIONS ##############################################
 ###################################################################################
 
-predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0) {
+predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0,yinit=0,timest=0) {
 dfl<-unlist(df)
 res_parms<-as.numeric(dfl[(nheaders+1):(nheaders+nparms)]);
 names(res_parms)<-names(dfl[(nheaders+1):(nheaders+nparms)])
-times<-seq(0,72,0.1)
+if (length(timest)>1){times<-timest} else {times<-seq(0,72,0.1)}
 yini<-c(y1 = 1, y2 = 0, y3 = 0,y4 = 0, y5 = 0, y6 = 0)
 if (ntypes==3) { yini<-c(y1 = 1, y2 = 0, y3 = 0) }
 if (ntypes==4) { yini<-c(y1 = 1, y2 = 0, y3 = 0, y4 = 0) }
+if (length(yinit)>1){yini<-yinit}
 if (is(xmodel)[1]!="function"){
 mydata.fitted <- ode (times = times, y = yini, func = get(as.character(df[["model"]])[1]), parms = res_parms)} else {
 mydata.fitted <- ode (times = times, y = yini, func = mymodel, parms = res_parms)
@@ -296,116 +297,6 @@ loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix)
   sum(loglik)
 }
 
-generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermutations=1000,nameparams=nameparms, exploration.radius=1,returnonlyCI=FALSE,addpreviouslysampled="0",normalize_k11=TRUE)
-  {
-  print("calculate CI")
-  res<-c();res_temp<-c()
-  counterpar<-1
-  xxparams<-rep(0,length(nameparams))
-  names(xxparams)<-nameparams
-  if (inputasrates)
-    {
-    for (xrate in 1:length(nameparams))
-            {
-            xxparams[counterpar]<- bestmodels_l_rates_t %>% .[xrate,] %>% select(rates) %>% as.numeric()
-            maxl<- bestmodels_l_rates_t %>% select(value) %>% head(1) %>% as.numeric()
-            counterpar<-counterpar+1
-          }
-    } else
-    {
-    for (xrate in nameparams)
-        {
-        xxparams[counterpar]<-bestmodels_l_rates_t[[xrate]]
-        counterpar<-counterpar+1
-        }
-    };
-  	print("Generate parameters to explore")
-	counter00<-1
-        print(xxparams)
-	maxl2<-likfunction(xxparams)
-        xxprobs0<-xxparams^(-3)/sum(xxparams^(-3))
-        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius/1000)
-        newpars.m1<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius/10)
-        newpars.m2<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius)
-        newpars.m3<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius*10)
-        newpars.m4<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius*100)
-        newpars.m5<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        newpars<-rbind(newpars.m1,newpars.m2,newpars.m3,newpars.m4,newpars.m5)
-        colnames(newpars)<-nameparams
- 	print("Compute likelihood for new parameters")
-        for (iit in 1:npermutations)
-            {
-            newpars_t<-newpars[iit,]
-            newpars_t<-sapply(newpars_t,function(x) max(x,0))
-            names(newpars_t)<-nameparams
-            if (newpars_t[nameparams=="r0"]==0) { newpars_t[nameparams=="r0"]<-0.0001 }
-	    #print(c(iit,newpars_t))
-	    #reslik<-tryCatch(likfunction(newpars_t)); #not working on subfunctions?
-            reslik<-likfunction(newpars_t)
-	    #loglik_er_f(newpars,my_data=mydata,ODEfunc=xmodel,E.matrix=error_matrices3_l[[mytarget]][[myerror]])
-            if (!"error" %in% class(reslik)){
-	    res_temp<-c(newpars_t,reslik,maxl,maxl2);
-            if (counter00==1) {res<-res_temp } else { res<-rbind(res,res_temp) };
-            counter00<-counter00+1;}
-            }
-        res<-as.data.frame(res);row.names(res)<-NULL;
-        names(res)<-c(nameparams,"loglik","maxll","maxll.here");
-        if (addpreviouslysampled!="0")
-            {
-            dft<-get(addpreviouslysampled) %>% select(all_of(c(nameparams,"value")));
-            names(dft)<-c(nameparams,"loglik");dft$maxll<-res$maxll[1];dft$maxll.here<-res$maxll.here[1];
-            res<-rbind(res,dft)
-            }
-	if (normalize_k11)
-		{
-		print("normalize k11 in terms of cutting flow")
-		maxk11_norm<-as.numeric(xxparams[["k11"]]*induction_curve_vectorized(6,xxparams[(length(nameparams)-3):(length(nameparams))])[1])
-		for (ikk in 1:nrow(res))
-			{
-			res$k11[ikk]<-as.numeric(res$k11[ikk]*induction_curve_vectorized(6,res[ikk,(length(nameparams)-3):(length(nameparams))])[1])
-			#print(res$k11[ikk])
-			}
-		print("normalization of k11 done")
-		}
-        res$ok<-0
-        res$ok[abs(res$maxll-res$loglik)<1.92]<-1
-        if (!returnonlyCI){return(res[res$ok==1,])} else {
-        #Monte Carlo exploration returns points retained in CI, so biased towards underestimation.
-	#To correct run mid-point interpolation.
-	maxCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=max)
-        minCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=min)
-        meanCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=median)
-        maxCI.unbiased.l<-c()
-        minCI.unbiased.l<-c()
-        for (ipar in 1:length(nameparams))
-          {
-	  print(nameparms[ipar])
-          maxpoint<-res[res$ok==1 & res[,ipar]==maxCI.biased[ipar],1:length(nameparams)] %>% head(1) %>% unlist
-          df<-as.data.frame(res[res$ok==0 & res[,ipar]>maxCI.biased[ipar],1:length(nameparams)])
-          if (nrow(df)>0)
-            {
-            maxCI.unbiased<-apply(df,MARGIN=1,FUN=function(x) sum((x-maxpoint)^2/meanCI.biased))
-            maxCI.unbiased.l[ipar]<-(df[which.min(maxCI.unbiased),ipar]+maxCI.biased[ipar])/2
-            } else { maxCI.unbiased.l[ipar]<-maxCI.biased[ipar] }
-          minpoint<-res[res$ok==1 & res[,ipar]==minCI.biased[ipar],1:length(nameparams)] %>% head(1) %>% unlist
-          if (minCI.biased[ipar]==0){minCI.unbiased.l[ipar]<-0} else {
-            if (nrow(df)>0)
-                {
-                df<-as.data.frame(res[res$ok==0 & res[,ipar]<minCI.biased[ipar],1:length(nameparams)])
-                minCI.unbiased<-apply(df,MARGIN=1,FUN=function(x) sum((x-minpoint)^2/meanCI.biased))
-                minCI.unbiased.l[ipar]<-(df[which.min(minCI.unbiased)[1],ipar]+minCI.biased[ipar])/2
-                }
-                else { minCI.unbiased.l[ipar]<-minCI.biased[ipar] }
-          }
-        }
-        xxparams[which(nameparams=="k11")]<-maxk11_norm
-	return(list(data.frame(max=xxparams,CIlow=minCI.unbiased.l,CIhigh=maxCI.unbiased.l,rate=nameparams),res))
-        }
-}
 
 
 ################################################################################
@@ -487,9 +378,11 @@ for ( isim in 1:nsims)
         bestmodels_t.cfitted.sims<-predict_induction(simsinCI[xsims[isim],],nparms=nparms-nparms_induction,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized)
 	induction_for_normalized_k11<-bestmodels_t.cfitted.sims %>% filter(time==6) %>% select(curve_fitted) %>% as.numeric
 	k11<-simsinCI[xsims[isim],1]/induction_for_normalized_k11
-	bestmodels_t.cfitted.sims$curve_fitted<-bestmodels_t.cfitted.sims$curve_fitted*k11
+	k12<-simsinCI[xsims[isim],2]/induction_for_normalized_k11
+	bestmodels_t.cfitted.sims$curve_fitted<-bestmodels_t.cfitted.sims$curve_fitted*(k11+k12)
 	if (isim==1) { bestmodels.cfitted.CI<-bestmodels_t.cfitted.sims } else { bestmodels.cfitted.CI<-rbind(bestmodels.cfitted.CI,bestmodels_t.cfitted.sims) }
         simsinCI[xsims[isim],1]<-k11
+        simsinCI[xsims[isim],2]<-k12
 	bestmodels_t.fitted.sims<-predict_models(simsinCI[xsims[isim],],ntypes=ntypes,nparms=nparms,nheaders=0,errormatrix=errormatrix,mymodel=get(mymodel)) #"E_errorsfromunbroken"
 	if (isim==1) { bestmodels.fitted.CI<-bestmodels_t.fitted.sims } else { bestmodels.fitted.CI<-rbind(bestmodels.fitted.CI,bestmodels_t.fitted.sims) }
 	#print(simsinCI[xsims[isim],])
@@ -512,15 +405,20 @@ bestmodels.cfitted<-predict_induction(bestmodels_t,nparms=nparms-nparms_inductio
 #extract induction at time 6h to calculate k11-no-induction
 induction_for_normalized_k11<-bestmodels.cfitted %>% filter(time==6) %>% select(curve_fitted) %>% as.numeric
 k11<-bestmodels_t$k11/induction_for_normalized_k11
+k12<-bestmodels_t$k12/induction_for_normalized_k11
 bestmodels_t$k11<-k11
+bestmodels_t$k12<-k12
 #rescale mean induction in terms of induction*k11 (cutting flow)
-bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*k11
+bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11+k12)
 bestmodels.cfitted<-left_join(bestmodels.cfitted,bestmodels.cfitted.CI)
 #calculate mean trajectory with k11-no-induction
 bestmodels.fitted<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nparms,nheaders=0,errormatrix=errormatrix,mymodel=get(mymodel))
 bestmodels.fitted <- bestmodels.fitted %>% left_join(bestmodels.fitted.CI)
+#calculate mean trajectory with no errors
+bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nparms,nheaders=0,errormatrix=diag(4),mymodel=get(mymodel),timest=seq(0,2,0.0002))
 
-print(head(bestmodels.fitted)) 
+
+#====PLOT TRAJECTORIES====
 myplot <- bestmodels.fitted %>% ggplot(aes(x=time,y=p,colour=types)) + 
 xlim(0,72.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,6,12,24,36,48,72), limits=c(0,72.5))+
 geom_ribbon(aes(ymin = lowCI, ymax = highCI), alpha = 0.1 ,linetype="dotted")+ 
@@ -534,6 +432,7 @@ ggsave(myplot,filename=paste0(output_file,"_plot.trajectories.pdf"))
  #       geom_ribbon(aes(ymin = lowCI, ymax = highCI), alpha = 0.1 ,linetype="dotted") + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,6,12,24,36,48,72), limits=c(0,72.5)) + ggtitle(paste(mytarget,myinduction))
 
 
+#====PLOT INDUCTION CURVES====
 #datatmpnor11<-bestmodels.cfitted %>% filter(target==mytarget,induction==myinduction,model=="modelDSBs1i1_realimpnor11")
 myplot <- bestmodels.cfitted %>% ggplot(aes(x=time,y=curve_fitted)) + 
 xlim(0,72.2) +
@@ -541,4 +440,40 @@ scale_y_continuous("p", trans='sqrt') + scale_x_continuous("time (hours)", break
 geom_line()+xlim(0,72.2) +scale_y_continuous("precise cuts/intact DNA per hour",trans = 'sqrt') + theme_bw() +
 geom_ribbon(aes(ymin = lowCI, ymax = highCI), alpha=0.1,linetype="dotted")  
 ggsave(myplot,filename=paste0(output_file,"_plot.induction.pdf"))
+
+
+#====CALCULATE FLOWS====
+print("calculate flow")
+print(bestmodels_t)
+#print(bestmodels.fitted)
+#y.fitted<-bestmodels.fitted %>% pivot_wider(names_from="types",values_from="p")
+y.fitted<-bestmodels.fitted.0er %>% pivot_wider(names_from="types",values_from="p",values_fill=0)
+#print(y.fitted)
+names(y.fitted)<-c("time","y1","y2","y3","y4")
+y.fitted <- y.fitted %>% group_by(time) %>% summarise(y1=sum(y1),y2=sum(y2),y3=sum(y3),y4=sum(y4)) #%>% select(y1,y2,y3,y4)
+#print(y.fitted)
+bestmodels_t0<-bestmodels_t
+for (ipar in 1:(nparms-nparms_induction)){bestmodels_t0[ipar]<-0}
+
+flow_l<-list()
+#abundance_l<-list()
+#change_l<-list()
+for (ipar in 1:(nparms-nparms_induction)){
+bestmodels_tt<-bestmodels_t0
+bestmodels_tt[ipar]<-bestmodels_t[ipar]
+changes<-apply(y.fitted[,-1], MARGIN=1,FUN=function(x) predict_models(bestmodels_tt,ntypes=ntypes,nparms=nparms,nheaders=0,errormatrix=diag(4),mymodel=get(mymodel),yinit=c(x),timest=c(0,0.0002)))
+#flow_l[[nameparms[ipar]]]<-sum(sapply(changes,function(x) sum(abs(x$p[x$time==0.1]-x$p[x$time==0]))/2))
+flow_l[[nameparms[ipar]]]<-sum(sapply(changes,function(x) sum(max(x$p[x$time==0.0002]-x$p[x$time==0]))))
+#abundance_l<-apply(y.fitted[,-1], MARGIN=2,FUN=function(x) mean(x)) 
+#changes_l[[nameparms[ipar]]]<-sum(sapply(changes,function(x) x$p[x$time==0.0002]-x$p[x$time==0]))
+#print("changes")
+#print(head(changes))
+}
+#print("abundance")
+#print(unlist(abundance_l))
+#print("flow")
+#print(unlist(flow_l))
+#write.table(unlist(flow_l),file=paste0(output_file,"_plot.flow.tab"))
+write.table(unlist(flow_l),file=paste0(output_file,"_plot.flow.tab"))
+
 

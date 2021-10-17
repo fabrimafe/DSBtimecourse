@@ -33,7 +33,6 @@ induction_curve_vectorized<-function(x,params)
   }
 
 x<-seq(0,72,0.01)
-plot(x,induction_curve(x,parms_induction[1],parms_induction[2],parms_induction[3],parms_induction[4]),type="l")
 
 model5i1 <- function(t, y, parms,induction_c=induction_curve) {
   with(as.list(c(y, parms)), 
@@ -226,9 +225,7 @@ loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E
 
 argv<- arg_parser("Parse arguments")
 
-argv <- add_argument(argv, "-t", help="target")
 argv <- add_argument(argv, "-T", help="time course of target site. A dataset with time as 1st column and then the number of molecules")
-argv <- add_argument(argv, "-i", help="induction system")
 argv <- add_argument(argv, "-m", help="model")
 argv <- add_argument(argv, "-o", help="output file", default="output.txt")
 argv <- add_argument(argv, "-e", help="errors")
@@ -239,16 +236,20 @@ argv <- add_argument(argv, "-d", help="switch to change likelihood function. To 
 
 
 args <- parse_args(argv)
-mytarget_i<-args$t
 input.file<-args$T
 myerror<-args$e
 myerrorE<-args$E
 mymodel<-args$m
-myinduction<-args$i
 output.file<-args$o
 n.max<-as.numeric(args$n)
-optimize_errorDSB2indel<-0
 optimize_errorDSB2indel<-as.numeric(args$d)
+
+if (is.na(myerror)){ myerror<-"error" }
+if (is.na(n.max)){ n.max<-100 }
+if (is.na(output.file)){ output.file<-"DSBtimecourse_optimize.tsv" }
+if (is.na(optimize_errorDSB2indel)){ optimize_errorDSB2indel<-0 }
+
+
 
 ########################################################################################################
 ##################### LOAD DATA ########################################################################
@@ -329,7 +330,7 @@ for ( counter in 1:n.max)
 	names(myparscale)<-paste0("parscale",1:nrates)
         names(xparms)<-paste0("init_",names(xparms))
         names(mysteps)<-paste0("step",1:nrates)
-        res_allinfo<-t(unlist(list(mytarget_i,mymodel,res,xparms,myparscale,mysteps)))
+        res_allinfo<-t(unlist(list(res,xparms,myparscale,mysteps)))
         if (counter==1) { print_header=TRUE } else { print_header=FALSE }
         write.table(res_allinfo,file=output.file,quote=FALSE,row.names=FALSE,append=TRUE,col.names=print_header,sep="\t")
         };
