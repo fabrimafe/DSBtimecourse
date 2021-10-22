@@ -230,6 +230,7 @@ argv <- add_argument(argv, "-d", help="data_file; time course used to calculate 
 argv <- add_argument(argv, "-o", help="output_file")
 argv <- add_argument(argv, "-n", help="number of sampled points")
 argv <- add_argument(argv, "-E", help="error matrix")
+argv <- add_argument(argv, "-m", help="model - mandatory, with no default")
 
 args <- parse_args(argv)
 
@@ -238,12 +239,13 @@ input_file<-args$i
 output_file<-args$o
 myerrorE<-args$E
 data_file<-args$d
+mymodel<-args$m
 
 inputf<-read.table(input_file,header=TRUE)
-mytarget_i<-inputf$target[1]
-myinduction<-inputf$induction[1]
-myerror<-inputf$error[1]
-mymodel<-inputf$model[1]
+#mytarget_i<-inputf$target[1]
+#myinduction<-inputf$induction[1]
+#myerror<-inputf$error[1]
+#mymodel<-inputf$model[1]
 optimize_errorDSB2indel<-0
 if ( length(grep("ester1",input_file))==1){ optimize_errorDSB2indel<-1 }
 if ( length(grep("ester2",input_file))==1){ optimize_errorDSB2indel<-2 }
