@@ -226,6 +226,8 @@ loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E
 argv<- arg_parser("Parse arguments")
 
 argv <- add_argument(argv, "-T", help="time course of target site. A dataset with time as 1st column and then the number of molecules")
+argv <- add_argument(argv, "-R", help="time course of target2 site. A dataset with time as 1st column and then the number of molecules")
+argv <- add_argument(argv, "-S", help="time course of target3 site. A dataset with time as 1st column and then the number of molecules")
 argv <- add_argument(argv, "-m", help="model")
 argv <- add_argument(argv, "-o", help="output file", default="output.txt")
 argv <- add_argument(argv, "-e", help="errors")

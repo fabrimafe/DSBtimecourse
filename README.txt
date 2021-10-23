@@ -43,7 +43,7 @@ bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=160
 done;done;done;done
 
 
-for MYN in 20000;do #50000 150000 500000 2000000
+for MYN in 20000 50000 150000 500000;do # 2000000
 for MYDELAY in '' _mydelay0.25;do
 for MYINDUCTION in gRNA RNP;do
 for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
@@ -60,7 +60,7 @@ if [ -f $OUTPUTA ];then
 echo $MYN $TIMECOURSE
 #cat $OUTPUTA | head -1 > $OUTPUTALL 
 #cat $OUTPUTA $OUTPUTB $OUTPUTC $OUTPUTD | grep -v k11 | head -5000 >> $OUTPUTALL
-bsub -q new-short -J CI -e ~/mylogs/confint.e%J -o ~/mylogs/confint.o%J -R rusage[mem=48000] ./calculate_CI_v1.sh $OUTPUTALL $TIMECOURSE $ERRORMATRIX $MYN $mymodel
+bsub -q new-long -J CI -e ~/mylogs/confint.e%J -o ~/mylogs/confint.o%J -R rusage[mem=48000] ./calculate_CI_v1.sh $OUTPUTALL $TIMECOURSE $ERRORMATRIX $MYN $mymodel
 fi
 done;done;done;done;done
 
@@ -76,20 +76,23 @@ TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARG
 OUTPUT=~/workspace/daniela/resultsv1/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}
 OUTPUTA=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
 if [ -f $OUTPUTA ];then
-trialfile1=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all_n500000
-trialfile2=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all_n150000
-trialfile3=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all_n50000
-trialfile4=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all_n20000
-ls ~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all_n*
-if [ -f ${trialfile4}.CI.RData ];then myfile=$trialfile4;fi 
-if [ -f ${trialfile3}.CI.RData ];then myfile=$trialfile3;fi 
-if [ -f ${trialfile2}.CI.RData ];then myfile=$trialfile2;fi 
-if [ -f ${trialfile1}.CI.RData ];then myfile=$trialfile1;fi 
-ERRORMATRIXM=$( basename $ERRORMATRIX .tsv )
-TIMECOURSEM=$( basename $TIMECOURSE .txt )
-myfile=${myfile}
-cat ${myfile}.CI | awk -v var1=$MYTARGET -v var2=$MYINDUCTION -v var3=$mymodel -v var4=$ERRORMATRIXM -v var5=$TIMECOURSEM '{print $0,var1,var2,var3,var4,var5}' | grep -v max >> ~/workspace/daniela/resultsv2/table.CI 
-#bsub -q new-medium -J plot -e ~/mylogs/plot.e%J -o ~/mylogs/plot.o%J -R rusage[mem=24000] ./plot.v1.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 1000 ~/workspace/daniela/resultsv2/plots/plot_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}
+	trialfile1=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all_n500000
+	trialfile2=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all_n150000
+	trialfile3=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all_n50000
+	trialfile4=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all_n20000
+	ls ~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all_n*
+	myfile="notexist"
+	if [ -f ${trialfile4}.CI.RData ];then myfile=$trialfile4;fi 
+	if [ -f ${trialfile3}.CI.RData ];then myfile=$trialfile3;fi 
+	if [ -f ${trialfile2}.CI.RData ];then myfile=$trialfile2;fi 
+	if [ -f ${trialfile1}.CI.RData ];then myfile=$trialfile1;fi 
+	ERRORMATRIXM=$( basename $ERRORMATRIX .tsv )
+	TIMECOURSEM=$( basename $TIMECOURSE .txt )
+	myfile=${myfile}
+	if [ -f ${myfile}.CI.RData ];then
+		cat ${myfile}.CI | awk -v var1=$MYTARGET -v var2=$MYINDUCTION -v var3=$mymodel -v var4=$ERRORMATRIXM -v var5=$TIMECOURSEM '{print $0,var1,var2,var3,var4,var5}' | grep -v max >> ~/workspace/daniela/resultsv2/table.CI 
+		bsub -q new-medium -J plot -e ~/mylogs/plot.e%J -o ~/mylogs/plot.o%J -R rusage[mem=24000] ./plot.v1.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 1000 ~/workspace/daniela/resultsv2/plots/plot_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}
+	fi
 fi
 done;done;done;done
 

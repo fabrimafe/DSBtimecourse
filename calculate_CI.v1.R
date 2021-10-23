@@ -176,7 +176,7 @@ loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix)
   yinit<-c(1,rep(0,ncol(my_data)-2))
   out <- ode (times = my_data$time, y = yinit, func = ODEfunc, parms = parms)
   probs<-(out[,2:ncol(out)]) %*% E.matrix
-  probs[probs<10^(-16)]<-10^(-16)
+  probs[probs<10^(-9)]<-10^(-9)
   loglik<-sapply(1:nrow(my_data), function(x) dmultinom(x=my_data[x,-1],prob=probs[x,],log=TRUE))
   sum(loglik)
 }
@@ -282,9 +282,12 @@ loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix)
   yinit<-c(1,rep(0,ncol(my_data)-2))
   out <- ode (times = my_data$time, y = yinit, func = ODEfunc, parms = parms)
   probs<-(out[,2:ncol(out)]) %*% E.matrix
-  probs[probs<10^(-16)]<-10^(-16)
+  if( sum(is.nan(probs))>0){ return(-999999999)} else {  
+  probs[probs<10^(-9)]<-10^(-9)
+#  print(probs)
   loglik<-sapply(1:nrow(my_data), function(x) dmultinom(x=my_data[x,-1],prob=probs[x,],log=TRUE))
-  sum(loglik)
+  return(sum(loglik))
+  }
 }
 
 generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermutations=1000,nameparams=nameparms, exploration.radius=1,returnonlyCI=FALSE,addpreviouslysampled="0",normalize_k11=TRUE)
@@ -312,7 +315,7 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
     };
   	print("Generate parameters to explore")
 	counter00<-1
-        print(xxparams)
+  #      print(xxparams)
 	maxl2<-likfunction(xxparams)
         xxprobs0<-xxparams^(-3)/sum(xxparams^(-3))
         mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius/1000)
@@ -325,7 +328,9 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
         newpars.m4<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
         mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius*100)
         newpars.m5<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        newpars<-rbind(newpars.m1,newpars.m2,newpars.m3,newpars.m4,newpars.m5)
+        newpars.m5[newpars.m5>1000]<-1000
+	newpars<-rbind(newpars.m5,newpars.m4,newpars.m3,newpars.m2,newpars.m1)
+	newpars[newpars<0]<-0
         colnames(newpars)<-nameparams
  	print("Compute likelihood for new parameters")
         for (iit in 1:npermutations)
@@ -334,6 +339,7 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
             newpars_t<-sapply(newpars_t,function(x) max(x,0))
             names(newpars_t)<-nameparams
             if (newpars_t[nameparams=="r0"]==0) { newpars_t[nameparams=="r0"]<-0.0001 }
+            #if (newpars_t[nameparams=="K"]>20) { newpars_t[nameparams=="K"]<-20 }
 	    #print(c(iit,newpars_t))
 	    #reslik<-tryCatch(likfunction(newpars_t)); #not working on subfunctions?
             reslik<-likfunction(newpars_t)
