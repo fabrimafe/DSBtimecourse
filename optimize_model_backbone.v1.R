@@ -97,6 +97,29 @@ modelDSBs1i1_realimprecise <- function(t, y, parms,induction_c=induction_curve) 
       })
 }
 
+modelDSBs1i1_realimpnor11 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11+k12)*induction_c(t,K,x0,r0,r2)*y[1]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r12+rr12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
+        dy4 <- -r22*y[4]+(k12*induction_c(t,K,x0,r0,r2))*y[1]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_realnor21 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -((k11+k12)*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r11+r12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
+        dy4 <- -r22*y[4]+(k12*induction_c(t,K,x0,r0,r2))*y[1]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+
 modelDSBs1i1_fullimpreciseDSB <- function(t, y, parms,induction_c=induction_curve) {
   with(as.list(c(y, parms)), 
        {
@@ -119,17 +142,17 @@ modelDSBs1i1_fullimpreciseDSB_nor11 <- function(t, y, parms,induction_c=inductio
       })
 }
 
-modelDSBs1i1_realimpnor11 <- function(t, y, parms,induction_c=induction_curve) {
+
+modelDSBs1i1_3x4 <- function(t, y, parms,induction_c=induction_curve) {
   with(as.list(c(y, parms)), 
        {
-        dy1 <- -(k11+k12)*induction_c(t,K,x0,r0,r2)*y[1]
-        dy2 <- r12*y[3]+r22*y[4]
-        dy3 <- -(r12+rr12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
-        dy4 <- -r22*y[4]+(k12*induction_c(t,K,x0,r0,r2))*y[1]+rr12*y[3]
+        dy1 <- -(k11*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]
+        dy2 <- r12*y[3]
+        dy3 <- -(r11+r12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
+        dy4 <- +0
         list(c(dy1, dy2, dy3, dy4))
       })
 }
-
 
 
 ###################################################################################
@@ -199,15 +222,42 @@ loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc
   penalty<-0
   if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.7)^2 }
   E.matrix_t<-E.matrix
-  E.matrix_t[3,1]<-erDSB2indel/2
-  E.matrix_t[4,1]<-erDSB2indel/2
-  E.matrix_t[3,2]<-erDSB2indel/2
-  E.matrix_t[3,2]<-erDSB2indel/2
+  E.matrix_t[3,2]<-erDSB2indel
+  E.matrix_t[4,2]<-erDSB2indel
   E.matrix_t[3,3]<-1-erDSB2indel
   E.matrix_t[4,4]<-1-erDSB2indel
   penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
+  loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
+  }
+
+loglik_er_f.pen_errorimpDSB2pDSB_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
+  erDSB2indel<-parms[length(parms)]
+  penalty<-0
+  if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.7)^2 }
+  E.matrix_t<-E.matrix
+  E.matrix_t[3,3]<-1-erDSB2indel
+  E.matrix_t[3,4]<-erDSB2indel
+  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
+  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
+  loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
+  }
+
+loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
+  mydata.1<-my_data[1:(time_courses_begins[1]-1),]		
+  mydata.2<-my_data[time_courses_begins[1]:(time_courses_begins[2]-1),]		
+  mydata.3<-my_data[time_courses_begins[2]:nrow(mydata),]		
+  E.matrix.1<-E.matrix[1:4,]
+  E.matrix.2<-E.matrix[5:8,]
+  E.matrix.3<-E.matrix[9:12,]
+  #xmodel<-get("modelDSBs1i1_realimprecise")
+  parms.1<-parms[c(seq(1,length(parms)-6,3),(length(parms)-3):length(parms))]
+  parms.2<-parms[c(seq(2,length(parms)-5,3),(length(parms)-3):length(parms))]
+  parms.3<-parms[c(seq(3,length(parms)-4,3),(length(parms)-3):length(parms))]
+  print(parms.1)
+  penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
+  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
+  loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty
   }
 
 #function for unconstrained optimization
@@ -226,27 +276,25 @@ loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E
 argv<- arg_parser("Parse arguments")
 
 argv <- add_argument(argv, "-T", help="time course of target site. A dataset with time as 1st column and then the number of molecules")
-argv <- add_argument(argv, "-R", help="time course of target2 site. A dataset with time as 1st column and then the number of molecules")
-argv <- add_argument(argv, "-S", help="time course of target3 site. A dataset with time as 1st column and then the number of molecules")
 argv <- add_argument(argv, "-m", help="model")
 argv <- add_argument(argv, "-o", help="output file", default="output.txt")
 argv <- add_argument(argv, "-e", help="errors")
 argv <- add_argument(argv, "-E", help="error matrix")
 argv <- add_argument(argv, "-n", help="n iterations", default=100)
-argv <- add_argument(argv, "-d", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2.", default=0)
+argv <- add_argument(argv, "-d", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
 
 
 
 args <- parse_args(argv)
 input.file<-args$T
-myerror<-args$e
+#myerror<-args$e
 myerrorE<-args$E
 mymodel<-args$m
 output.file<-args$o
 n.max<-as.numeric(args$n)
 optimize_errorDSB2indel<-as.numeric(args$d)
 
-if (is.na(myerror)){ myerror<-"error" }
+#if (is.na(myerror)){ myerror<-"error" }
 if (is.na(n.max)){ n.max<-100 }
 if (is.na(output.file)){ output.file<-"DSBtimecourse_optimize.tsv" }
 if (is.na(optimize_errorDSB2indel)){ optimize_errorDSB2indel<-0 }
@@ -260,62 +308,83 @@ mydelay<-0
 ntypes<-4
 
 mydata<-read.table(input.file, header=TRUE)
+time_courses_begins<-c(which(mydata$time[-1]-mydata$time[-length(mydata$time)]<0)+1)
+print(time_courses_begins)
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
+xmodel<-NA
 if (mymodel=="model5i1" || mymodel=="model5i1_nor11")
-	{ 
-	ntypes<-3 ; load("RData/error_matrices3_l.RData");
-	error_mat_l<-error_matrices3_l
- 	}
+		{ 
+    		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
+		ntypes<-3
+		} else
+if (mymodel=="modelDSBs1i1_fullimpreciseDSB")
+		{
+    		nameparms <-c("k11","k12","rr12","rr21","r11","r12","r21","r22","K","x0","r0","r2")
+  		} else 
+if ( mymodel=="modelDSBs1i1_impfromcut" || mymodel=="modelDSBs1i1_impfrompDSB" || mymodel=="modelDSBs1i1_imp2DSB")
+		{
+		nameparms <-c("k11","k12","r11","r12","r21","r22","K","x0","r0","r2")
+		} else
+if ( mymodel=="modelDSBs1i1_realimprecise")
+		{
+	        nameparms <-c("k11","k12","rr12","r11","r12","r21","r22","K","x0","r0","r2")
+		} else
+if ( mymodel=="modelDSBs1i1_realimpnor11")
+		{
+		nameparms <-c("k11","k12","rr12","r12","r22","K","x0","r0","r2")
+		} else
+if ( mymodel=="modelDSBs1i1_realnor21")
+		{
+	        nameparms <-c("k11","k12","r11","r12","r22","K","x0","r0","r2")
+		} else
+if ( mymodel=="modelDSBs1i1_fullimpreciseDSB_nor11")
+		{
+    		nameparms <-c("k11","k12","rr12","rr21","r12","r22","K","x0","r0","r2")
+		} else
+if ( mymodel=="model5i1")
+		{
+    		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
+		} else
+if ( mymodel=="model5i1_nor11")
+		{
+    		nameparms <-c("k11","r12","K","x0","r0","r2")
+		} else
+if ( mymodel=="modelDSBs1i1_3x4")
+		{
+    		nameparms <-c("k11","r11","r12",,"K","x0","r0","r2")
+		} else
+if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
+		{
+	        #nameparms <-c("k11.1","k11.2","k11.3","k12.1","k12.2","k12.3","rr12.1","rr12.2","rr12.3","r11.1","r11.2","r11.3","r12.1","r12.2","r12.3","r21.1","r21.2","r21.3","r22.1","r22.2","r22.3","K","x0","r0","r2")
+	        nameparms <-c("k11","k11","k11","k12","k12","k12","rr12","rr12","rr12","r11","r11","r11","r12","r12","r12","r21","r21","r21","r22","r22","r22","K","x0","r0","r2")
+		loglik_er_f.pen<-loglik_er_f.pen_modelinductionx3
+		xmodel<-get("modelDSBs1i1_realimprecise")
+		};
 
 if (optimize_errorDSB2indel==2) { mydelay<-0 } 
 
-
+if (!"function" %in% is(xmodel)) { xmodel<-get(mymodel) }
 #################################################################################
 ##################### START OPTIMIZATION ########################################
 #################################################################################
 print("prepare optimization")
 
-
 #if (mytarget_i=="CRTISO_49and50bp") {mytarget<-"CRTISO"} else {mytarget<-mytarget_i};
 for ( counter in 1:n.max)
 	{
-	if (mymodel=="modelDSBs1i1_fullimpreciseDSB")
-		{
-    		nameparms <-c("k11","k12","rr12","rr21","r11","r12","r21","r22","K","x0","r0","r2")
-  		} else 
-	if ( mymodel=="modelDSBs1i1_impfromcut" || mymodel=="modelDSBs1i1_impfrompDSB" || mymodel=="modelDSBs1i1_imp2DSB")
-		{
-		nameparms <-c("k11","k12","r11","r12","r21","r22","K","x0","r0","r2")
-		} else
-	if ( mymodel=="modelDSBs1i1_realimprecise")
-		{
-	        nameparms <-c("k11","k12","rr12","r11","r12","r21","r22","K","x0","r0","r2")
-		} else
-	if ( mymodel=="modelDSBs1i1_realimpnor11")
-		{
-		nameparms <-c("k11","k12","rr12","r12","r22","K","x0","r0","r2")
-		} else
-	if ( mymodel=="modelDSBs1i1_fullimpreciseDSB_nor11")
-		{
-    		nameparms <-c("k11","k12","rr12","rr21","r12","r22","K","x0","r0","r2")
-		} else
-	if ( mymodel=="model5i1")
-		{
-    		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
-		} else
-	if ( mymodel=="model5i1_nor11")
-		{
-    		nameparms <-c("k11","r12","K","x0","r0","r2")
-		};
 	if ( optimize_errorDSB2indel==1 ) 
-	{ 
-	loglik_er_f.pen<-loglik_er_f.pen_errorDBS2indel_4states_m1
-	nameparms<-c(nameparms,"er1")
-	} else if ( optimize_errorDSB2indel==2 )
-	{
-	loglik_er_f.pen<-loglik_er_f.nopen
-	};
-	xmodel=get(mymodel);
+		{ 
+		loglik_er_f.pen<-loglik_er_f.pen_errorDBS2indel_4states_m1
+		nameparms<-c(nameparms,"er1")
+		} else 
+	if ( optimize_errorDSB2indel==2 )
+		{
+		loglik_er_f.pen<-loglik_er_f.nopen
+		} else 
+	if ( optimize_errorDSB2indel==3 )
+		{
+		loglik_er_f.pen<-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1
+		};
         nrates<-length(nameparms)
 	step_exp<-sample(6:8,1);mysteps<-rep(10^(-step_exp),nrates)
 	parscales_exp<-sample(1:3,nrates,replace=TRUE);myparscale<-10^(-parscales_exp)
@@ -326,8 +395,7 @@ for ( counter in 1:n.max)
 	myfactr<-10^(-sample(c(7,8,10),1))
 #	print(c(counter,mytarget_i,myinduction,myerror))
 	names(xparms)<-nameparms
-        #mydata<-mydata_l[[paste0(myinduction,"_",mytarget_i)]]
-        res<-optimx(par=xparms,fn=function(z)
+	res<-optimx(par=xparms,fn=function(z)
         loglik_er_f.pen(z,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix),control=list(maximize=TRUE,maxit=1000,parscale=myparscale,ndeps=mysteps,lmm=mylmm,factr=myfactr),method="L-BFGS-B",lower=lower_bound,hessian=FALSE,gr=NULL) #dowarn=FALSE
 	names(myparscale)<-paste0("parscale",1:nrates)
         names(xparms)<-paste0("init_",names(xparms))

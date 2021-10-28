@@ -16,18 +16,45 @@
 
 
 ### for tomato PhyB2 no controls yet, so only from time 0 
-for IGENE in PhyB2.1 PhyB2.2 PhyB2.3; do cat ~/workspace/daniela/input_datasets/timecourse_RNP_${IGENE}.txt | head -3 > ~/workspace/daniela/input_datasets/control_${IGENE}_time0.txt
-./calculate_error_matrix.R -i ~/workspace/daniela/input_datasets/control_${IGENE}_time0.txt -o ~/workspace/daniela/error_matrices/error_matrix4_${IGENE}_ -f 1
+for IGENE in PhyB2.1 PhyB2.2 PhyB2.3; do 
+cat ~/workspace/daniela/input_datasets/timecourse_RNP_${IGENE}.txt | head -3 > ~/workspace/daniela/input_datasets/control_${IGENE}_time0.txt
+#./calculate_error_matrix.R -i ~/workspace/daniela/input_datasets/control_${IGENE}_time0.txt -o ~/workspace/daniela/error_matrices/error_matrix4_${IGENE}_ -f 1
+./calculate_error_matrix.R -i ~/workspace/daniela/input_datasets/control_${IGENE}_time0.txt -o ~/workspace/daniela/error_matrices/error_matrix3_${IGENE}_ -f 1 -d 3
 done
 
 for IGENE in Psy1 CRTISO CRTISO.49and50bp; do 
-./calculate_error_matrix.R -i ~/workspace/daniela/input_datasets/control_${IGENE}_Types_MH_df.csv -o ~/workspace/daniela/error_matrices/error_matrix4_${IGENE}_ -f 2
+#./calculate_error_matrix.R -i ~/workspace/daniela/input_datasets/control_${IGENE}_Types_MH_df.csv -o ~/workspace/daniela/error_matrices/error_matrix4_${IGENE}_ -f 2
+./calculate_error_matrix.R -i ~/workspace/daniela/input_datasets/control_${IGENE}_Types_MH_df.csv -o ~/workspace/daniela/error_matrices/error_matrix3_${IGENE}_ -f 2 -d 3
 done
 
+myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_* )
+for i in $myfiles;do 
+rootname=$( basename $i .txt )
+cat $i | awk -v OFS='\t' '{if (NR==1){print $1,$2,$3,$4} else {print $1,$2,$4+$5,$3}}' > ~/workspace/daniela/input_datasets/${rootname}_3states.txt
+done
+
+#3states
+for MYDELAY in '' _mydelay0.25;do
+for MYINDUCTION in gRNA RNP;do
+for mymodel in model5i1;do #modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.2 PhyB2.1m PhyB2.3m;do # CRTISO0h;do #CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do
+MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' )
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix3_${MYTARGETM}_errorsfromunbroken.tsv
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}_3states.txt
+OUTPUTA=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
+OUTPUTB=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
+OUTPUTC=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
+OUTPUTD=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.d
+echo $OUTPUTA
+if [ ! -f $OUTPUTA ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250 ; fi
+if [ ! -f $OUTPUTB ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250 ; fi
+if [ ! -f $OUTPUTC ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250 ; fi
+if [ ! -f $OUTPUTD ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250 ; fi
+done;done;done;done
 
 for MYDELAY in '' _mydelay0.25;do
 for MYINDUCTION in gRNA RNP;do
-for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+for mymodel in modelDSBs1i1_realnor21;do #modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
 for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.2 PhyB2.1m PhyB2.3m;do # CRTISO0h;do #CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do
 MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
@@ -36,10 +63,11 @@ OUTPUTA=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARG
 OUTPUTB=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
 OUTPUTC=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
 OUTPUTD=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.d
-bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250
-bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250
-bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250
-bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250 
+echo $OUTPUTA
+if [ ! -f $OUTPUTA ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250 ; fi
+if [ ! -f $OUTPUTB ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250 ; fi
+if [ ! -f $OUTPUTC ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250 ; fi
+if [ ! -f $OUTPUTD ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250 ; fi
 done;done;done;done
 
 
@@ -97,11 +125,27 @@ fi
 done;done;done;done
 
 
-##############################################################################
+###################################BY INDUCTION###########################################
 
+cat ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2.txt | head -1 > ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1CRTISOPhyB2.2.txt
+cat ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2.txt | grep -v time >> ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1CRTISOPhyB2.2.txt
+cat ~/workspace/daniela/error_matrices/error_matrix4_CRTISO_errorsfromunbroken.tsv ~/workspace/daniela/error_matrices/error_matrix4_Psy1_errorsfromunbroken.tsv ~/workspace/daniela/error_matrices/error_matrix4_PhyB2.2_errorsfromunbroken.tsv > ~/workspace/daniela/error_matrices/error_matrix4_Psy1CRTISOPhyB2.2_errorsfromunbroken.tsv
 
-
-
+#./optimize_model_backbone.v1.R -T ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1CRTISOPhyB2.2.txt -m modelDSBs1i1_realimprecise.inductionx3 -E ~/workspace/daniela/error_matrices/error_matrix4_Psy1CRTISOPhyB2.2_errorsfromunbroken.tsv -o buum
+MYDELAY=''
+mymodel=modelDSBs1i1_realimprecise.inductionx3
+MYINDUCTION=RNP
+MYTARGET=Psy1CRTISOPhyB2.2
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_RNP_Psy1CRTISOPhyB2.2.txt
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_Psy1CRTISOPhyB2.2_errorsfromunbroken.tsv
+OUTPUTA=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
+OUTPUTB=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
+OUTPUTC=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
+OUTPUTD=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.d
+bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250
+bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250
+bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250
+bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250
 
 
 

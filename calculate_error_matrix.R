@@ -83,7 +83,7 @@ argv<- arg_parser("Parse arguments")
 argv <- add_argument(argv, "-i", help="input data")
 argv <- add_argument(argv, "-o", help="output file root", default="error_matrix")
 argv <- add_argument(argv, "-e", help="error model")
-argv <- add_argument(argv, "-d", help="number of types -> dimension matrix")
+argv <- add_argument(argv, "-d", help="number of types -> dimension matrix: 3,4", default=4)
 argv <- add_argument(argv, "-f", help="input format: 1 is target,time,y1,y2...; 2 is csv with MMEJ from daniela")
 
 args <- parse_args(argv)
@@ -106,6 +106,9 @@ if (is.na(output.file)){ output.file<-"error_matrix" }
 #################################################################################
 ##################### START OPTIMIZATION ########################################
 #################################################################################
+
+#=====================================4 types=
+if (ntypes==4){ 
 error_matrices4_l<-list()
 if (input.format==2)
 	{
@@ -178,4 +181,79 @@ error_matrices4_l[["E_errorsfromunbroken"]]<-E_errorsfromunbroken
 write.table(error_matrices4_l[["E_noerrors"]],file=paste0(output.file,"noerrors.tsv"),quote=FALSE,row.names=FALSE,sep="\t",col.names=FALSE)
 write.table(error_matrices4_l[["E_errorsfromintact"]],file=paste0(output.file,"errorsfromintact.tsv"),quote=FALSE,row.names=FALSE,sep="\t",col.names=FALSE)
 write.table(error_matrices4_l[["E_errorsfromunbroken"]],file=paste0(output.file,"errorsfromunbroken.tsv"),quote=FALSE,row.names=FALSE,sep="\t",col.names=FALSE)
+
+} else if (ntypes==3) #########################################=3 types=################################3
+{
+
+error_matrices3_l<-list()
+if (input.format==2)
+	{
+	mydata<-read.table(input.file, header=TRUE,sep=",")
+	mydata[is.na(mydata)]<-0;
+	mydata<-cbind(matrix(unlist(sapply(as.character(mydata$X),function(x) strsplit(x,"_"))),ncol=4,byrow=T),mydata);mydata[,2]<-NULL
+	names(mydata)[1:4]<-c("target","time","replicate","ID_name"); mydata$time<-as.numeric(sapply(mydata$time, function(x) gsub("h","",x)))
+
+	mydata<-mydata %>% mutate(DSB=Perfect.DSB+Extended.DSB+PAM_side.DSB+guide_side.DSB,indels=Ins+Del+MH_Del+MH_Del_2)
+	mydata<- mydata %>% select(time,WT.Sub,DSB,indels)
+	names(mydata)<-c("time","y1","y2","y3")
+	} else if (input.format==1)
+	{
+	mydata<-read.table(input.file, header=TRUE,sep="\t")
+	mydata[is.na(mydata)]<-0;
+	}
+print(mydata)
+mydata.p<-as.data.frame(cbind(mydata$time,t(apply(mydata[,2:4],MARGIN=1,FUN=function(x) x/sum(x)))))
+names(mydata.p)<-c("time","y1","y2","y3")
+
+loglik_errorcontrol_f<-function(parms,mydata=mydata){
+  #mydata: a dataframe with "time" course (which should always include 0) as 1st column, and col-types compatible with ODEfunc
+  #parms: vector specifying the set of parameters (compatible with ODEfunc)
+  loglik<-sapply(1:nrow(mydata), function(y) dmultinom(x=mydata[y,-1],prob=parms,log=TRUE))
+  return(sum(loglik))
+}
+
+xparms<-c(p11=0.01,p12=0.01,p13=0.01)
+sumerror<-rep(1/(ncol(mydata)-2),ncol(mydata)-2)/10
+error_proxy<-optimx(par=xparms,fn=function(z) loglik_errorcontrol_f(z,mydata=mydata),control=list(maximize=TRUE),method="L-BFGS-B",lower=rep(10^(-9),ncol(mydata)-1),hessian=FALSE,gr=NULL)
+
+error_rates<-error_proxy[1:3]/sum(error_proxy[1:3]); error_rates[1]<-1-sum(error_rates[-1]); error_rates<-unlist(error_rates)
+
+xerror_rates<-error_rates
+xprobs<-c(1,0,0)
+#GENERATE ERROR MATRICES
+n_types<-ncol(mydata)-1
+#--no errors
+E_noerrors<-diag(n_types)
+E_noerrors<-(E_noerrors+10^(-6))/(1+n_types*(10^(-6)))
+#--errors only from intact molecules
+E_errorsfromintact<-unname(rbind(error_rates,diag(n_types)));E_errorsfromintact<-E_errorsfromintact[-2,]
+#--errors only and equally from unbroken molecules
+error_matrix<-E_errorsfromintact
+for ( i in 2:(n_types/2)){
+error_matrix[i,]<-error_rates
+error_matrix[i,1]<-0
+error_matrix[i,i]<-error_rates[1]+error_rates[i]
+}
+for ( i in (n_types/2+1):n_types){
+error_matrix[i,]<-rep(0,n_types)
+error_matrix[i,i]<-1
+}
+E_errorsfromunbroken<-error_matrix
+
+#check that all sum to 1
+xprobs<-rep(1/6,3)
+sum(xprobs %*% E_noerrors)
+sum(xprobs %*% E_errorsfromintact)
+sum(xprobs %*% E_errorsfromunbroken)
+
+error_matrices3_l[["E_noerrors"]]<-E_noerrors
+error_matrices3_l[["E_errorsfromintact"]]<-E_errorsfromintact
+error_matrices3_l[["E_errorsfromunbroken"]]<-E_errorsfromunbroken
+
+write.table(error_matrices3_l[["E_noerrors"]],file=paste0(output.file,"noerrors.tsv"),quote=FALSE,row.names=FALSE,sep="\t",col.names=FALSE)
+write.table(error_matrices3_l[["E_errorsfromintact"]],file=paste0(output.file,"errorsfromintact.tsv"),quote=FALSE,row.names=FALSE,sep="\t",col.names=FALSE)
+write.table(error_matrices3_l[["E_errorsfromunbroken"]],file=paste0(output.file,"errorsfromunbroken.tsv"),quote=FALSE,row.names=FALSE,sep="\t",col.names=FALSE)
+
+}
+
 
