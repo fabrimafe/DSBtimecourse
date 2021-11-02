@@ -17,9 +17,9 @@
 
 ### for tomato PhyB2 no controls yet, so only from time 0 
 for IGENE in PhyB2.1 PhyB2.2 PhyB2.3; do 
-cat ~/workspace/daniela/input_datasets/timecourse_RNP_${IGENE}.txt | head -3 > ~/workspace/daniela/input_datasets/control_${IGENE}_time0.txt
+cat ~/workspace/daniela/input_datasets/timecourse_RNP_${IGENE}.txt | awk -v OFS='\t' '{if ($1=="time"){printf "time\ty1\ty2\ty3\n"} else if ($1==0){print $1,$2,$4+$5,$3}}' > ~/workspace/daniela/input_datasets/control_${IGENE}_time0_3states.txt
 #./calculate_error_matrix.R -i ~/workspace/daniela/input_datasets/control_${IGENE}_time0.txt -o ~/workspace/daniela/error_matrices/error_matrix4_${IGENE}_ -f 1
-./calculate_error_matrix.R -i ~/workspace/daniela/input_datasets/control_${IGENE}_time0.txt -o ~/workspace/daniela/error_matrices/error_matrix3_${IGENE}_ -f 1 -d 3
+./calculate_error_matrix.R -i ~/workspace/daniela/input_datasets/control_${IGENE}_time0_3states.txt -o ~/workspace/daniela/error_matrices/error_matrix3_${IGENE}_ -f 1 -d 3
 done
 
 for IGENE in Psy1 CRTISO CRTISO.49and50bp; do 
@@ -34,65 +34,93 @@ cat $i | awk -v OFS='\t' '{if (NR==1){print $1,$2,$3,$4} else {print $1,$2,$4+$5
 done
 
 #3states
-for MYDELAY in '' _mydelay0.25;do
-for MYINDUCTION in gRNA RNP;do
-for mymodel in model5i1;do #modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+#for MYDELAY in '' _mydelay0.25;do
+#for MYINDUCTION in gRNA RNP;do
+#for mymodel in model5i1;do #modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+#for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.2 PhyB2.1m PhyB2.3m;do # CRTISO0h;do #CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do
+#MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' )
+#ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix3_${MYTARGETM}_errorsfromunbroken.tsv
+#TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}_3states.txt
+#OUTPUTA=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
+#OUTPUTB=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
+#OUTPUTC=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
+#OUTPUTD=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.d
+#echo $OUTPUTA
+#if [ ! -f $OUTPUTA ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250 ; fi
+#if [ ! -f $OUTPUTB ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250 ; fi
+#if [ ! -f $OUTPUTC ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250 ; fi
+#if [ ! -f $OUTPUTD ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250 ; fi
+#done;done;done;done
+
+#for MYDELAY in '' _mydelay0.25;do
+#for MYINDUCTION in gRNA RNP;do
+#for mymodel in modelDSBs1i1_realnor21;do #modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+#for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.2 PhyB2.1m PhyB2.3m;do # CRTISO0h;do #CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do
+#MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' )
+#ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
+#TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
+#OUTPUTA=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
+#OUTPUTB=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
+#OUTPUTC=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
+#OUTPUTD=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.d
+#echo $OUTPUTA
+#if [ ! -f $OUTPUTA ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250 ; fi
+#if [ ! -f $OUTPUTB ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250 ; fi
+#if [ ! -f $OUTPUTC ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250 ; fi
+#if [ ! -f $OUTPUTD ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250 ; fi
+#done;done;done;done
+
+for MYDELAY in '';do # _mydelay0.25;do
+for MYINDUCTION in RNP;do #gRNA RNP;do
+for mymodel in  model5i1;do #modelDSBs1i1_3x4;do #modelDSBs1i1_realnor21 modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
 for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.2 PhyB2.1m PhyB2.3m;do # CRTISO0h;do #CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do
 MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' )
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
+if [ $mymodel == "model5i1" ];then
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix3_${MYTARGETM}_errorsfromunbroken.tsv
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}_3states.txt
+fi
 OUTPUTA=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
 OUTPUTB=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
 OUTPUTC=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
 OUTPUTD=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.d
+likfun=0; if [ $mymodel == "modelDSBs1i1_3x4" ];then likfun=3; fi
 echo $OUTPUTA
-if [ ! -f $OUTPUTA ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250 ; fi
-if [ ! -f $OUTPUTB ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250 ; fi
-if [ ! -f $OUTPUTC ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250 ; fi
-if [ ! -f $OUTPUTD ];then bsub -q new-long -J m3 -e ~/mylogs/m3.e%J -o ~/mylogs/m3.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250 ; fi
+if [ ! -f $OUTPUTA ];then bsub -q new-long -J mPhyB -e ~/mylogs/md3.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1b.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250 $likfun ; fi
+if [ ! -f $OUTPUTB ];then bsub -q new-long -J mPhyB -e ~/mylogs/md3.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1b.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250 $likfun ; fi
+if [ ! -f $OUTPUTC ];then bsub -q new-long -J mPhyB -e ~/mylogs/md3.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1b.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250 $likfun ; fi
+if [ ! -f $OUTPUTD ];then bsub -q new-long -J mPhyB -e ~/mylogs/md3.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1b.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250 $likfun ; fi
 done;done;done;done
 
+#for MYN in 20000 50000 150000 500000;do # 2000000
+for MYN in 500000;do # 2000000
 for MYDELAY in '' _mydelay0.25;do
 for MYINDUCTION in gRNA RNP;do
-for mymodel in modelDSBs1i1_realnor21;do #modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
+for mymodel in modelDSBs1i1_3x4 model5i1;do  #modelDSBs1i1_realnor21 modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
 for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.2 PhyB2.1m PhyB2.3m;do # CRTISO0h;do #CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do
 MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
-OUTPUTA=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
-OUTPUTB=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
-OUTPUTC=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
-OUTPUTD=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.d
-echo $OUTPUTA
-if [ ! -f $OUTPUTA ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250 ; fi
-if [ ! -f $OUTPUTB ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250 ; fi
-if [ ! -f $OUTPUTC ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250 ; fi
-if [ ! -f $OUTPUTD ];then bsub -q new-long -J m21 -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250 ; fi
-done;done;done;done
-
-
-for MYN in 20000 50000 150000 500000;do # 2000000
-for MYDELAY in '' _mydelay0.25;do
-for MYINDUCTION in gRNA RNP;do
-for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_realimpnor11;do
-for MYTARGET in Psy1 CRTISO CRTISO.49and50bp PhyB2.2 PhyB2.1m PhyB2.3m;do # CRTISO0h;do #CRTISO.49and50bp0h PhyB2.1m PhyB2.3m;do
-MYTARGETM=$( echo $MYTARGET | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' )
-ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
-TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
+if [ $mymodel == "model5i1" ];then
+ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix3_${MYTARGETM}_errorsfromunbroken.tsv
+TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}_3states.txt
+fi
 OUTPUTA=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.a
 OUTPUTB=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
 OUTPUTC=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
 OUTPUTD=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.d
 OUTPUTALL=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all.tsv
+likfun=0; if [ $mymodel == "modelDSBs1i1_3x4" ];then likfun=3; fi
 if [ -f $OUTPUTA ];then
 echo $MYN $TIMECOURSE
-#cat $OUTPUTA | head -1 > $OUTPUTALL 
-#cat $OUTPUTA $OUTPUTB $OUTPUTC $OUTPUTD | grep -v k11 | head -5000 >> $OUTPUTALL
-bsub -q new-long -J CI -e ~/mylogs/confint.e%J -o ~/mylogs/confint.o%J -R rusage[mem=48000] ./calculate_CI_v1.sh $OUTPUTALL $TIMECOURSE $ERRORMATRIX $MYN $mymodel
+cat $OUTPUTA | head -1 > $OUTPUTALL 
+cat $OUTPUTA $OUTPUTB $OUTPUTC $OUTPUTD | grep -v k11 | head -5000 >> $OUTPUTALL
+bsub -q new-long -J CI -e ~/mylogs/confint.e%J -o ~/mylogs/confint.o%J -R rusage[mem=48000] ./calculate_CI_v1.sh $OUTPUTALL $TIMECOURSE $ERRORMATRIX $MYN $mymodel $likfun
 fi
 done;done;done;done;done
 
-#for MYN in 20000 150000 500000 2000000;do #MYN=50000
+for MYN in 20000 150000 500000 2000000;do #MYN=50000
 echo "aaa" | awk '{printf "max\tCIlow\tCIhigh\trate\ttarget\tinduction\tmodel\terror\ttimecourse\n"}' > ~/workspace/daniela/resultsv2/table.CI
 for MYDELAY in '' _mydelay0.25;do
 for MYINDUCTION in gRNA RNP;do
@@ -131,10 +159,11 @@ cat ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1.txt ~/workspace/danie
 cat ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2.txt | grep -v time >> ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1CRTISOPhyB2.2.txt
 cat ~/workspace/daniela/error_matrices/error_matrix4_CRTISO_errorsfromunbroken.tsv ~/workspace/daniela/error_matrices/error_matrix4_Psy1_errorsfromunbroken.tsv ~/workspace/daniela/error_matrices/error_matrix4_PhyB2.2_errorsfromunbroken.tsv > ~/workspace/daniela/error_matrices/error_matrix4_Psy1CRTISOPhyB2.2_errorsfromunbroken.tsv
 
-#./optimize_model_backbone.v1.R -T ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1CRTISOPhyB2.2.txt -m modelDSBs1i1_realimprecise.inductionx3 -E ~/workspace/daniela/error_matrices/error_matrix4_Psy1CRTISOPhyB2.2_errorsfromunbroken.tsv -o buum
+#CI to be rerun because not a long of iterations with induction, since it is slow. opt for RNP still running as mrep
+MYN=500000
 MYDELAY=''
 mymodel=modelDSBs1i1_realimprecise.inductionx3
-MYINDUCTION=RNP
+MYINDUCTION=RNP #gRNA #RNP
 MYTARGET=Psy1CRTISOPhyB2.2
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_RNP_Psy1CRTISOPhyB2.2.txt
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_Psy1CRTISOPhyB2.2_errorsfromunbroken.tsv
@@ -142,10 +171,14 @@ OUTPUTA=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARG
 OUTPUTB=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.b
 OUTPUTC=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.c
 OUTPUTD=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.d
-bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250
-bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250
-bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250
-bsub -q new-long -J mrep -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250
+OUTPUTALL=~/workspace/daniela/resultsv2/results_${mymodel}_${MYINDUCTION}_${MYTARGET}${MYDELAY}.all.tsv
+#bsub -q new-long -J mind -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTA ${mymodel} 1250
+#bsub -q new-long -J mind -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTB ${mymodel} 1250
+#bsub -q new-long -J mind -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTC ${mymodel} 1250
+#bsub -q new-long -J mind -e ~/mylogs/m1.e%J -o ~/mylogs/m1.o%J -R rusage[mem=16000] ./launch_optimization_cas9_v1.sh $TIMECOURSE $ERRORMATRIX $OUTPUTD ${mymodel} 1250
+cat $OUTPUTA | head -1 > $OUTPUTALL 
+cat $OUTPUTA $OUTPUTB $OUTPUTC $OUTPUTD | grep -v k11 | head -5000 >> $OUTPUTALL
+bsub -q new-long -J CI.ind -e ~/mylogs/confint.e%J -o ~/mylogs/confint.o%J -R rusage[mem=48000] ./calculate_CI_v1.sh $OUTPUTALL $TIMECOURSE $ERRORMATRIX $MYN $mymodel 0
 
 
 

@@ -1,13 +1,3 @@
-#!/usr/bin/env Rscript
-#example to run
-#./optimize_model_backbone.R  -t CRTISO -i RNP -m modelDSBs1i1_fullimpreciseDSB -e E_errorsfromunbroken -n 10000 -o CRTISO_RNP_optimization.tsv 
-
-library(argparser, quietly=TRUE,warn.conflicts=FALSE)
-library(tidyverse)
-library(optimx)
-library(ggplot2)
-library(deSolve)
-
 ################################################################
 # DRAW THE MODEL (an ODE function) AND GENERATE SOME RANDOM DATA
 ################################################################
@@ -268,140 +258,190 @@ loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E
   loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
   }
 
-################################################################################
-################## READ ARGUMENTS ##############################################
-################################################################################
 
 
-argv<- arg_parser("Parse arguments")
-
-argv <- add_argument(argv, "-T", help="time course of target site. A dataset with time as 1st column and then the number of molecules")
-argv <- add_argument(argv, "-m", help="model")
-argv <- add_argument(argv, "-o", help="output file", default="output.txt")
-argv <- add_argument(argv, "-e", help="errors")
-argv <- add_argument(argv, "-E", help="error matrix")
-argv <- add_argument(argv, "-n", help="n iterations", default=100)
-argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
-
-
-
-args <- parse_args(argv)
-input.file<-args$T
-#myerror<-args$e
-myerrorE<-args$E
-mymodel<-args$m
-output.file<-args$o
-n.max<-as.numeric(args$n)
-optimize_errorDSB2indel<-as.numeric(args$l)
-
-#if (is.na(myerror)){ myerror<-"error" }
-if (is.na(n.max)){ n.max<-100 }
-if (is.na(output.file)){ output.file<-"DSBtimecourse_optimize.tsv" }
-if (is.na(optimize_errorDSB2indel)){ optimize_errorDSB2indel<-0 }
-
-
-
-########################################################################################################
-##################### LOAD DATA ########################################################################
-########################################################################################################
-mydelay<-0
-ntypes<-4
-
-mydata<-read.table(input.file, header=TRUE)
-time_courses_begins<-c(which(mydata$time[-1]-mydata$time[-length(mydata$time)]<0)+1)
-errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
-xmodel<-NA
-if (mymodel=="model5i1" || mymodel=="model5i1_nor11")
-		{ 
-    		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
-		ntypes<-3
-		} else
-if (mymodel=="modelDSBs1i1_fullimpreciseDSB")
+model2nameparams<-function(mymodel){
+	if (mymodel=="modelDSBs1i1_fullimpreciseDSB")
 		{
     		nameparms <-c("k11","k12","rr12","rr21","r11","r12","r21","r22","K","x0","r0","r2")
   		} else 
-if ( mymodel=="modelDSBs1i1_impfromcut" || mymodel=="modelDSBs1i1_impfrompDSB" || mymodel=="modelDSBs1i1_imp2DSB")
+	if ( mymodel=="modelDSBs1i1_impfromcut" || mymodel=="modelDSBs1i1_impfrompDSB" || mymodel=="modelDSBs1i1_imp2DSB")
 		{
 		nameparms <-c("k11","k12","r11","r12","r21","r22","K","x0","r0","r2")
 		} else
-if ( mymodel=="modelDSBs1i1_realimprecise")
+	if ( mymodel=="modelDSBs1i1_realimprecise")
 		{
 	        nameparms <-c("k11","k12","rr12","r11","r12","r21","r22","K","x0","r0","r2")
 		} else
-if ( mymodel=="modelDSBs1i1_realimpnor11")
+	if ( mymodel=="modelDSBs1i1_realimpnor11")
 		{
 		nameparms <-c("k11","k12","rr12","r12","r22","K","x0","r0","r2")
 		} else
-if ( mymodel=="modelDSBs1i1_realnor21")
+	if ( mymodel=="modelDSBs1i1_realnor21")
 		{
 	        nameparms <-c("k11","k12","r11","r12","r22","K","x0","r0","r2")
 		} else
-if ( mymodel=="modelDSBs1i1_fullimpreciseDSB_nor11")
+	if ( mymodel=="modelDSBs1i1_fullimpreciseDSB_nor11")
 		{
     		nameparms <-c("k11","k12","rr12","rr21","r12","r22","K","x0","r0","r2")
 		} else
-if ( mymodel=="model5i1")
+	if ( mymodel=="model5i1")
 		{
     		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
 		} else
-if ( mymodel=="model5i1_nor11")
+	if ( mymodel=="model5i1_nor11")
 		{
     		nameparms <-c("k11","r12","K","x0","r0","r2")
 		} else
-if ( mymodel=="modelDSBs1i1_3x4")
+	if ( mymodel=="modelDSBs1i1_3x4")
 		{
     		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
 		} else
-if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
+	if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
 		{
-	        #nameparms <-c("k11.1","k11.2","k11.3","k12.1","k12.2","k12.3","rr12.1","rr12.2","rr12.3","r11.1","r11.2","r11.3","r12.1","r12.2","r12.3","r21.1","r21.2","r21.3","r22.1","r22.2","r22.3","K","x0","r0","r2")
 	        nameparms <-c("k11","k11","k11","k12","k12","k12","rr12","rr12","rr12","r11","r11","r11","r12","r12","r12","r21","r21","r21","r22","r22","r22","K","x0","r0","r2")
 		loglik_er_f.pen<-loglik_er_f.pen_modelinductionx3
 		xmodel<-get("modelDSBs1i1_realimprecise")
 		};
+	print(mymodel)
+	print(nameparms)
+	return(nameparms)
+}
 
-if (optimize_errorDSB2indel==2) { mydelay<-0 } 
 
-if (!"function" %in% is(xmodel)) { xmodel<-get(mymodel) }
-#################################################################################
-##################### START OPTIMIZATION ########################################
-#################################################################################
-print("prepare optimization")
 
-#if (mytarget_i=="CRTISO_49and50bp") {mytarget<-"CRTISO"} else {mytarget<-mytarget_i};
-for ( counter in 1:n.max)
-	{
-	if ( optimize_errorDSB2indel==1 ) 
-		{ 
-		loglik_er_f.pen<-loglik_er_f.pen_errorDBS2indel_4states_m1
-		nameparms<-c(nameparms,"er1")
-		} else 
-	if ( optimize_errorDSB2indel==2 )
-		{
-		loglik_er_f.pen<-loglik_er_f.nopen
-		} else 
-	if ( optimize_errorDSB2indel==3 )
-		{
-		loglik_er_f.pen<-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1
-		};
-        nrates<-length(nameparms)
-	step_exp<-sample(6:8,1);mysteps<-rep(10^(-step_exp),nrates)
-	parscales_exp<-sample(1:3,nrates,replace=TRUE);myparscale<-10^(-parscales_exp)
-	if (sample(0:1,1)==1) { myparscale<-rep(1,nrates) };
-	xparms<-10^runif(nrates,-6,1)
-        lower_bound<-c(rep(0,nrates-2),10^(-7),0)
-	mylmm<-sample(5:8,1)
-	myfactr<-10^(-sample(c(7,8,10),1))
-#	print(c(counter,mytarget_i,myinduction,myerror))
-	names(xparms)<-nameparms
-	res<-optimx(par=xparms,fn=function(z)
-        loglik_er_f.pen(z,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix),control=list(maximize=TRUE,maxit=1000,parscale=myparscale,ndeps=mysteps,lmm=mylmm,factr=myfactr),method="L-BFGS-B",lower=lower_bound,hessian=FALSE,gr=NULL) #dowarn=FALSE
-	names(myparscale)<-paste0("parscale",1:nrates)
-        names(xparms)<-paste0("init_",names(xparms))
-        names(mysteps)<-paste0("step",1:nrates)
-        res_allinfo<-t(unlist(list(res,xparms,myparscale,mysteps)))
-        if (counter==1) { print_header=TRUE } else { print_header=FALSE }
-        write.table(res_allinfo,file=output.file,quote=FALSE,row.names=FALSE,append=TRUE,col.names=print_header,sep="\t")
-        };
-print("done") 
+loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix){
+  #ODEfunc: a function of class desolve
+  #my_data: a dataframe with "time" course (which should always include 0) as 1st column, and col-types compatible with ODEfunc
+  #parms: vector specifying the set of parameters (compatible with ODEfunc)
+  #ncells<-apply(mydata[,-1],MARGIN=1,sum)
+  yinit<-c(1,rep(0,ncol(my_data)-2))
+  out <- ode (times = my_data$time, y = yinit, func = ODEfunc, parms = parms)
+  probs<-(out[,2:ncol(out)]) %*% E.matrix
+  if( sum(is.nan(probs))>0){ return(-999999999)} else {
+  probs[probs<10^(-9)]<-10^(-9)
+#  print(probs)
+  loglik<-sapply(1:nrow(my_data), function(x) dmultinom(x=my_data[x,-1],prob=probs[x,],log=TRUE))
+  return(sum(loglik))
+  }
+}
+
+
+generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermutations=1000,nameparams=nameparms, exploration.radius=1,returnonlyCI=FALSE,addpreviouslysampled="0",normalize_k11=TRUE)
+  {
+  print("calculate CI")
+  res<-c();res_temp<-c()
+  counterpar<-1
+  xxparams<-rep(0,length(nameparams))
+  names(xxparams)<-nameparams
+  if (inputasrates)
+    {
+    for (xrate in 1:length(nameparams))
+            {
+            xxparams[counterpar]<- bestmodels_l_rates_t %>% .[xrate,] %>% select(rates) %>% as.numeric()
+            maxl<- bestmodels_l_rates_t %>% select(value) %>% head(1) %>% as.numeric()
+            counterpar<-counterpar+1
+          }
+    } else
+    {
+    for (xrate in nameparams)
+        {
+        xxparams[counterpar]<-bestmodels_l_rates_t[[xrate]]
+        counterpar<-counterpar+1
+        }
+    };
+        print("Generate parameters to explore")
+        counter00<-1
+  #      print(xxparams)
+        maxl2<-likfunction(xxparams)
+        xxprobs0<-xxparams^(-3)/sum(xxparams^(-3))
+        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius/1000)
+        newpars.m1<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
+        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius/10)
+        newpars.m2<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
+        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius)
+        newpars.m3<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
+        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius*10)
+        newpars.m4<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
+        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius*100)
+        newpars.m5<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
+        newpars.m5[newpars.m5>1000]<-1000
+        newpars<-rbind(newpars.m5,newpars.m4,newpars.m3,newpars.m2,newpars.m1)
+        newpars[newpars<0]<-0
+        colnames(newpars)<-nameparams
+        print("Compute likelihood for new parameters")
+        for (iit in 1:npermutations)
+            {
+            newpars_t<-newpars[iit,]
+            newpars_t<-sapply(newpars_t,function(x) max(x,0))
+            names(newpars_t)<-nameparams
+            if (newpars_t[nameparams=="r0"]==0) { newpars_t[nameparams=="r0"]<-0.0001 }
+            #if (newpars_t[nameparams=="K"]>20) { newpars_t[nameparams=="K"]<-20 }
+            #print(c(iit,newpars_t))
+            #reslik<-tryCatch(likfunction(newpars_t)); #not working on subfunctions?
+            reslik<-likfunction(newpars_t)
+            #loglik_er_f(newpars,my_data=mydata,ODEfunc=xmodel,E.matrix=error_matrices3_l[[mytarget]][[myerror]])
+            if (!"error" %in% class(reslik)){
+            res_temp<-c(newpars_t,reslik,maxl,maxl2);
+            if (counter00==1) {res<-res_temp } else { res<-rbind(res,res_temp) };
+            counter00<-counter00+1;}
+            }
+        res<-as.data.frame(res);row.names(res)<-NULL;
+        names(res)<-c(nameparams,"loglik","maxll","maxll.here");
+        if (addpreviouslysampled!="0")
+            {
+            dft<-get(addpreviouslysampled) %>% select(all_of(c(nameparams,"value")));
+            names(dft)<-c(nameparams,"loglik");dft$maxll<-res$maxll[1];dft$maxll.here<-res$maxll.here[1];
+            res<-rbind(res,dft)
+            }
+        if (normalize_k11)
+                {
+                print("normalize k11 in terms of cutting flow")
+                maxk11_norm<-as.numeric(xxparams[["k11"]]*induction_curve_vectorized(6,xxparams[(length(nameparams)-3):(length(nameparams))])[1])
+                if ("k12" %in% nameparams) { maxk12_norm<-as.numeric(xxparams[["k12"]]*induction_curve_vectorized(6,xxparams[(length(nameparams)-3):(length(nameparams))])[1])}
+                for (ikk in 1:nrow(res))
+                        {
+                        res$k11[ikk]<-as.numeric(res$k11[ikk]*induction_curve_vectorized(6,res[ikk,(length(nameparams)-3):(length(nameparams))])[1])
+                        if ("k12" %in% nameparams) { res$k12[ikk]<-as.numeric(res$k12[ikk]*induction_curve_vectorized(6,res[ikk,(length(nameparams)-3):(length(nameparams))])[1]) }
+                        #print(res$k11[ikk])
+                        }
+                print("normalization of k11 done")
+                }
+        res$ok<-0
+        res$ok[abs(res$maxll-res$loglik)<1.92]<-1
+        if (!returnonlyCI){return(res[res$ok==1,])} else {
+        #Monte Carlo exploration returns points retained in CI, so biased towards underestimation.
+        #To correct run mid-point interpolation.
+        maxCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=max)
+        minCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=min)
+        meanCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=median)
+        maxCI.unbiased.l<-c()
+        minCI.unbiased.l<-c()
+        for (ipar in 1:length(nameparams))
+          {
+          print(nameparms[ipar])
+          maxpoint<-res[res$ok==1 & res[,ipar]==maxCI.biased[ipar],1:length(nameparams)] %>% head(1) %>% unlist
+          df<-as.data.frame(res[res$ok==0 & res[,ipar]>maxCI.biased[ipar],1:length(nameparams)])
+          if (nrow(df)>0)
+            {
+            maxCI.unbiased<-apply(df,MARGIN=1,FUN=function(x) sum((x-maxpoint)^2/meanCI.biased))
+            maxCI.unbiased.l[ipar]<-(df[which.min(maxCI.unbiased),ipar]+maxCI.biased[ipar])/2
+            } else { maxCI.unbiased.l[ipar]<-maxCI.biased[ipar] }
+          minpoint<-res[res$ok==1 & res[,ipar]==minCI.biased[ipar],1:length(nameparams)] %>% head(1) %>% unlist
+          if (minCI.biased[ipar]==0){minCI.unbiased.l[ipar]<-0} else {
+            if (nrow(df)>0)
+                {
+                df<-as.data.frame(res[res$ok==0 & res[,ipar]<minCI.biased[ipar],1:length(nameparams)])
+                minCI.unbiased<-apply(df,MARGIN=1,FUN=function(x) sum((x-minpoint)^2/meanCI.biased))
+                minCI.unbiased.l[ipar]<-(df[which.min(minCI.unbiased)[1],ipar]+minCI.biased[ipar])/2
+                }
+                else { minCI.unbiased.l[ipar]<-minCI.biased[ipar] }
+          }
+        }
+        xxparams[which(nameparams=="k11")]<-maxk11_norm
+        if ("k12" %in% nameparams) { xxparams[which(nameparams=="k12")]<-maxk12_norm }
+        return(list(data.frame(max=xxparams,CIlow=minCI.unbiased.l,CIhigh=maxCI.unbiased.l,rate=nameparams),res))
+        }
+}
+
 

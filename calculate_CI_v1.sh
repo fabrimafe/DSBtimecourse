@@ -6,6 +6,7 @@ data_file=$2
 ERRORMATRIX=$3
 NMAX=$4
 MYMODEL=$5
+errorflag=$6
 #for target in CRTISO Psy1 CRTISO_49and50bp;do
 #for induction in gRNA RNP;do
 #bsub -q new.long -J ${target}${induction} -e ${target}${induction}.e -o ${target}${induction}.o -R rusage[mem=16000] 
@@ -13,7 +14,7 @@ MYMODEL=$5
 outputf=$( basename $inputf .tsv )
 outputf2=$( dirname $inputf )
 if [ ! -f ${outputf2}/${outputf}_n${NMAX}.CI ];then
-./calculate_CI.v1.R -i ${inputf} -o ${outputf2}/${outputf}_n${NMAX}.CI -d $data_file -n ${NMAX} -E ${ERRORMATRIX} -m $MYMODEL
+./calculate_CI.v1.R -i ${inputf} -o ${outputf2}/${outputf}_n${NMAX}.CI -d $data_file -n ${NMAX} -E ${ERRORMATRIX} -m $MYMODEL -l $errorflag
 fi
 #done
 #done
