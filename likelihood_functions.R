@@ -149,23 +149,29 @@ modelDSBs1i1_3x4 <- function(t, y, parms,induction_c=induction_curve) {
 ################### DEFINE FUNCTIONS ##############################################
 ###################################################################################
 
-predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0) {
+predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0,yinit=0,timest=0) {
 dfl<-unlist(df)
 res_parms<-as.numeric(dfl[(nheaders+1):(nheaders+nparms)]);
 names(res_parms)<-names(dfl[(nheaders+1):(nheaders+nparms)])
-times<-seq(0,72,0.1)
+if (length(timest)>1){times<-timest} else {times<-seq(0,72,0.1)}
 yini<-c(y1 = 1, y2 = 0, y3 = 0,y4 = 0, y5 = 0, y6 = 0)
 if (ntypes==3) { yini<-c(y1 = 1, y2 = 0, y3 = 0) }
 if (ntypes==4) { yini<-c(y1 = 1, y2 = 0, y3 = 0, y4 = 0) }
-if (is(xmodel)[1]!="function"){
-mydata.fitted <- ode (times = times, y = yini, func = get(as.character(df[["model"]])[1]), parms = res_parms)} else {
-mydata.fitted <- ode (times = times, y = yini, func = mymodel, parms = res_parms)
-}
+if (length(yinit)>1){yini<-yinit}
+if (is(xmodel)[1]!="function"){mymodel_t<-get(as.character(df[["model"]])[1])} else {
+mymodel_t<-mymodel}
+mydata.fitted <- ode (times = times, y = yini, func = mymodel_t, parms = res_parms)
 mydata.fitted.df<-as.data.frame(mydata.fitted)
-mydata.fitted.df[,2:ncol(mydata.fitted.df)]<-t(sapply(1:nrow(mydata.fitted.df), function(x) as.matrix(mydata.fitted.df)[x,2:ncol(mydata.fitted.df)] %*% errormatrix))
+errormatrix_t<-errormatrix
+if (mymodel_t=="modelDSBs1i1_3x4")
+{
+errormatrix_t[3,3]<-1-res_parms[nparms]
+errormatrix_t[3,4]<-res_parms[nparms]
+}
+mydata.fitted.df[,2:ncol(mydata.fitted.df)]<-t(sapply(1:nrow(mydata.fitted.df), function(x) as.matrix(mydata.fitted.df)[x,2:ncol(mydata.fitted.df)] %*% errormatrix_t))
 if (ntypes==6) { names(mydata.fitted.df)<-c("time","x0","x+","x-","y0","y+","y-") }
-if (ntypes==3) { names(mydata.fitted.df)<-c("time","intact","DSB","indels") } 
-if (ntypes==4) { names(mydata.fitted.df)<-c("time","intact","indels","preciseDSB","impreciseDSB") } 
+if (ntypes==3) { names(mydata.fitted.df)<-c("time","intact","DSB","indels") }
+if (ntypes==4) { names(mydata.fitted.df)<-c("time","intact","indels","preciseDSB","impreciseDSB") }
 tidy.mydata.fitted.df<-mydata.fitted.df %>% pivot_longer(names(mydata.fitted.df)[2:(ntypes+1)],names_to = "types", values_to = "p")
 return(tidy.mydata.fitted.df)
 }
@@ -182,18 +188,6 @@ mydata.fitted <-data.frame(time=times,curve_fitted=induction_function(times,res_
 return(mydata.fitted)
 }
 
-loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix){
-  #ODEfunc: a function of class desolve 
-  #my_data: a dataframe with "time" course (which should always include 0) as 1st column, and col-types compatible with ODEfunc
-  #parms: vector specifying the set of parameters (compatible with ODEfunc)
-  #ncells<-apply(mydata[,-1],MARGIN=1,sum)
-  yinit<-c(1,rep(0,ncol(my_data)-2))
-  out <- ode (times = my_data$time, y = yinit, func = ODEfunc, parms = parms)
-  probs<-(out[,2:ncol(out)]) %*% E.matrix
-  probs[probs<10^(-16)]<-10^(-16)
-  loglik<-sapply(1:nrow(my_data), function(x) dmultinom(x=my_data[x,-1],prob=probs[x,],log=TRUE))
-  sum(loglik)
-}
 
 loglik_er_f.pen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
   penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
@@ -244,7 +238,6 @@ loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E
   parms.1<-parms[c(seq(1,length(parms)-6,3),(length(parms)-3):length(parms))]
   parms.2<-parms[c(seq(2,length(parms)-5,3),(length(parms)-3):length(parms))]
   parms.3<-parms[c(seq(3,length(parms)-4,3),(length(parms)-3):length(parms))]
-  print(parms.1)
   penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
   loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty
@@ -309,7 +302,6 @@ model2nameparams<-function(mymodel){
 }
 
 
-
 loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix){
   #ODEfunc: a function of class desolve
   #my_data: a dataframe with "time" course (which should always include 0) as 1st column, and col-types compatible with ODEfunc
@@ -320,7 +312,6 @@ loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix)
   probs<-(out[,2:ncol(out)]) %*% E.matrix
   if( sum(is.nan(probs))>0){ return(-999999999)} else {
   probs[probs<10^(-9)]<-10^(-9)
-#  print(probs)
   loglik<-sapply(1:nrow(my_data), function(x) dmultinom(x=my_data[x,-1],prob=probs[x,],log=TRUE))
   return(sum(loglik))
   }
@@ -352,7 +343,6 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
     };
         print("Generate parameters to explore")
         counter00<-1
-  #      print(xxparams)
         maxl2<-likfunction(xxparams)
         xxprobs0<-xxparams^(-3)/sum(xxparams^(-3))
         mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius/1000)
@@ -376,7 +366,7 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
             newpars_t<-sapply(newpars_t,function(x) max(x,0))
             names(newpars_t)<-nameparams
             if (newpars_t[nameparams=="r0"]==0) { newpars_t[nameparams=="r0"]<-0.0001 }
-            #if (newpars_t[nameparams=="K"]>20) { newpars_t[nameparams=="K"]<-20 }
+            if (sum(newpars_t>50)>0) { newpars_t[newpars_t>50]<-50 }
             #print(c(iit,newpars_t))
             #reslik<-tryCatch(likfunction(newpars_t)); #not working on subfunctions?
             reslik<-likfunction(newpars_t)
@@ -403,7 +393,6 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
                         {
                         res$k11[ikk]<-as.numeric(res$k11[ikk]*induction_curve_vectorized(6,res[ikk,(length(nameparams)-3):(length(nameparams))])[1])
                         if ("k12" %in% nameparams) { res$k12[ikk]<-as.numeric(res$k12[ikk]*induction_curve_vectorized(6,res[ikk,(length(nameparams)-3):(length(nameparams))])[1]) }
-                        #print(res$k11[ikk])
                         }
                 print("normalization of k11 done")
                 }
@@ -425,7 +414,10 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
           if (nrow(df)>0)
             {
             maxCI.unbiased<-apply(df,MARGIN=1,FUN=function(x) sum((x-maxpoint)^2/meanCI.biased))
-            maxCI.unbiased.l[ipar]<-(df[which.min(maxCI.unbiased),ipar]+maxCI.biased[ipar])/2
+	    tmin<-which.min(maxCI.unbiased)[1]
+	    if (length(tmin)>0){
+	    maxCI.unbiased.l[ipar]<-(df[tmin,ipar]+maxCI.biased[ipar])/2} else
+	    { maxCI.unbiased.l[ipar] <-NA }
             } else { maxCI.unbiased.l[ipar]<-maxCI.biased[ipar] }
           minpoint<-res[res$ok==1 & res[,ipar]==minCI.biased[ipar],1:length(nameparams)] %>% head(1) %>% unlist
           if (minCI.biased[ipar]==0){minCI.unbiased.l[ipar]<-0} else {

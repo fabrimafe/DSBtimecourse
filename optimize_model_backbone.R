@@ -208,7 +208,7 @@ loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc
   E.matrix_t[4,4]<-1-erDSB2indel
   penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
+  loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
   }
 
 #function for unconstrained optimization

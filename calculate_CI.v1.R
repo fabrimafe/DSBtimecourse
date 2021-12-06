@@ -51,19 +51,6 @@ mydata.fitted <-data.frame(time=times,curve_fitted=induction_function(times,res_
 return(mydata.fitted)
 }
 
-loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix){
-  #ODEfunc: a function of class desolve 
-  #my_data: a dataframe with "time" course (which should always include 0) as 1st column, and col-types compatible with ODEfunc
-  #parms: vector specifying the set of parameters (compatible with ODEfunc)
-  #ncells<-apply(mydata[,-1],MARGIN=1,sum)
-  yinit<-c(1,rep(0,ncol(my_data)-2))
-  out <- ode (times = my_data$time, y = yinit, func = ODEfunc, parms = parms)
-  probs<-(out[,2:ncol(out)]) %*% E.matrix
-  probs[probs<10^(-9)]<-10^(-9)
-  loglik<-sapply(1:nrow(my_data), function(x) dmultinom(x=my_data[x,-1],prob=probs[x,],log=TRUE))
-  sum(loglik)
-}
-
 loglik_er_f.pen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
   penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
@@ -154,7 +141,7 @@ if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
 ########################################################################################################
 ##################### LOAD DATA ########################################################################
 ########################################################################################################
-
+xmodel<-0
 mydata<-read.table(data_file,header=TRUE)
 time_courses_begins<-c(which(mydata$time[-1]-mydata$time[-length(mydata$time)]<0)+1)
 mydelay<-0

@@ -368,22 +368,24 @@ if (!"function" %in% is(xmodel)) { xmodel<-get(mymodel) }
 #################################################################################
 print("prepare optimization")
 
+if ( optimize_errorDSB2indel==1 ) 
+	{ 
+	loglik_er_f.pen<-loglik_er_f.pen_errorDBS2indel_4states_m1
+	nameparms<-c(nameparms,"er1")
+	} else 
+if ( optimize_errorDSB2indel==2 )
+	{
+	loglik_er_f.pen<-loglik_er_f.nopen
+	} else 
+if ( optimize_errorDSB2indel==3 )
+	{
+	loglik_er_f.pen<-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1
+	nameparms<-c(nameparms,"er1")
+	};
+
 #if (mytarget_i=="CRTISO_49and50bp") {mytarget<-"CRTISO"} else {mytarget<-mytarget_i};
 for ( counter in 1:n.max)
 	{
-	if ( optimize_errorDSB2indel==1 ) 
-		{ 
-		loglik_er_f.pen<-loglik_er_f.pen_errorDBS2indel_4states_m1
-		nameparms<-c(nameparms,"er1")
-		} else 
-	if ( optimize_errorDSB2indel==2 )
-		{
-		loglik_er_f.pen<-loglik_er_f.nopen
-		} else 
-	if ( optimize_errorDSB2indel==3 )
-		{
-		loglik_er_f.pen<-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1
-		};
         nrates<-length(nameparms)
 	step_exp<-sample(6:8,1);mysteps<-rep(10^(-step_exp),nrates)
 	parscales_exp<-sample(1:3,nrates,replace=TRUE);myparscale<-10^(-parscales_exp)
