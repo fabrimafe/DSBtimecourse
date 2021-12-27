@@ -13,8 +13,8 @@ errorflag=$6
 #./optimize_model_backbone.R  -t ${target} -i $induction -m modelDSBs1i1_fullimpreciseDSB -e E_errorsfromunbroken -n 10000 -o ${target}_${induction}_optimization.tsv
 outputf=$( basename $inputf .tsv )
 outputf2=$( dirname $inputf )
-if [ ! -f ${outputf2}/${outputf}_n${NMAX}.CI ];then
+#if [ ! -f ${outputf2}/${outputf}_n${NMAX}.CI ];then
 ./calculate_CI.v1.R -i ${inputf} -o ${outputf2}/${outputf}_n${NMAX}.CI -d $data_file -n ${NMAX} -E ${ERRORMATRIX} -m $MYMODEL -l $errorflag
-fi
+#fi
 #done
 #done

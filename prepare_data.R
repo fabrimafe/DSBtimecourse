@@ -22,7 +22,7 @@ mydata_l<-list()
 mydata.p_l<-list()
 #in addition CRTISO0h0 was edited manually by introducing 0 counts at time 0
 #
-for (mytarget_i in c("CRTISO.cleanedandnov2021","CRTISO.nov2021","PhyB2.2.nov2021")) #c("CRTISOcleaned")) #,"CRTISO.49and50bp","CRTISO","Psy1","PhyB2.1","PhyB2.2","PhyB2.3"))
+for (mytarget_i in c("CRTISO.cleanedandnov2021.49and50","CRTISO.nov2021.49and50")) #c("CRTISO.cleanedandnov2021","CRTISO.nov2021","PhyB2.2.nov2021")) #c("CRTISOcleaned")) #,"CRTISO.49and50bp","CRTISO","Psy1","PhyB2.1","PhyB2.2","PhyB2.3"))
         {
         for (myinduction in c("RNP")) #,"gRNA"))
                 {

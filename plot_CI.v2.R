@@ -168,7 +168,7 @@ for ( isim in 1:nsims)
 	if (isim==1) { bestmodels.cfitted.CI<-bestmodels_t.cfitted.sims } else { bestmodels.cfitted.CI<-rbind(bestmodels.cfitted.CI,bestmodels_t.cfitted.sims) }
         simsinCI[xsims[isim],1]<-k11
 	if ("k12" %in% nameparms) {simsinCI[xsims[isim],2]<-k12}
-	bestmodels_t.fitted.sims<-predict_models(simsinCI[xsims[isim],],ntypes=ntypes,nparms=nparms,nheaders=0,errormatrix=errormatrix,mymodel=get(mymodel)) #"E_errorsfromunbroken"
+	bestmodels_t.fitted.sims<-predict_models(simsinCI[xsims[isim],],ntypes=ntypes,nparms=nparms,nheaders=0,errormatrix=errormatrix,mymodel=mymodel) #"E_errorsfromunbroken"
 	if (isim==1) { bestmodels.fitted.CI<-bestmodels_t.fitted.sims } else { bestmodels.fitted.CI<-rbind(bestmodels.fitted.CI,bestmodels_t.fitted.sims) }
 	#print(simsinCI[xsims[isim],])
 	#print(bestmodels_t.fitted.sims %>% filter(time==0))

@@ -109,6 +109,16 @@ modelDSBs1i1_realnor21 <- function(t, y, parms,induction_c=induction_curve) {
       })
 }
 
+modelDSBs1i1_nok12 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -k11*induction_c(t,K,x0,r0,r2)*y[1]+r11*y[3]+r21*y[4]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r11+r12+rr12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
+        dy4 <- -(r21+r22)*y[4]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
 
 modelDSBs1i1_fullimpreciseDSB <- function(t, y, parms,induction_c=induction_curve) {
   with(as.list(c(y, parms)), 
@@ -148,7 +158,6 @@ modelDSBs1i1_3x4 <- function(t, y, parms,induction_c=induction_curve) {
 ###################################################################################
 ################### DEFINE FUNCTIONS ##############################################
 ###################################################################################
-
 predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0,yinit=0,timest=0) {
 dfl<-unlist(df)
 res_parms<-as.numeric(dfl[(nheaders+1):(nheaders+nparms)]);
@@ -158,16 +167,18 @@ yini<-c(y1 = 1, y2 = 0, y3 = 0,y4 = 0, y5 = 0, y6 = 0)
 if (ntypes==3) { yini<-c(y1 = 1, y2 = 0, y3 = 0) }
 if (ntypes==4) { yini<-c(y1 = 1, y2 = 0, y3 = 0, y4 = 0) }
 if (length(yinit)>1){yini<-yinit}
-if (is(xmodel)[1]!="function"){mymodel_t<-get(as.character(df[["model"]])[1])} else {
-mymodel_t<-mymodel}
+errormatrix_t<-errormatrix
+if (is(mymodel)[1]!="function")
+	{ 
+	if (mymodel=="modelDSBs1i1_3x4")
+		{
+		errormatrix_t[3,3]<-1-res_parms[nparms]
+		errormatrix_t[3,4]<-res_parms[nparms]
+		};
+	if (mymodel==0){mymodel_t<-get(as.character(df[["model"]])[1])} else { mymodel_t<-get(mymodel) }
+	} else {mymodel_t<-mymodel}
 mydata.fitted <- ode (times = times, y = yini, func = mymodel_t, parms = res_parms)
 mydata.fitted.df<-as.data.frame(mydata.fitted)
-errormatrix_t<-errormatrix
-if (mymodel_t=="modelDSBs1i1_3x4")
-{
-errormatrix_t[3,3]<-1-res_parms[nparms]
-errormatrix_t[3,4]<-res_parms[nparms]
-}
 mydata.fitted.df[,2:ncol(mydata.fitted.df)]<-t(sapply(1:nrow(mydata.fitted.df), function(x) as.matrix(mydata.fitted.df)[x,2:ncol(mydata.fitted.df)] %*% errormatrix_t))
 if (ntypes==6) { names(mydata.fitted.df)<-c("time","x0","x+","x-","y0","y+","y-") }
 if (ntypes==3) { names(mydata.fitted.df)<-c("time","intact","DSB","indels") }
@@ -269,6 +280,10 @@ model2nameparams<-function(mymodel){
 	if ( mymodel=="modelDSBs1i1_realimpnor11")
 		{
 		nameparms <-c("k11","k12","rr12","r12","r22","K","x0","r0","r2")
+		} else
+	if ( mymodel=="modelDSBs1i1_nok12")
+		{
+	        nameparms <-c("k11","rr12","r11","r12","r21","r22","K","x0","r0","r2")
 		} else
 	if ( mymodel=="modelDSBs1i1_realnor21")
 		{
