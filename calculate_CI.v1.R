@@ -40,17 +40,6 @@ return(tidy.mydata.fitted.df)
 }
 
 
-predict_induction <- function(df,nparms=6,nparms_induction=5,nheaders=3,induction_function=induction_curve_vectorized) {
-#nparms=3;nparms_induction=5;ntypes=6;induction_function=induction_curve_vectorized
-#df<-bestmodels_l[1,]
-dfl<-unlist(df)
-res_parms<-as.numeric(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)]);
-names(res_parms)<-names(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)])
-times<-seq(0,72,0.1)
-mydata.fitted <-data.frame(time=times,curve_fitted=induction_function(times,res_parms))
-return(mydata.fitted)
-}
-
 loglik_er_f.pen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
   penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
@@ -174,6 +163,7 @@ if ( optimize_errorDSB2indel==2 )
 if ( optimize_errorDSB2indel==3 )
 	{
 	loglik_er_f.pen<-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1
+	nameparms<-c(nameparms,"er1")
 	};
 
 if (optimize_errorDSB2indel==2) { mydelay<-0 } 

@@ -147,7 +147,7 @@ modelDSBs1i1_3x4 <- function(t, y, parms,induction_c=induction_curve) {
   with(as.list(c(y, parms)), 
        {
         dy1 <- -(k11*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]
-        dy2 <- r12*y[3]
+        dy2 <- +r12*y[3]
         dy3 <- -(r11+r12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
         dy4 <- +0
         list(c(dy1, dy2, dy3, dy4))
@@ -197,6 +197,7 @@ predict_induction <- function(df,nparms=6,nparms_induction=5,nheaders=3,inductio
 dfl<-unlist(df)
 res_parms<-as.numeric(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)]);
 names(res_parms)<-names(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)])
+#print(res_parms)
 times<-seq(0,72,0.1)
 mydata.fitted <-data.frame(time=times,curve_fitted=induction_function(times,res_parms))
 return(mydata.fitted)
@@ -218,7 +219,7 @@ loglik_er_f.nopen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_m
 loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
   erDSB2indel<-parms[length(parms)]
   penalty<-0
-  if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.7)^2 }
+  if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.999)^2 }
   E.matrix_t<-E.matrix
   E.matrix_t[3,2]<-erDSB2indel
   E.matrix_t[4,2]<-erDSB2indel
@@ -232,7 +233,7 @@ loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc
 loglik_er_f.pen_errorimpDSB2pDSB_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
   erDSB2indel<-parms[length(parms)]
   penalty<-0
-  if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.7)^2 }
+  if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.999)^2 }
   E.matrix_t<-E.matrix
   E.matrix_t[3,3]<-1-erDSB2indel
   E.matrix_t[3,4]<-erDSB2indel
@@ -405,12 +406,13 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
         if (normalize_k11)
                 {
                 print("normalize k11 in terms of cutting flow")
-                maxk11_norm<-as.numeric(xxparams[["k11"]]*induction_curve_vectorized(6,xxparams[(length(nameparams)-3):(length(nameparams))])[1])
-                if ("k12" %in% nameparams) { maxk12_norm<-as.numeric(xxparams[["k12"]]*induction_curve_vectorized(6,xxparams[(length(nameparams)-3):(length(nameparams))])[1])}
+		i_params_ind<-which(names(xxparams) %in% c("K","x0","r0","r2"))
+                maxk11_norm<-as.numeric(xxparams[["k11"]]*induction_curve_vectorized(6,xxparams[i_params_ind])[1])
+                if ("k12" %in% nameparams) { maxk12_norm<-as.numeric(xxparams[["k12"]]*induction_curve_vectorized(6,xxparams[i_params_ind])[1])}
                 for (ikk in 1:nrow(res))
                         {
-                        res$k11[ikk]<-as.numeric(res$k11[ikk]*induction_curve_vectorized(6,res[ikk,(length(nameparams)-3):(length(nameparams))])[1])
-                        if ("k12" %in% nameparams) { res$k12[ikk]<-as.numeric(res$k12[ikk]*induction_curve_vectorized(6,res[ikk,(length(nameparams)-3):(length(nameparams))])[1]) }
+                        res$k11[ikk]<-as.numeric(res$k11[ikk]*induction_curve_vectorized(6,res[ikk,i_params_ind])[1])
+                        if ("k12" %in% nameparams) { res$k12[ikk]<-as.numeric(res$k12[ikk]*induction_curve_vectorized(6,res[ikk,i_params_ind])[1]) }
                         }
                 print("normalization of k11 done")
                 }

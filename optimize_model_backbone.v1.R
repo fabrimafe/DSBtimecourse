@@ -95,65 +95,20 @@ ntypes<-4
 
 mydata<-read.table(input.file, header=TRUE)
 time_courses_begins<-c(which(mydata$time[-1]-mydata$time[-length(mydata$time)]<0)+1)
+nameparms<-model2nameparams(mymodel)
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
 xmodel<-NA
+
 if (mymodel=="model5i1" || mymodel=="model5i1_nor11")
-		{ 
-    		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
-		ntypes<-3
-		} else
-if (mymodel=="modelDSBs1i1_fullimpreciseDSB")
-		{
-    		nameparms <-c("k11","k12","rr12","rr21","r11","r12","r21","r22","K","x0","r0","r2")
-  		} else 
-if ( mymodel=="modelDSBs1i1_impfromcut" || mymodel=="modelDSBs1i1_impfrompDSB" || mymodel=="modelDSBs1i1_imp2DSB")
-		{
-		nameparms <-c("k11","k12","r11","r12","r21","r22","K","x0","r0","r2")
-		} else
-if ( mymodel=="modelDSBs1i1_realimprecise")
-		{
-	        nameparms <-c("k11","k12","rr12","r11","r12","r21","r22","K","x0","r0","r2")
-		} else
-if ( mymodel=="modelDSBs1i1_realimpnor11")
-		{
-		nameparms <-c("k11","k12","rr12","r12","r22","K","x0","r0","r2")
-		} else
-if ( mymodel=="modelDSBs1i1_realnor21")
-		{
-	        nameparms <-c("k11","k12","r11","r12","r22","K","x0","r0","r2")
-		} else
-if ( mymodel=="modelDSBs1i1_fullimpreciseDSB_nor11")
-		{
-    		nameparms <-c("k11","k12","rr12","rr21","r12","r22","K","x0","r0","r2")
-		} else
-if ( mymodel=="model5i1")
-		{
-    		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
-		} else
-if ( mymodel=="model5i1_nor11")
-		{
-    		nameparms <-c("k11","r12","K","x0","r0","r2")
-		} else
-if ( mymodel=="modelDSBs1i1_3x4")
-		{
-    		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
-		} else
+                {
+                ntypes<-3
+                };
 if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
-		{
-	        #nameparms <-c("k11.1","k11.2","k11.3","k12.1","k12.2","k12.3","rr12.1","rr12.2","rr12.3","r11.1","r11.2","r11.3","r12.1","r12.2","r12.3","r21.1","r21.2","r21.3","r22.1","r22.2","r22.3","K","x0","r0","r2")
-	        nameparms <-c("k11","k11","k11","k12","k12","k12","rr12","rr12","rr12","r11","r11","r11","r12","r12","r12","r21","r21","r21","r22","r22","r22","K","x0","r0","r2")
-		loglik_er_f.pen<-loglik_er_f.pen_modelinductionx3
-		xmodel<-get("modelDSBs1i1_realimprecise")
-		};
-
-if (optimize_errorDSB2indel==2) { mydelay<-0 } 
-
-if (!"function" %in% is(xmodel)) { xmodel<-get(mymodel) }
-#################################################################################
-##################### START OPTIMIZATION ########################################
-#################################################################################
-print("prepare optimization")
-
+                {
+                loglik_er_f.pen<-loglik_er_f.pen_modelinductionx3
+                xmodel<-get("modelDSBs1i1_realimprecise")
+	        #nameparms <-c("k11","k11","k11","k12","k12","k12","rr12","rr12","rr12","r11","r11","r11","r12","r12","r12","r21","r21","r21","r22","r22","r22","K","x0","r0","r2")
+                };
 if ( optimize_errorDSB2indel==1 ) 
 	{ 
 	loglik_er_f.pen<-loglik_er_f.pen_errorDBS2indel_4states_m1
@@ -168,6 +123,15 @@ if ( optimize_errorDSB2indel==3 )
 	loglik_er_f.pen<-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1
 	nameparms<-c(nameparms,"er1")
 	};
+
+if (optimize_errorDSB2indel==2) { mydelay<-0 } 
+
+if (!"function" %in% is(xmodel)) { xmodel<-get(mymodel) }
+
+#################################################################################
+##################### START OPTIMIZATION ########################################
+#################################################################################
+print("prepare optimization")
 
 #if (mytarget_i=="CRTISO_49and50bp") {mytarget<-"CRTISO"} else {mytarget<-mytarget_i};
 for ( counter in 1:n.max)

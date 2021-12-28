@@ -159,17 +159,6 @@ return(tidy.mydata.fitted.df)
 }
 
 
-predict_induction <- function(df,nparms=6,nparms_induction=5,nheaders=3,induction_function=induction_curve_vectorized) {
-#nparms=3;nparms_induction=5;ntypes=6;induction_function=induction_curve_vectorized
-#df<-bestmodels_l[1,]
-dfl<-unlist(df)
-res_parms<-as.numeric(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)]);
-names(res_parms)<-names(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)])
-times<-seq(0,72,0.1)
-mydata.fitted <-data.frame(time=times,curve_fitted=induction_function(times,res_parms))
-return(mydata.fitted)
-}
-
 loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix){
   #ODEfunc: a function of class desolve 
   #my_data: a dataframe with "time" course (which should always include 0) as 1st column, and col-types compatible with ODEfunc
