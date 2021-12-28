@@ -188,6 +188,9 @@ return(tidy.mydata.fitted.df)
 }
 
 
+
+
+
 predict_induction <- function(df,nparms=6,nparms_induction=5,nheaders=3,induction_function=induction_curve_vectorized) {
 #nparms=3;nparms_induction=5;ntypes=6;induction_function=induction_curve_vectorized
 #df<-bestmodels_l[1,]

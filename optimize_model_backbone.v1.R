@@ -12,185 +12,33 @@ library(deSolve)
 # DRAW THE MODEL (an ODE function) AND GENERATE SOME RANDOM DATA
 ################################################################
 
-#-->Logistic decay -> discard and change to make decay constant as Daniela suggests and Brinkam does
-#parms_induction<-c(K=3.5,x0=1,x2=0.7,r0=0,r2=0.02)
-#induction_curve<-function(x,K,x0,x2,r0,r2) K/(1+exp(-r0*(x-x0)))/(1+exp(+r2*(x-x2)))
-#induction_curve_vectorized<-function(x,params) 
-#  {
-#  K<-params[1];x0<-params[2];x2<-params[3];r0<-params[4];r2<-params[5];
-#  return(K/(1+exp(-r0*(x-x0)))/(1+exp(+r2*(x-x2))))
-#  }
-#x<-seq(0,2,0.01)
-#plot(x,induction_curve(x,parms_induction[1],parms_induction[2],parms_induction[3],parms_induction[4],parms_induction[5]),type="l")
-#-->Half-life decay as in Brinkman. r2 is 1/half life
-#load("RData/notebook_2errormatrices.RData")
-parms_induction<-c(K=1,x0=1,r0=10,r2=1)
-#induction_curve_logistic<-function(x,K,x0,x2,r0,r2) K/(1+exp(-r0*(x-x0)))/(1+exp(+r2*(x-x2)))
-induction_curve<-function(x,K,x0,r0,r2) K*2^(-x*r2)/(1+exp(-r0*(x-x0)))
-induction_curve_vectorized<-function(x,params) 
-  {
-  return(induction_curve(x,params[1],params[2],params[3],params[4]))
-  }
-
-x<-seq(0,72,0.01)
-
-model5i1 <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -(k11*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[2]
-        dy2 <- -(r11+r12)*y[2]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
-        dy3 <- r12*y[2]
-        list(c(dy1, dy2, dy3))
-      })
-}
-model5i1_nor11 <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -(k11*induction_c(t,K,x0,r0,r2) )*y[1]
-        dy2 <- -r12*y[2]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
-        dy3 <- r12*y[2]
-        list(c(dy1, dy2, dy3))
-      })
-}
-
-modelDSBs1i1_impfromcut <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -((k11+k12)*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]+r21*y[4]
-        dy2 <- r12*y[3]+r22*y[4]
-        dy3 <- -(r11+r12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
-        dy4 <- -(r21+r22)*y[4]+(k12*induction_c(t,K,x0,r0,r2))*y[1]
-        list(c(dy1, dy2, dy3, dy4))
-      })
-}
-
-modelDSBs1i1_impfrompDSB <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -(k11*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]+r21*y[4]
-        dy2 <- r12*y[3]+r22*y[4]
-        dy3 <- -(r11+r12+k12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
-        dy4 <- -(r21+r22)*y[4]+k12*y[3]
-        list(c(dy1, dy2, dy3, dy4))
-      })
-}
-
-modelDSBs1i1_imp2DSB <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -(k11*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]+r21*y[4]
-        dy2 <- r12*y[3]+r22*y[4]
-        dy3 <- -(r11+r12)*y[3]+k12*y[4]
-        dy4 <- -(r21+r22+k12)*y[4]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
-        list(c(dy1, dy2, dy3, dy4))
-      })
-}
-
-modelDSBs1i1_realimprecise <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -((k11+k12)*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]+r21*y[4]
-        dy2 <- r12*y[3]+r22*y[4]
-        dy3 <- -(r11+r12+rr12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
-        dy4 <- -(r21+r22)*y[4]+(k12*induction_c(t,K,x0,r0,r2))*y[1]+rr12*y[3]
-        list(c(dy1, dy2, dy3, dy4))
-      })
-}
-
-modelDSBs1i1_realimpnor11 <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -(k11+k12)*induction_c(t,K,x0,r0,r2)*y[1]
-        dy2 <- r12*y[3]+r22*y[4]
-        dy3 <- -(r12+rr12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
-        dy4 <- -r22*y[4]+(k12*induction_c(t,K,x0,r0,r2))*y[1]+rr12*y[3]
-        list(c(dy1, dy2, dy3, dy4))
-      })
-}
-
-modelDSBs1i1_realnor21 <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -((k11+k12)*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]
-        dy2 <- r12*y[3]+r22*y[4]
-        dy3 <- -(r11+r12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
-        dy4 <- -r22*y[4]+(k12*induction_c(t,K,x0,r0,r2))*y[1]
-        list(c(dy1, dy2, dy3, dy4))
-      })
-}
-
-
-modelDSBs1i1_fullimpreciseDSB <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -((k11+k12)*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]+r21*y[4]
-        dy2 <- r12*y[3]+r22*y[4]
-        dy3 <- -(r11+r12+rr12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]+rr21*y[4]
-        dy4 <- -(r21+r22+rr21)*y[4]+(k12*induction_c(t,K,x0,r0,r2))*y[1]+rr12*y[3]
-        list(c(dy1, dy2, dy3, dy4))
-      })
-}
-
-modelDSBs1i1_fullimpreciseDSB_nor11 <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -((k11+k12)*induction_c(t,K,x0,r0,r2) )*y[1]
-        dy2 <- r12*y[3]+r22*y[4]
-        dy3 <- -(r12+rr12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]+rr21*y[4]
-        dy4 <- -(r22+rr21)*y[4]+(k12*induction_c(t,K,x0,r0,r2))*y[1]+rr12*y[3]
-        list(c(dy1, dy2, dy3, dy4))
-      })
-}
-
-
-modelDSBs1i1_3x4 <- function(t, y, parms,induction_c=induction_curve) {
-  with(as.list(c(y, parms)), 
-       {
-        dy1 <- -(k11*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]
-        dy2 <- r12*y[3]
-        dy3 <- -(r11+r12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
-        dy4 <- +0
-        list(c(dy1, dy2, dy3, dy4))
-      })
-}
-
+source("likelihood_functions.R")
 
 ###################################################################################
 ################### DEFINE FUNCTIONS ##############################################
 ###################################################################################
 
-predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0) {
-dfl<-unlist(df)
-res_parms<-as.numeric(dfl[(nheaders+1):(nheaders+nparms)]);
-names(res_parms)<-names(dfl[(nheaders+1):(nheaders+nparms)])
-times<-seq(0,72,0.1)
-yini<-c(y1 = 1, y2 = 0, y3 = 0,y4 = 0, y5 = 0, y6 = 0)
-if (ntypes==3) { yini<-c(y1 = 1, y2 = 0, y3 = 0) }
-if (ntypes==4) { yini<-c(y1 = 1, y2 = 0, y3 = 0, y4 = 0) }
-if (is(xmodel)[1]!="function"){
-mydata.fitted <- ode (times = times, y = yini, func = get(as.character(df[["model"]])[1]), parms = res_parms)} else {
-mydata.fitted <- ode (times = times, y = yini, func = mymodel, parms = res_parms)
-}
-mydata.fitted.df<-as.data.frame(mydata.fitted)
-mydata.fitted.df[,2:ncol(mydata.fitted.df)]<-t(sapply(1:nrow(mydata.fitted.df), function(x) as.matrix(mydata.fitted.df)[x,2:ncol(mydata.fitted.df)] %*% errormatrix))
-if (ntypes==6) { names(mydata.fitted.df)<-c("time","x0","x+","x-","y0","y+","y-") }
-if (ntypes==3) { names(mydata.fitted.df)<-c("time","intact","DSB","indels") } 
-if (ntypes==4) { names(mydata.fitted.df)<-c("time","intact","indels","preciseDSB","impreciseDSB") } 
-tidy.mydata.fitted.df<-mydata.fitted.df %>% pivot_longer(names(mydata.fitted.df)[2:(ntypes+1)],names_to = "types", values_to = "p")
-return(tidy.mydata.fitted.df)
-}
+#predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0) {
+#dfl<-unlist(df)
+#res_parms<-as.numeric(dfl[(nheaders+1):(nheaders+nparms)]);
+#names(res_parms)<-names(dfl[(nheaders+1):(nheaders+nparms)])
+#times<-seq(0,72,0.1)
+#yini<-c(y1 = 1, y2 = 0, y3 = 0,y4 = 0, y5 = 0, y6 = 0)
+#if (ntypes==3) { yini<-c(y1 = 1, y2 = 0, y3 = 0) }
+#if (ntypes==4) { yini<-c(y1 = 1, y2 = 0, y3 = 0, y4 = 0) }
+#if (is(xmodel)[1]!="function"){
+#mydata.fitted <- ode (times = times, y = yini, func = get(as.character(df[["model"]])[1]), parms = res_parms)} else {
+#mydata.fitted <- ode (times = times, y = yini, func = mymodel, parms = res_parms)
+#}
+#mydata.fitted.df<-as.data.frame(mydata.fitted)
+#mydata.fitted.df[,2:ncol(mydata.fitted.df)]<-t(sapply(1:nrow(mydata.fitted.df), function(x) as.matrix(mydata.fitted.df)[x,2:ncol(mydata.fitted.df)] %*% errormatrix))
+#if (ntypes==6) { names(mydata.fitted.df)<-c("time","x0","x+","x-","y0","y+","y-") }
+#if (ntypes==3) { names(mydata.fitted.df)<-c("time","intact","DSB","indels") } 
+#if (ntypes==4) { names(mydata.fitted.df)<-c("time","intact","indels","preciseDSB","impreciseDSB") } 
+#tidy.mydata.fitted.df<-mydata.fitted.df %>% pivot_longer(names(mydata.fitted.df)[2:(ntypes+1)],names_to = "types", values_to = "p")
+#return(tidy.mydata.fitted.df)
+#}
 
-
-predict_induction <- function(df,nparms=6,nparms_induction=5,nheaders=3,induction_function=induction_curve_vectorized) {
-#nparms=3;nparms_induction=5;ntypes=6;induction_function=induction_curve_vectorized
-#df<-bestmodels_l[1,]
-dfl<-unlist(df)
-res_parms<-as.numeric(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)]);
-names(res_parms)<-names(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)])
-times<-seq(0,72,0.1)
-mydata.fitted <-data.frame(time=times,curve_fitted=induction_function(times,res_parms))
-return(mydata.fitted)
-}
 
 loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix){
   #ODEfunc: a function of class desolve 
@@ -205,68 +53,6 @@ loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix)
   sum(loglik)
 }
 
-loglik_er_f.pen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
-  }
-
-loglik_er_f.nopen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  #penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  #if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix) #-penalty
-  }
-
-loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  erDSB2indel<-parms[length(parms)]
-  penalty<-0
-  if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.7)^2 }
-  E.matrix_t<-E.matrix
-  E.matrix_t[3,2]<-erDSB2indel
-  E.matrix_t[4,2]<-erDSB2indel
-  E.matrix_t[3,3]<-1-erDSB2indel
-  E.matrix_t[4,4]<-1-erDSB2indel
-  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
-  }
-
-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  erDSB2indel<-parms[length(parms)]
-  penalty<-0
-  if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.7)^2 }
-  E.matrix_t<-E.matrix
-  E.matrix_t[3,3]<-1-erDSB2indel
-  E.matrix_t[3,4]<-erDSB2indel
-  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
-  }
-
-loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  mydata.1<-my_data[1:(time_courses_begins[1]-1),]		
-  mydata.2<-my_data[time_courses_begins[1]:(time_courses_begins[2]-1),]		
-  mydata.3<-my_data[time_courses_begins[2]:nrow(mydata),]		
-  E.matrix.1<-E.matrix[1:4,]
-  E.matrix.2<-E.matrix[5:8,]
-  E.matrix.3<-E.matrix[9:12,]
-  #xmodel<-get("modelDSBs1i1_realimprecise")
-  parms.1<-parms[c(seq(1,length(parms)-6,3),(length(parms)-3):length(parms))]
-  parms.2<-parms[c(seq(2,length(parms)-5,3),(length(parms)-3):length(parms))]
-  parms.3<-parms[c(seq(3,length(parms)-4,3),(length(parms)-3):length(parms))]
-  print(parms.1)
-  penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty
-  }
-
-#function for unconstrained optimization
-loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  penalty<-penalty+sum(apply(cbind(parms,rep(0,length(parms))),MARGIN=1,min)^2)*10^16
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
-  }
 
 ################################################################################
 ################## READ ARGUMENTS ##############################################
