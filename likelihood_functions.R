@@ -98,6 +98,28 @@ modelDSBs1i1_realimpnor11 <- function(t, y, parms,induction_c=induction_curve) {
       })
 }
 
+modelDSBs1i1_mini <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11*induction_c(t,K,x0,r0,r2) )*y[1]+r11*y[3]
+        dy2 <- +r22*y[4]
+        dy3 <- -(r11+rr12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
+        dy4 <- -r22*y[4]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_realimpnor11 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11+k12)*induction_c(t,K,x0,r0,r2)*y[1]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r12+rr12)*y[3]+(k11*induction_c(t,K,x0,r0,r2))*y[1]
+        dy4 <- -r22*y[4]+(k12*induction_c(t,K,x0,r0,r2))*y[1]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
 modelDSBs1i1_realnor21 <- function(t, y, parms,induction_c=induction_curve) {
   with(as.list(c(y, parms)), 
        {
@@ -284,6 +306,10 @@ model2nameparams<-function(mymodel){
 	if ( mymodel=="modelDSBs1i1_realimpnor11")
 		{
 		nameparms <-c("k11","k12","rr12","r12","r22","K","x0","r0","r2")
+		} else
+	if ( mymodel=="modelDSBs1i1_mini")
+		{
+	        nameparms <-c("k11","rr12","r11","r22","K","x0","r0","r2")
 		} else
 	if ( mymodel=="modelDSBs1i1_nok12")
 		{

@@ -205,7 +205,7 @@ bestmodels.cfitted<-left_join(bestmodels.cfitted,bestmodels.cfitted.CI)
 bestmodels.fitted<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=errormatrix,mymodel=mymodel)
 bestmodels.fitted <- bestmodels.fitted %>% left_join(bestmodels.fitted.CI)
 #calculate mean trajectory with no errors
-bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=mymodel,timest=seq(0,2,0.0002))
+bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=mymodel,timest=seq(0,72,0.0002))
 
 
 #====PLOT TRAJECTORIES====
