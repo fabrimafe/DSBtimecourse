@@ -40,20 +40,7 @@ return(tidy.mydata.fitted.df)
 }
 
 
-loglik_er_f.pen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
-  }
-
-loglik_er_f.nopen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  #penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  #if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix) #-penalty
-  }
-
-
-
+if (FALSE){
 loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
   erDSB2indel<-parms[length(parms)]
   penalty<-0
@@ -81,15 +68,7 @@ loglik_er_f.pen_errorimpDSB2pDSB_4states_m1<-function(parms,my_data=mydata,ODEfu
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
   loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
   }
-
-#function for unconstrained optimization
-loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  penalty<-penalty+sum(apply(cbind(parms,rep(0,length(parms))),MARGIN=1,min)^2)*10^16
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
-  }
-
+}
 
 
 ################################################################################
@@ -103,6 +82,7 @@ argv <- add_argument(argv, "-i", help="input_file; optimization file, output fro
 argv <- add_argument(argv, "-d", help="data_file; time course used to calculate likelihood with optimization.R")
 argv <- add_argument(argv, "-o", help="output_file")
 argv <- add_argument(argv, "-n", help="number of sampled points")
+argv <- add_argument(argv, "-z", help="n parameters in induction curve", default=2)
 argv <- add_argument(argv, "-E", help="error matrix")
 argv <- add_argument(argv, "-m", help="model - mandatory, with no default")
 argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
@@ -117,10 +97,14 @@ myerrorE<-args$E
 data_file<-args$d
 mymodel<-args$m
 optimize_errorDSB2indel<-as.numeric(args$l)
+nparamsind<-as.numeric(args$z)
+
 
 
 inputf<-read.table(input_file,header=TRUE)
 if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
+if (is.na(nparamsind)){ nparamsind<-2 }
+define_ODE.functions(nparamsind)
 
 
 
@@ -138,8 +122,10 @@ ntypes<-4
 
 #mydata<-read.table(input.file, header=TRUE)
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
-nameparms<-model2nameparams(mymodel)
+nameparms<-model2nameparams(mymodel,nparamsind)
 
+normalize_k11.t<-FALSE
+if (nparamsind==4){ normalize_k11.t=TRUE }
 if (mymodel=="model5i1" || mymodel=="model5i1_nor11")
                 {
                 ntypes<-3
@@ -182,7 +168,7 @@ bestmodel<-inputf[maxl==inputf$value,][1,]
 #bestmodels_l_rates_t<-bestmodels_l_rates %>%  filter(target==mytarget_i,induction==myinduction)
 
 print("start calculations");
-res<-generate_CI(bestmodel,inputasrates=FALSE,likfunction=function(zz) loglik_er_f.pen(zz,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix),npermutations=n.max,returnonlyCI=TRUE,addpreviouslysampled="inputf")
+res<-generate_CI(bestmodel,inputasrates=FALSE,likfunction=function(zz) loglik_er_f.pen(zz,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix),npermutations=n.max,returnonlyCI=TRUE,addpreviouslysampled="inputf",normalize_k11=normalize_k11.t)
 
 #print(paste0("finished calculations, now saving to file ",output_file))
 #print(res[[1]])

@@ -16,14 +16,17 @@
 #load("RData/notebook_2errormatrices.RData")
 parms_induction<-c(K=1,x0=1,r0=10,r2=1)
 #induction_curve_logistic<-function(x,K,x0,x2,r0,r2) K/(1+exp(-r0*(x-x0)))/(1+exp(+r2*(x-x2)))
-induction_curve<-function(x,K,x0,r0,r2) K*2^(-x*r2)/(1+exp(-r0*(x-x0)))
-induction_curve_vectorized<-function(x,params) 
-  {
-  return(induction_curve(x,params[1],params[2],params[3],params[4]))
-  }
+induction_curve_4params<-function(x,K,x0,r0,r2) K*2^(-x*r2)/(1+exp(-r0*(x-x0)))
+induction_curve_vectorized_4params<-function(x,params) { return(induction_curve(x,params[1],params[2],params[3],params[4])) }
+induction_curve_3params<-function(x,x0,r0,r2) 2^(-x*r2)/(1+exp(-r0*(x-x0)))
+induction_curve_vectorized_3params<-function(x,params) { return(induction_curve(x,params[1],params[2],params[3])) }
+induction_curve<-function(x,r0,r2) { 2^(-x*r2)/(1+exp(-r0*(x-log(10^6)/(r0+10^(-12))))) }
+induction_curve_vectorized<-function(x,params) induction_curve(x,params[1],params[2])
 
 x<-seq(0,72,0.01)
-
+define_ODE.functions<-function(nparams.ind=2)
+{
+#n.ind==4==========================================================
 model5i1 <- function(t, y, parms,induction_c=induction_curve) {
   with(as.list(c(y, parms)), 
        {
@@ -176,7 +179,222 @@ modelDSBs1i1_3x4 <- function(t, y, parms,induction_c=induction_curve) {
       })
 }
 
+if (nparams.ind==4)
+	{
+	for (ifunc in c("model5i1","modelDSBs1i1_3x4","modelDSBs1i1_fullimpreciseDSB_nor11","modelDSBs1i1_fullimpreciseDSB","modelDSBs1i1_nok12","modelDSBs1i1_mini","modelDSBs1i1_realnor21","modelDSBs1i1_realimpnor11","modelDSBs1i1_impfrompDSB","model5i1_nor11"))
+		{
+		assign(ifunc, get(ifunc), envir = .GlobalEnv)
+		}
+assign("induction_curve",induction_curve_4params,envir = .GlobalEnv)
+assign("induction_curve_vectorized",induction_curve_vectorized_4params,envir = .GlobalEnv)
+	}
 
+#n.ind==2==========================================================
+model5i1 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11*induction_c(t,r0,r2) )*y[1]+r11*y[2]
+        dy2 <- -(r11+r12)*y[2]+(k11*induction_c(t,r0,r2))*y[1]
+        dy3 <- r12*y[2]
+        list(c(dy1, dy2, dy3))
+      })
+}
+model5i1_nor11 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11*induction_c(t,r0,r2) )*y[1]
+        dy2 <- -r12*y[2]+(k11*induction_c(t,r0,r2))*y[1]
+        dy3 <- r12*y[2]
+        list(c(dy1, dy2, dy3))
+      })
+}
+
+modelDSBs1i1_impfromcut <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -((k11+k12)*induction_c(t,r0,r2) )*y[1]+r11*y[3]+r21*y[4]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r11+r12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]
+        dy4 <- -(r21+r22)*y[4]+(k12*induction_c(t,r0,r2))*y[1]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_impfrompDSB <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11*induction_c(t,r0,r2) )*y[1]+r11*y[3]+r21*y[4]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r11+r12+k12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]
+        dy4 <- -(r21+r22)*y[4]+k12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_imp2DSB <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11*induction_c(t,r0,r2) )*y[1]+r11*y[3]+r21*y[4]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r11+r12)*y[3]+k12*y[4]
+        dy4 <- -(r21+r22+k12)*y[4]+(k11*induction_c(t,r0,r2))*y[1]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_realimprecise <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -((k11+k12)*induction_c(t,r0,r2) )*y[1]+r11*y[3]+r21*y[4]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r11+r12+rr12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]
+        dy4 <- -(r21+r22)*y[4]+(k12*induction_c(t,r0,r2))*y[1]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_realimpnor11 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11+k12)*induction_c(t,r0,r2)*y[1]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r12+rr12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]
+        dy4 <- -r22*y[4]+(k12*induction_c(t,r0,r2))*y[1]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_mini <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11*induction_c(t,r0,r2) )*y[1]+r11*y[3]
+        dy2 <- +r22*y[4]
+        dy3 <- -(r11+rr12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]
+        dy4 <- -r22*y[4]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_realimpnor11 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11+k12)*induction_c(t,r0,r2)*y[1]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r12+rr12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]
+        dy4 <- -r22*y[4]+(k12*induction_c(t,r0,r2))*y[1]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_realnor21 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -((k11+k12)*induction_c(t,r0,r2) )*y[1]+r11*y[3]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r11+r12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]
+        dy4 <- -r22*y[4]+(k12*induction_c(t,r0,r2))*y[1]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_nok12 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -k11*induction_c(t,r0,r2)*y[1]+r11*y[3]+r21*y[4]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r11+r12+rr12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]
+        dy4 <- -(r21+r22)*y[4]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_fullimpreciseDSB <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -((k11+k12)*induction_c(t,r0,r2) )*y[1]+r11*y[3]+r21*y[4]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r11+r12+rr12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]+rr21*y[4]
+        dy4 <- -(r21+r22+rr21)*y[4]+(k12*induction_c(t,r0,r2))*y[1]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_fullimpreciseDSB_nor11 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -((k11+k12)*induction_c(t,r0,r2) )*y[1]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r12+rr12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]+rr21*y[4]
+        dy4 <- -(r22+rr21)*y[4]+(k12*induction_c(t,r0,r2))*y[1]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+
+modelDSBs1i1_3x4 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11*induction_c(t,r0,r2) )*y[1]+r11*y[3]
+        dy2 <- +r12*y[3]
+        dy3 <- -(r11+r12)*y[3]+(k11*induction_c(t,r0,r2))*y[1]
+        dy4 <- +0
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+if (nparams.ind==2)
+	{
+	for (ifunc in c("model5i1","modelDSBs1i1_3x4","modelDSBs1i1_fullimpreciseDSB_nor11","modelDSBs1i1_fullimpreciseDSB","modelDSBs1i1_nok12","modelDSBs1i1_mini","modelDSBs1i1_realnor21","modelDSBs1i1_realimpnor11","modelDSBs1i1_impfrompDSB","model5i1_nor11"))
+		{
+		assign(ifunc, get(ifunc), envir = .GlobalEnv)
+		}
+	}
+
+modelDSBs1i1_mini <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11*induction_c(t,x0,r0,r2) )*y[1]+r11*y[3]
+        dy2 <- +r22*y[4]
+        dy3 <- -(r11+rr12)*y[3]+(k11*induction_c(t,x0,r0,r2))*y[1]
+        dy4 <- -r22*y[4]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_3x4 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -(k11*induction_c(t,x0,r0,r2) )*y[1]+r11*y[3]
+        dy2 <- +r12*y[3]
+        dy3 <- -(r11+r12)*y[3]+(k11*induction_c(t,x0,r0,r2))*y[1]
+        dy4 <- +0
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+modelDSBs1i1_nok12 <- function(t, y, parms,induction_c=induction_curve) {
+  with(as.list(c(y, parms)), 
+       {
+        dy1 <- -k11*induction_c(t,x0,r0,r2)*y[1]+r11*y[3]+r21*y[4]
+        dy2 <- r12*y[3]+r22*y[4]
+        dy3 <- -(r11+r12+rr12)*y[3]+(k11*induction_c(t,x0,r0,r2))*y[1]
+        dy4 <- -(r21+r22)*y[4]+rr12*y[3]
+        list(c(dy1, dy2, dy3, dy4))
+      })
+}
+
+
+if (nparams.ind==3)
+	{
+	for (ifunc in c("modelDSBs1i1_3x4","modelDSBs1i1_nok12","modelDSBs1i1_mini"))
+		{
+		assign(ifunc, get(ifunc), envir = .GlobalEnv)
+		}
+	assign("induction_curve",induction_curve_3params,envir = .GlobalEnv)
+	assign("induction_curve_vectorized",induction_curve_vectorized_3params,envir = .GlobalEnv)
+	}
+
+}
 ###################################################################################
 ################### DEFINE FUNCTIONS ##############################################
 ###################################################################################
@@ -213,21 +431,21 @@ return(tidy.mydata.fitted.df)
 
 
 
-predict_induction <- function(df,nparms=6,nparms_induction=5,nheaders=3,induction_function=induction_curve_vectorized) {
+predict_induction <- function(df,nparms=6,nparms_induction=5,nheaders=3,induction_function=induction_curve_vectorized,times=seq(0,72,0.1)) {
 #nparms=3;nparms_induction=5;ntypes=6;induction_function=induction_curve_vectorized
 #df<-bestmodels_l[1,]
 dfl<-unlist(df)
 res_parms<-as.numeric(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)]);
 names(res_parms)<-names(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)])
 #print(res_parms)
-times<-seq(0,72,0.1)
 mydata.fitted <-data.frame(time=times,curve_fitted=induction_function(times,res_parms))
 return(mydata.fitted)
 }
 
 
-loglik_er_f.pen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
+
+loglik_er_f.pen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
+  penalty<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
   loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
   }
@@ -238,7 +456,7 @@ loglik_er_f.nopen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_m
   loglik_er_f(parms,my_data,ODEfunc,E.matrix) #-penalty
   }
 
-loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
+loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   erDSB2indel<-parms[length(parms)]
   penalty<-0
   if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.999)^2 }
@@ -247,24 +465,24 @@ loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc
   E.matrix_t[4,2]<-erDSB2indel
   E.matrix_t[3,3]<-1-erDSB2indel
   E.matrix_t[4,4]<-1-erDSB2indel
-  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
+  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
   loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
   }
 
-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
+loglik_er_f.pen_errorimpDSB2pDSB_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   erDSB2indel<-parms[length(parms)]
   penalty<-0
   if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.999)^2 }
   E.matrix_t<-E.matrix
   E.matrix_t[3,3]<-1-erDSB2indel
   E.matrix_t[3,4]<-erDSB2indel
-  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
+  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
   loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
   }
 
-loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
+loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   mydata.1<-my_data[1:(time_courses_begins[1]-1),]		
   mydata.2<-my_data[time_courses_begins[1]:(time_courses_begins[2]-1),]		
   mydata.3<-my_data[time_courses_begins[2]:nrow(mydata),]		
@@ -275,14 +493,14 @@ loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E
   parms.1<-parms[c(seq(1,length(parms)-6,3),(length(parms)-3):length(parms))]
   parms.2<-parms[c(seq(2,length(parms)-5,3),(length(parms)-3):length(parms))]
   parms.3<-parms[c(seq(3,length(parms)-4,3),(length(parms)-3):length(parms))]
-  penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
+  penalty<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
   loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty
   }
 
 #function for unconstrained optimization
-loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
+loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
+  penalty<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
   penalty<-penalty+sum(apply(cbind(parms,rep(0,length(parms))),MARGIN=1,min)^2)*10^16
   loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
@@ -290,57 +508,58 @@ loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E
 
 
 
-model2nameparams<-function(mymodel){
+model2nameparams<-function(mymodel,nind=2){
 	if (mymodel=="modelDSBs1i1_fullimpreciseDSB")
 		{
-    		nameparms <-c("k11","k12","rr12","rr21","r11","r12","r21","r22","K","x0","r0","r2")
+    		nameparms <-c("k11","k12","rr12","rr21","r11","r12","r21","r22")
   		} else 
 	if ( mymodel=="modelDSBs1i1_impfromcut" || mymodel=="modelDSBs1i1_impfrompDSB" || mymodel=="modelDSBs1i1_imp2DSB")
 		{
-		nameparms <-c("k11","k12","r11","r12","r21","r22","K","x0","r0","r2")
+		nameparms <-c("k11","k12","r11","r12","r21","r22")
 		} else
 	if ( mymodel=="modelDSBs1i1_realimprecise")
 		{
-	        nameparms <-c("k11","k12","rr12","r11","r12","r21","r22","K","x0","r0","r2")
+	        nameparms <-c("k11","k12","rr12","r11","r12","r21","r22")
 		} else
 	if ( mymodel=="modelDSBs1i1_realimpnor11")
 		{
-		nameparms <-c("k11","k12","rr12","r12","r22","K","x0","r0","r2")
+		nameparms <-c("k11","k12","rr12","r12","r22")
 		} else
 	if ( mymodel=="modelDSBs1i1_mini")
 		{
-	        nameparms <-c("k11","rr12","r11","r22","K","x0","r0","r2")
+	        nameparms <-c("k11","rr12","r11","r22")
 		} else
 	if ( mymodel=="modelDSBs1i1_nok12")
 		{
-	        nameparms <-c("k11","rr12","r11","r12","r21","r22","K","x0","r0","r2")
+	        nameparms <-c("k11","rr12","r11","r12","r21","r22")
 		} else
 	if ( mymodel=="modelDSBs1i1_realnor21")
 		{
-	        nameparms <-c("k11","k12","r11","r12","r22","K","x0","r0","r2")
+	        nameparms <-c("k11","k12","r11","r12","r22")
 		} else
 	if ( mymodel=="modelDSBs1i1_fullimpreciseDSB_nor11")
 		{
-    		nameparms <-c("k11","k12","rr12","rr21","r12","r22","K","x0","r0","r2")
+    		nameparms <-c("k11","k12","rr12","rr21","r12","r22")
 		} else
 	if ( mymodel=="model5i1")
 		{
-    		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
+    		nameparms <-c("k11","r11","r12","K")
 		} else
 	if ( mymodel=="model5i1_nor11")
 		{
-    		nameparms <-c("k11","r12","K","x0","r0","r2")
+    		nameparms <-c("k11","r12")
 		} else
 	if ( mymodel=="modelDSBs1i1_3x4")
 		{
-    		nameparms <-c("k11","r11","r12","K","x0","r0","r2")
+    		nameparms <-c("k11","r11","r12")
 		} else
 	if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
 		{
-	        nameparms <-c("k11","k11","k11","k12","k12","k12","rr12","rr12","rr12","r11","r11","r11","r12","r12","r12","r21","r21","r21","r22","r22","r22","K","x0","r0","r2")
+	        nameparms <-c("k11","k11","k11","k12","k12","k12","rr12","rr12","rr12","r11","r11","r11","r12","r12","r12","r21","r21","r21","r22","r22","r22")
 		loglik_er_f.pen<-loglik_er_f.pen_modelinductionx3
 		xmodel<-get("modelDSBs1i1_realimprecise")
 		};
+	if (nind==2) { nameparms<-c(nameparms,"r0","r2")} else if (nind==4){ nameparms<-c(nameparms,"K","x0","r0","r2")} else if (nind==3){ nameparms<-c(nameparms,"x0","r0","r2")}
 	print(mymodel)
 	print(nameparms)
 	return(nameparms)
@@ -364,13 +583,13 @@ loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix)
 
 
 generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermutations=1000,nameparams=nameparms, exploration.radius=1,returnonlyCI=FALSE,addpreviouslysampled="0",normalize_k11=TRUE)
-  {
-  print("calculate CI")
-  res<-c();res_temp<-c()
-  counterpar<-1
-  xxparams<-rep(0,length(nameparams))
-  names(xxparams)<-nameparams
-  if (inputasrates)
+{
+print("calculate CI")
+res<-c();res_temp<-c()
+counterpar<-1
+xxparams<-rep(0,length(nameparams))
+names(xxparams)<-nameparams
+if (inputasrates)
     {
     for (xrate in 1:length(nameparams))
             {
@@ -386,26 +605,26 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
         counterpar<-counterpar+1
         }
     };
-        print("Generate parameters to explore")
-        counter00<-1
-        maxl2<-likfunction(xxparams)
-        xxprobs0<-xxparams^(-3)/sum(xxparams^(-3))
-        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius/1000)
-        newpars.m1<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius/10)
-        newpars.m2<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius)
-        newpars.m3<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius*10)
-        newpars.m4<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius*100)
-        newpars.m5<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
-        newpars.m5[newpars.m5>1000]<-1000
-        newpars<-rbind(newpars.m5,newpars.m4,newpars.m3,newpars.m2,newpars.m1)
-        newpars[newpars<0]<-0
-        colnames(newpars)<-nameparams
-        print("Compute likelihood for new parameters")
-        for (iit in 1:npermutations)
+    print("Generate parameters to explore")
+    counter00<-1
+    maxl2<-likfunction(xxparams)
+    xxprobs0<-xxparams^(-3)/sum(xxparams^(-3))
+    mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius/1000)
+    newpars.m1<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
+    mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius/10)
+    newpars.m2<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
+    mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius)
+    newpars.m3<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
+    mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius*10)
+    newpars.m4<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
+    mysd<-sapply(xxparams,function(z) (z+0.001)/exploration.radius*100)
+    newpars.m5<-t(sapply(1:round(npermutations/5), function(x) rnorm(n=length(xxparams),mean=xxparams,sd=mysd)))
+    newpars.m5[newpars.m5>1000]<-1000
+    newpars<-rbind(newpars.m5,newpars.m4,newpars.m3,newpars.m2,newpars.m1)
+    newpars[newpars<0]<-0
+    colnames(newpars)<-nameparams
+    print("Compute likelihood for new parameters")
+    for (iit in 1:npermutations)
             {
             newpars_t<-newpars[iit,]
             newpars_t<-sapply(newpars_t,function(x) max(x,0))
@@ -421,63 +640,67 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
             if (counter00==1) {res<-res_temp } else { res<-rbind(res,res_temp) };
             counter00<-counter00+1;}
             }
-        res<-as.data.frame(res);row.names(res)<-NULL;
-        names(res)<-c(nameparams,"loglik","maxll","maxll.here");
-        if (addpreviouslysampled!="0")
+    res<-as.data.frame(res);row.names(res)<-NULL;
+    names(res)<-c(nameparams,"loglik","maxll","maxll.here");
+    if (addpreviouslysampled!="0")
             {
             dft<-get(addpreviouslysampled) %>% select(all_of(c(nameparams,"value")));
             names(dft)<-c(nameparams,"loglik");dft$maxll<-res$maxll[1];dft$maxll.here<-res$maxll.here[1];
             res<-rbind(res,dft)
             }
-        if (normalize_k11)
-                {
-                print("normalize k11 in terms of cutting flow")
-		i_params_ind<-which(names(xxparams) %in% c("K","x0","r0","r2"))
-                maxk11_norm<-as.numeric(xxparams[["k11"]]*induction_curve_vectorized(6,xxparams[i_params_ind])[1])
-                if ("k12" %in% nameparams) { maxk12_norm<-as.numeric(xxparams[["k12"]]*induction_curve_vectorized(6,xxparams[i_params_ind])[1])}
-                for (ikk in 1:nrow(res))
-                        {
-                        res$k11[ikk]<-as.numeric(res$k11[ikk]*induction_curve_vectorized(6,res[ikk,i_params_ind])[1])
-                        if ("k12" %in% nameparams) { res$k12[ikk]<-as.numeric(res$k12[ikk]*induction_curve_vectorized(6,res[ikk,i_params_ind])[1]) }
-                        }
-                print("normalization of k11 done")
-                }
-        res$ok<-0
-        res$ok[abs(res$maxll-res$loglik)<1.92]<-1
-        if (!returnonlyCI){return(res[res$ok==1,])} else {
-        #Monte Carlo exploration returns points retained in CI, so biased towards underestimation.
-        #To correct run mid-point interpolation.
-        maxCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=max)
-        minCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=min)
-        meanCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=median)
-        maxCI.unbiased.l<-c()
-        minCI.unbiased.l<-c()
-        for (ipar in 1:length(nameparams))
-          {
-          print(nameparms[ipar])
-          maxpoint<-res[res$ok==1 & res[,ipar]==maxCI.biased[ipar],1:length(nameparams)] %>% head(1) %>% unlist
-          df<-as.data.frame(res[res$ok==0 & res[,ipar]>maxCI.biased[ipar],1:length(nameparams)])
-          if (nrow(df)>0)
+    if (normalize_k11)
             {
-            maxCI.unbiased<-apply(df,MARGIN=1,FUN=function(x) sum((x-maxpoint)^2/meanCI.biased))
-	    tmin<-which.min(maxCI.unbiased)[1]
-	    if (length(tmin)>0){
-	    maxCI.unbiased.l[ipar]<-(df[tmin,ipar]+maxCI.biased[ipar])/2} else
-	    { maxCI.unbiased.l[ipar] <-NA }
-            } else { maxCI.unbiased.l[ipar]<-maxCI.biased[ipar] }
-          minpoint<-res[res$ok==1 & res[,ipar]==minCI.biased[ipar],1:length(nameparams)] %>% head(1) %>% unlist
-          if (minCI.biased[ipar]==0){minCI.unbiased.l[ipar]<-0} else {
-            if (nrow(df)>0)
-                {
-                df<-as.data.frame(res[res$ok==0 & res[,ipar]<minCI.biased[ipar],1:length(nameparams)])
-                minCI.unbiased<-apply(df,MARGIN=1,FUN=function(x) sum((x-minpoint)^2/meanCI.biased))
-                minCI.unbiased.l[ipar]<-(df[which.min(minCI.unbiased)[1],ipar]+minCI.biased[ipar])/2
+            print("normalize k11 in terms of cutting flow at 6h")
+	    i_params_ind<-which(names(xxparams) %in% c("K","x0","r0","r2"))
+            maxk11_norm<-as.numeric(xxparams[["k11"]]*induction_curve_vectorized(6,xxparams[i_params_ind])[1])
+            if ("k12" %in% nameparams) { maxk12_norm<-as.numeric(xxparams[["k12"]]*induction_curve_vectorized(6,xxparams[i_params_ind])[1])}
+            for (ikk in 1:nrow(res))
+            	{
+                res$k11[ikk]<-as.numeric(res$k11[ikk]*induction_curve_vectorized(6,res[ikk,i_params_ind])[1])
+                if ("k12" %in% nameparams) { res$k12[ikk]<-as.numeric(res$k12[ikk]*induction_curve_vectorized(6,res[ikk,i_params_ind])[1]) }
                 }
-                else { minCI.unbiased.l[ipar]<-minCI.biased[ipar] }
-          }
-        }
-        xxparams[which(nameparams=="k11")]<-maxk11_norm
-        if ("k12" %in% nameparams) { xxparams[which(nameparams=="k12")]<-maxk12_norm }
+            print("normalization of k11 done")
+            }
+     res$ok<-0
+     res$ok[abs(res$maxll-res$loglik)<1.92]<-1
+     if (!returnonlyCI){return(res[res$ok==1,])} else 
+	    {
+            #Monte Carlo exploration returns points retained in CI, so biased towards underestimation.
+            #To correct run mid-point interpolation.
+            maxCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=max)
+            minCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=min)
+            meanCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=median)
+            maxCI.unbiased.l<-c()
+            minCI.unbiased.l<-c()
+            for (ipar in 1:length(nameparams))
+          	{
+          	print(nameparms[ipar])
+          	maxpoint<-res[res$ok==1 & res[,ipar]==maxCI.biased[ipar],1:length(nameparams)] %>% head(1) %>% unlist
+          	df<-as.data.frame(res[res$ok==0 & res[,ipar]>maxCI.biased[ipar],1:length(nameparams)])
+          	if (nrow(df)>0)
+            		{
+            		maxCI.unbiased<-apply(df,MARGIN=1,FUN=function(x) sum((x-maxpoint)^2/meanCI.biased))
+	    		tmin<-which.min(maxCI.unbiased)[1]
+	    		if (length(tmin)>0){
+	    		maxCI.unbiased.l[ipar]<-(df[tmin,ipar]+maxCI.biased[ipar])/2} else
+	    		{ maxCI.unbiased.l[ipar] <-NA }
+            		} else { maxCI.unbiased.l[ipar]<-maxCI.biased[ipar] }
+          	minpoint<-res[res$ok==1 & res[,ipar]==minCI.biased[ipar],1:length(nameparams)] %>% head(1) %>% unlist
+          	if (minCI.biased[ipar]==0){minCI.unbiased.l[ipar]<-0} else 
+			{
+            		if (nrow(df)>0)
+                		{
+                		df<-as.data.frame(res[res$ok==0 & res[,ipar]<minCI.biased[ipar],1:length(nameparams)])
+                		minCI.unbiased<-apply(df,MARGIN=1,FUN=function(x) sum((x-minpoint)^2/meanCI.biased))
+                		minCI.unbiased.l[ipar]<-(df[which.min(minCI.unbiased)[1],ipar]+minCI.biased[ipar])/2
+                		} else { minCI.unbiased.l[ipar]<-minCI.biased[ipar] }
+          		}
+        	}
+	if (normalize_k11)
+		{	
+        	xxparams[which(nameparams=="k11")]<-maxk11_norm
+        	if ("k12" %in% nameparams) { xxparams[which(nameparams=="k12")]<-maxk12_norm }
+		}
         return(list(data.frame(max=xxparams,CIlow=minCI.unbiased.l,CIhigh=maxCI.unbiased.l,rate=nameparams),res))
         }
 }

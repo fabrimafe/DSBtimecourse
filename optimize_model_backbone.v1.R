@@ -39,7 +39,6 @@ source("likelihood_functions.R")
 #return(tidy.mydata.fitted.df)
 #}
 
-
 loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix){
   #ODEfunc: a function of class desolve 
   #my_data: a dataframe with "time" course (which should always include 0) as 1st column, and col-types compatible with ODEfunc
@@ -67,6 +66,7 @@ argv <- add_argument(argv, "-o", help="output file", default="output.txt")
 argv <- add_argument(argv, "-e", help="errors")
 argv <- add_argument(argv, "-E", help="error matrix")
 argv <- add_argument(argv, "-n", help="n iterations", default=100)
+argv <- add_argument(argv, "-z", help="n parameters in induction curve", default=2)
 argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
 
 
@@ -76,6 +76,7 @@ input.file<-args$T
 #myerror<-args$e
 myerrorE<-args$E
 mymodel<-args$m
+nparamsind<-as.numeric(args$z)
 output.file<-args$o
 n.max<-as.numeric(args$n)
 optimize_errorDSB2indel<-as.numeric(args$l)
@@ -84,7 +85,8 @@ optimize_errorDSB2indel<-as.numeric(args$l)
 if (is.na(n.max)){ n.max<-100 }
 if (is.na(output.file)){ output.file<-"DSBtimecourse_optimize.tsv" }
 if (is.na(optimize_errorDSB2indel)){ optimize_errorDSB2indel<-0 }
-
+if (is.na(nparamsind)){ nparamsind<-2 }
+define_ODE.functions(nparamsind)
 
 
 ########################################################################################################
@@ -95,7 +97,7 @@ ntypes<-4
 
 mydata<-read.table(input.file, header=TRUE)
 time_courses_begins<-c(which(mydata$time[-1]-mydata$time[-length(mydata$time)]<0)+1)
-nameparms<-model2nameparams(mymodel)
+nameparms<-model2nameparams(mymodel,nparamsind)
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
 xmodel<-NA
 
@@ -127,7 +129,7 @@ if ( optimize_errorDSB2indel==3 )
 if (optimize_errorDSB2indel==2) { mydelay<-0 } 
 
 if (!"function" %in% is(xmodel)) { xmodel<-get(mymodel) }
-
+print(xmodel)
 #################################################################################
 ##################### START OPTIMIZATION ########################################
 #################################################################################

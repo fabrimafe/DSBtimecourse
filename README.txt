@@ -46,16 +46,21 @@ done
 module load R/4.1.0
 mkdir -p ~/workspace/daniela/input_datasets/stationarybootstraps
 mkdir -p ~/workspace/daniela/input_datasets/MEbootstraps
+mkdir -p ~/workspace/daniela/input_datasets/stratifiedbootstraps
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*Psy1x5.txt )
+myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.cleanedandnov2021*.txt )
 for i in $myfiles;do
 echo $i
 xname=$(basename $i .txt )
-newpath=~/workspace/daniela/input_datasets/stationarybootstraps/${xname}
+newpath=~/workspace/daniela/input_datasets/stratifiedbootstraps/${xname}
 rm -r $newpath;mkdir -p $newpath
-./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 0
-newpath=~/workspace/daniela/input_datasets/MEbootstraps/${xname}
-rm -r $newpath;mkdir -p $newpath
-./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 1 -r 10
+./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 2
+#newpath=~/workspace/daniela/input_datasets/stationarybootstraps/${xname}
+#rm -r $newpath;mkdir -p $newpath
+#./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 0
+#newpath=~/workspace/daniela/input_datasets/MEbootstraps/${xname}
+#rm -r $newpath;mkdir -p $newpath
+#./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 1 -r 10
 done
 
 #3states

@@ -72,7 +72,7 @@ while(final.ntimes<minimum.ntimes){
     new.samples[1:length(x)] 
 }
 
-if ( type_of_resampling != 1 ){
+if ( type_of_resampling == 0 ){
 print("method of resampling: stationary bootstrap")
 #res<-tsboot(as.ts(data.frame(time=1:30,x=(1:30)^2)),lynx.fun,R=100,l = 20, sim = "geom");res$t[1,]
 #I can run a stationary bootstrap with mean 4 (p=1/4). To choose between those with same time, I could for each simulation, choose randomly order for those at same time.
@@ -108,5 +108,22 @@ df.new<-as.data.frame(cbind(df$time,mat.t))
 names(df.new)<-names(df)
 write.table(df.new,file=paste0(destination_path,"/timecourse.bs",ip,".txt",sep=""),quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
 }
+} else if ( type_of_resampling == 2 )
+{
+print("method of resampling: time-stratified bootstrap")
+
+stratified.bootstrap<-function(df){
+times<-unique(sort(df$time))
+y<-c(unlist(sapply(times, function(x) { y<-which(df$time==x); y<-sample(y,length(y),replace=TRUE); return(y)})))
+return(df[y,])
 }
+
+for (ip in 1:npermutations){
+df.new<-stratified.bootstrap(df)
+write.table(df.new,file=paste0(destination_path,"/timecourse.bs",ip,".txt",sep=""),quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
+#,quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
+}
+
+}
+
 warnings()

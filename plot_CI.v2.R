@@ -28,6 +28,10 @@ argv <- add_argument(argv, "-E", help="error matrix")
 argv <- add_argument(argv, "-m", help="model")
 argv <- add_argument(argv, "-n", help="max accuracy for CI. Recommended >=100. Beyond 1000 calculations can be very slow.")
 argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
+argv <- add_argument(argv, "-y", help="condition flow to induction curve, i.e. calculate the flow in ideal system in which full induction", default=2)
+argv <- add_argument(argv, "-z", help="n parameters in induction curve", default=2)
+argv <- add_argument(argv, "-r", help="time resolution; default is 0.01")
+
 
 args <- parse_args(argv)
 
@@ -36,12 +40,19 @@ output_file<-args$o
 myerrorE<-args$E
 data_file<-args$d
 mymodel<-args$m
+timeresolution<-as.numeric(args$r)
 maxnsims<-as.numeric(args$n)
 optimize_errorDSB2indel<-as.numeric(args$l)
+normalize.byind<-as.numeric(args$y)
+nparamsind<-as.numeric(args$z)
+if (is.na(nparamsind)){ nparamsind<-2 }
+define_ODE.functions(nparamsind)
 
 
 load(input_file)
 if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
+if (is.na(normalize.byind)) { normalize.byind<-0 }
+if (is.na(timeresolution)) { timeresolution<-0.01 }
 
 
 
@@ -75,7 +86,7 @@ ntypes<-4
 xmodel<-0
 #mydata<-read.table(input.file, header=TRUE)
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
-nameparms<-model2nameparams(mymodel)
+nameparms<-model2nameparams(mymodel,nparamsind)
 
 if (mymodel=="model5i1" || mymodel=="model5i1_nor11")
                 {
@@ -88,7 +99,7 @@ if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
                 };
 nparms<-length(nameparms)
 nheaders<-4
-nparms_induction<-4
+nparms_induction<-nparamsind
 
 if ( optimize_errorDSB2indel==1 )
         {
@@ -157,10 +168,10 @@ for ( isim in 1:nsims)
 	if ( (isim %% 100)==0){print(isim)};
         bestmodels_t.cfitted.sims<-predict_induction(simsinCI[xsims[isim],],nparms=nparms-nparms_induction,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized)
 	induction_for_normalized_k11<-bestmodels_t.cfitted.sims %>% filter(time==6) %>% select(curve_fitted) %>% as.numeric
-	k11<-simsinCI[xsims[isim],1]/induction_for_normalized_k11
+	if (normalize.byind==1){ k11<-simsinCI[xsims[isim],1]/induction_for_normalized_k11 } else { k11<-simsinCI[xsims[isim],1] }
 	if ("k12" %in% nameparms)
 		{
-		k12<-simsinCI[xsims[isim],2]/induction_for_normalized_k11
+		if (normalize.byind==1){ k12<-simsinCI[xsims[isim],2]/induction_for_normalized_k11 } else { k12<-simsinCI[xsims[isim],2] }
 		bestmodels_t.cfitted.sims$curve_fitted<-bestmodels_t.cfitted.sims$curve_fitted*(k11+k12)
 		} else 
 		{
@@ -190,22 +201,30 @@ print(bestmodels_t)
 bestmodels.cfitted<-predict_induction(bestmodels_t,nparms=nparms-nparms_induction,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized)
 #extract induction at time 6h to calculate k11-no-induction
 induction_for_normalized_k11<-bestmodels.cfitted %>% filter(time==6) %>% select(curve_fitted) %>% as.numeric
-k11<-bestmodels_t$k11/induction_for_normalized_k11
-bestmodels_t$k11<-k11
-if ("k12" %in% nameparms){
-k12<-bestmodels_t$k12/induction_for_normalized_k11
-bestmodels_t$k12<-k12
-#rescale mean induction in terms of induction*k11 (cutting flow)
-bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11+k12)
-} else {
-bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11)
-}
+if (normalize.byind==1)
+	{ 
+	k11<-bestmodels_t$k11/induction_for_normalized_k11
+	bestmodels_t$k11<-k11
+	if ("k12" %in% nameparms)
+		{ 
+		k12<-bestmodels_t$k12/induction_for_normalized_k11
+		bestmodels_t$k12<-k12
+		}
+	}
+if ("k12" %in% nameparms)	
+	{ 
+	#rescale mean induction in terms of induction*k11 (cutting flow)
+	bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11+k12)
+	} else 
+	{
+	bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11)
+	}
 bestmodels.cfitted<-left_join(bestmodels.cfitted,bestmodels.cfitted.CI)
 #calculate mean trajectory with k11-no-induction
 bestmodels.fitted<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=errormatrix,mymodel=mymodel)
 bestmodels.fitted <- bestmodels.fitted %>% left_join(bestmodels.fitted.CI)
 #calculate mean trajectory with no errors
-bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=mymodel,timest=seq(0,72,0.0002))
+bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=mymodel,timest=seq(0,72,timeresolution))
 
 
 #====PLOT TRAJECTORIES====
@@ -251,14 +270,23 @@ bestmodels_t0<-bestmodels_t
 for (ipar in 1:(nparms-nparms_induction)){bestmodels_t0[ipar]<-0}
 
 flow_l<-list()
-#abundance_l<-list()
-#change_l<-list()
+#substitute param to obtain a full induction so that 1.
+bestmodels_t0[which(names(bestmodels_t0)=="r0")]<-999999999
+bestmodels_t0[which(names(bestmodels_t0)=="r2")]<-0
+bestmodels_t0[which(names(bestmodels_t0)=="x0")]<-0.0000001
+bestmodels.cfitted<-predict_induction(bestmodels_t,nparms=nparms-nparms_induction,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized,times=seq(0,72,timeresolution))
+#rescale k11 to have induction inside
 for (ipar in 1:(nparms-nparms_induction)){
 bestmodels_tt<-bestmodels_t0
 bestmodels_tt[ipar]<-bestmodels_t[ipar]
-changes<-apply(y.fitted[,-1], MARGIN=1,FUN=function(x) predict_models(bestmodels_tt,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=mymodel,yinit=c(x),timest=c(0,0.0002)))
+bestmodels_tt.df<-sapply(1:length(seq(0,72,timeresolution)), function(x) unlist(bestmodels_tt)) %>% t %>% as.data.frame
+if (names(bestmodels_t0)[ipar]=="k11" || names(bestmodels_t0)[ipar]=="k12" )
+{
+bestmodels_tt.df[,ipar]<-bestmodels_tt.df[,ipar]*as.numeric(bestmodels.cfitted$curve_fitted)
+}
+changess<-lapply(1:nrow(y.fitted), function(x) predict_models(bestmodels_tt.df[x,],ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=mymodel,yinit=unlist(y.fitted[x,-1]),timest=c(0,timeresolution)))
 #flow_l[[nameparms[ipar]]]<-sum(sapply(changes,function(x) sum(abs(x$p[x$time==0.1]-x$p[x$time==0]))/2))
-flow_l[[nameparms[ipar]]]<-sum(sapply(changes,function(x) sum(max(x$p[x$time==0.0002]-x$p[x$time==0]))))
+flow_l[[nameparms[ipar]]]<-sum(sapply(changess,function(x) max(abs(x$p[x$time==timeresolution]-x$p[x$time==0]))))
 #abundance_l<-apply(y.fitted[,-1], MARGIN=2,FUN=function(x) mean(x)) 
 #changes_l[[nameparms[ipar]]]<-sum(sapply(changes,function(x) x$p[x$time==0.0002]-x$p[x$time==0]))
 #print("changes")
@@ -269,6 +297,9 @@ flow_l[[nameparms[ipar]]]<-sum(sapply(changes,function(x) sum(max(x$p[x$time==0.
 #print("flow")
 #print(unlist(flow_l))
 #write.table(unlist(flow_l),file=paste0(output_file,"_plot.flow.tab"))
-write.table(unlist(flow_l),file=paste0(output_file,"_plot.flow.tab"))
+AIC<-2*(ncol(res[[2]])-4)-2*res[[2]]$maxll[1]
+AICtable<-data.frame(AICt="AIC",AICv=AIC)
+write.table(AICtable,file=paste0(output_file,"_plot.flow.tab"),quote=FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
+write.table(unlist(flow_l),file=paste0(output_file,"_plot.flow.tab"),quote=FALSE,sep="\t",append=TRUE,col.names=FALSE)
 
 
