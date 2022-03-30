@@ -123,6 +123,28 @@ df.new<-stratified.bootstrap(df)
 write.table(df.new,file=paste0(destination_path,"/timecourse.bs",ip,".txt",sep=""),quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
 #,quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
 }
+} else if ( type_of_resampling == 3 )
+{
+print("method of resampling: time and batch-stratified bootstrap")
+
+stratified.bootstrap<-function(df){
+times<-unique(sort(df$time))
+y<-c(unlist(sapply(times, function(x) { y<-which(df$time==x); y<-sample(y,length(y),replace=TRUE); return(y)})))
+return(df[y,])
+}
+
+print(df)
+time_courses_begins<-c(which(df$time[-1]-df$time[-length(df$time)]<0)+1)
+print(time_courses_begins)
+mydata.1<-df[1:(time_courses_begins[1]-1),]
+mydata.2<-df[time_courses_begins[1]:nrow(df),]
+
+for (ip in 1:npermutations){
+df.new.1<-stratified.bootstrap(mydata.1)
+df.new.2<-stratified.bootstrap(mydata.2)
+write.table(rbind(df.new.1,df.new.2),file=paste0(destination_path,"/timecourse.bs",ip,".txt",sep=""),quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
+#,quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
+}
 
 }
 

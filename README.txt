@@ -7,6 +7,9 @@
 
 ./prepare_data.R
 
+cat ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1.txt ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1_R2_Feb2022.txt | awk 'BEGIN{count=0}{if ($1=="time"){count=count+1}; if (! (count>1 && $1=="time")){print $0}}' > ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1_all.txt
+cat ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2.nov2021.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2_R2_Feb2022.txt | awk 'BEGIN{count=0}{if ($1=="time"){count=count+1}; if (! (count>1 && $1=="time")){print $0}}' > ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2_all.txt
+
 ### for tomato PhyB2 no controls yet, so only from time 0 
 for IGENE in PhyB2.1 PhyB2.2 PhyB2.3; do 
 cat ~/workspace/daniela/input_datasets/timecourse_RNP_${IGENE}.txt | awk -v OFS='\t' '{if ($1=="time"){printf "time\ty1\ty2\ty3\n"} else if ($1==0){print $1,$2,$4+$5,$3}}' > ~/workspace/daniela/input_datasets/control_${IGENE}_time0_3states.txt
@@ -47,14 +50,19 @@ module load R/4.1.0
 mkdir -p ~/workspace/daniela/input_datasets/stationarybootstraps
 mkdir -p ~/workspace/daniela/input_datasets/MEbootstraps
 mkdir -p ~/workspace/daniela/input_datasets/stratifiedbootstraps
+mkdir -p ~/workspace/daniela/input_datasets/stratifiedbootstraps2
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*Psy1x5.txt )
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.cleanedandnov2021*.txt )
+myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*allb.txt )
+#myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*all.txt )
 for i in $myfiles;do
 echo $i
 xname=$(basename $i .txt )
 newpath=~/workspace/daniela/input_datasets/stratifiedbootstraps/${xname}
+#newpath=~/workspace/daniela/input_datasets/stratifiedbootstraps2/${xname}
 rm -r $newpath;mkdir -p $newpath
 ./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 2
+#./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 3
 #newpath=~/workspace/daniela/input_datasets/stationarybootstraps/${xname}
 #rm -r $newpath;mkdir -p $newpath
 #./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 0

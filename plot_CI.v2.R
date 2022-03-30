@@ -159,6 +159,20 @@ if (optimize_errorDSB2indel==2) { mydelay<-0 }
 #################################################################################
 #nsims<-100
 simsinCI<-res[[2]][res[[2]]$ok==1,]; 
+#print(names(simsinCI))
+extremes_sims<-unique(sort(c(unlist(sapply(1:(which(names(simsinCI)=="loglik")-1),function(x) c(which.min(simsinCI[,x]),which.max(simsinCI[,x])))))))
+
+
+for ( i in 1:length(extremes_sims)){
+print(i)
+worsemodel_t<-simsinCI[extremes_sims[i],]
+print(worsemodel_t)
+bestmodels.fitted.0er<-predict_models(worsemodel_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=mymodel,timest=seq(0,72,timeresolution))
+}
+
+
+#print(simsinCI)
+#print(extremes_sims)
 nsims<-nrow(simsinCI)
 simsinCI<-simsinCI[order(simsinCI$loglik),]#[1:nsims,] 
 nsims<-min(maxnsims,nsims)
@@ -303,3 +317,12 @@ write.table(AICtable,file=paste0(output_file,"_plot.flow.tab"),quote=FALSE,sep="
 write.table(unlist(flow_l),file=paste0(output_file,"_plot.flow.tab"),quote=FALSE,sep="\t",append=TRUE,col.names=FALSE)
 
 
+
+
+#calculate flow for extreme values:
+for ( i in 1:length(extremes_sims)){
+restemp<-simsinCI[extremes_sims[i],]
+worsemodel_t<- restemp %>% select(rate,max) %>% pivot_wider(names_from=rate,values_from=max) %>% ungroup
+bestmodels.fitted.0er<-predict_models(worsemodel_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=mymodel,timest=seq(0,72,timeresolution))
+
+}

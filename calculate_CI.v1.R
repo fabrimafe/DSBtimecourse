@@ -18,6 +18,7 @@ source("likelihood_functions.R")
 ################### DEFINE FUNCTIONS ##############################################
 ###################################################################################
 
+if (FALSE){
 predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0) {
 dfl<-unlist(df)
 res_parms<-as.numeric(dfl[(nheaders+1):(nheaders+nparms)]);
@@ -40,7 +41,6 @@ return(tidy.mydata.fitted.df)
 }
 
 
-if (FALSE){
 loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
   erDSB2indel<-parms[length(parms)]
   penalty<-0
@@ -134,6 +134,11 @@ if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
                 {
                 loglik_er_f.pen<-loglik_er_f.pen_modelinductionx3
                 xmodel<-get("modelDSBs1i1_realimprecise")
+                };
+if ( mymodel=="modelDSBs1i1_mini.bytarget")
+                {
+                loglik_er_f.pen<-loglik_er_f.pen_model.mini.bytarget
+                xmodel<-get("modelDSBs1i1_mini")
                 };
 if ( optimize_errorDSB2indel==1 ) 
 	{ 

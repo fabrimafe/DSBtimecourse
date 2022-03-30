@@ -18,27 +18,6 @@ source("likelihood_functions.R")
 ################### DEFINE FUNCTIONS ##############################################
 ###################################################################################
 
-#predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0) {
-#dfl<-unlist(df)
-#res_parms<-as.numeric(dfl[(nheaders+1):(nheaders+nparms)]);
-#names(res_parms)<-names(dfl[(nheaders+1):(nheaders+nparms)])
-#times<-seq(0,72,0.1)
-#yini<-c(y1 = 1, y2 = 0, y3 = 0,y4 = 0, y5 = 0, y6 = 0)
-#if (ntypes==3) { yini<-c(y1 = 1, y2 = 0, y3 = 0) }
-#if (ntypes==4) { yini<-c(y1 = 1, y2 = 0, y3 = 0, y4 = 0) }
-#if (is(xmodel)[1]!="function"){
-#mydata.fitted <- ode (times = times, y = yini, func = get(as.character(df[["model"]])[1]), parms = res_parms)} else {
-#mydata.fitted <- ode (times = times, y = yini, func = mymodel, parms = res_parms)
-#}
-#mydata.fitted.df<-as.data.frame(mydata.fitted)
-#mydata.fitted.df[,2:ncol(mydata.fitted.df)]<-t(sapply(1:nrow(mydata.fitted.df), function(x) as.matrix(mydata.fitted.df)[x,2:ncol(mydata.fitted.df)] %*% errormatrix))
-#if (ntypes==6) { names(mydata.fitted.df)<-c("time","x0","x+","x-","y0","y+","y-") }
-#if (ntypes==3) { names(mydata.fitted.df)<-c("time","intact","DSB","indels") } 
-#if (ntypes==4) { names(mydata.fitted.df)<-c("time","intact","indels","preciseDSB","impreciseDSB") } 
-#tidy.mydata.fitted.df<-mydata.fitted.df %>% pivot_longer(names(mydata.fitted.df)[2:(ntypes+1)],names_to = "types", values_to = "p")
-#return(tidy.mydata.fitted.df)
-#}
-
 loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix){
   #ODEfunc: a function of class desolve 
   #my_data: a dataframe with "time" course (which should always include 0) as 1st column, and col-types compatible with ODEfunc
@@ -97,39 +76,16 @@ ntypes<-4
 
 mydata<-read.table(input.file, header=TRUE)
 time_courses_begins<-c(which(mydata$time[-1]-mydata$time[-length(mydata$time)]<0)+1)
-nameparms<-model2nameparams(mymodel,nparamsind)
+nameparms<-model2nameparams(mymodel,nparamsind,optimize_errorDSB2indel)
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
-xmodel<-NA
-
-if (mymodel=="model5i1" || mymodel=="model5i1_nor11")
-                {
-                ntypes<-3
-                };
-if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
-                {
-                loglik_er_f.pen<-loglik_er_f.pen_modelinductionx3
-                xmodel<-get("modelDSBs1i1_realimprecise")
-	        #nameparms <-c("k11","k11","k11","k12","k12","k12","rr12","rr12","rr12","r11","r11","r11","r12","r12","r12","r21","r21","r21","r22","r22","r22","K","x0","r0","r2")
-                };
-if ( optimize_errorDSB2indel==1 ) 
-	{ 
-	loglik_er_f.pen<-loglik_er_f.pen_errorDBS2indel_4states_m1
-	nameparms<-c(nameparms,"er1")
-	} else 
-if ( optimize_errorDSB2indel==2 )
-	{
-	loglik_er_f.pen<-loglik_er_f.nopen
-	} else 
-if ( optimize_errorDSB2indel==3 )
-	{
-	loglik_er_f.pen<-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1
-	nameparms<-c(nameparms,"er1")
-	};
+loglik_er_f.pen<-model2likelihoodfunction(mymodel,optimize_errorDSB2indel)
+ntypes<-model2ntypes(mymodel)
+xmodel<-model2xmodel(mymodel)
+print(mymodel)
+print(xmodel)
 
 if (optimize_errorDSB2indel==2) { mydelay<-0 } 
 
-if (!"function" %in% is(xmodel)) { xmodel<-get(mymodel) }
-print(xmodel)
 #################################################################################
 ##################### START OPTIMIZATION ########################################
 #################################################################################
@@ -146,8 +102,8 @@ for ( counter in 1:n.max)
         lower_bound<-c(rep(0,nrates-2),10^(-7),0)
 	mylmm<-sample(5:8,1)
 	myfactr<-10^(-sample(c(7,8,10),1))
-#	print(c(counter,mytarget_i,myinduction,myerror))
 	names(xparms)<-nameparms
+print(xparms)
 	res<-optimx(par=xparms,fn=function(z)
         loglik_er_f.pen(z,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix),control=list(maximize=TRUE,maxit=1000,parscale=myparscale,ndeps=mysteps,lmm=mylmm,factr=myfactr),method="L-BFGS-B",lower=lower_bound,hessian=FALSE,gr=NULL) #dowarn=FALSE
 	names(myparscale)<-paste0("parscale",1:nrates)
