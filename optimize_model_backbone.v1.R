@@ -81,8 +81,6 @@ errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
 loglik_er_f.pen<-model2likelihoodfunction(mymodel,optimize_errorDSB2indel)
 ntypes<-model2ntypes(mymodel)
 xmodel<-model2xmodel(mymodel)
-print(mymodel)
-print(xmodel)
 
 if (optimize_errorDSB2indel==2) { mydelay<-0 } 
 

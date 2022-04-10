@@ -47,7 +47,7 @@ normalize.byind<-as.numeric(args$y)
 nparamsind<-as.numeric(args$z)
 if (is.na(nparamsind)){ nparamsind<-2 }
 define_ODE.functions(nparamsind)
-
+calculate_flow<-TRUE
 
 load(input_file)
 if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
@@ -266,6 +266,7 @@ ggsave(myplot,filename=paste0(output_file,"_plot.induction.pdf"))
 
 
 #====CALCULATE FLOWS====
+if (calculate_flow){
 print("calculate flow")
 print(bestmodels_t)
 #print(bestmodels.fitted)
@@ -288,6 +289,7 @@ flow_l<-list()
 bestmodels_t0[which(names(bestmodels_t0)=="r0")]<-999999999
 bestmodels_t0[which(names(bestmodels_t0)=="r2")]<-0
 bestmodels_t0[which(names(bestmodels_t0)=="x0")]<-0.0000001
+bestmodels_t0[which(names(bestmodels_t0)=="er1")]<-0
 bestmodels.cfitted<-predict_induction(bestmodels_t,nparms=nparms-nparms_induction,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized,times=seq(0,72,timeresolution))
 #rescale k11 to have induction inside
 for (ipar in 1:(nparms-nparms_induction)){
@@ -316,13 +318,11 @@ AICtable<-data.frame(AICt="AIC",AICv=AIC)
 write.table(AICtable,file=paste0(output_file,"_plot.flow.tab"),quote=FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
 write.table(unlist(flow_l),file=paste0(output_file,"_plot.flow.tab"),quote=FALSE,sep="\t",append=TRUE,col.names=FALSE)
 
-
-
-
 #calculate flow for extreme values:
-for ( i in 1:length(extremes_sims)){
-restemp<-simsinCI[extremes_sims[i],]
-worsemodel_t<- restemp %>% select(rate,max) %>% pivot_wider(names_from=rate,values_from=max) %>% ungroup
-bestmodels.fitted.0er<-predict_models(worsemodel_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=mymodel,timest=seq(0,72,timeresolution))
-
+#for ( i in 1:length(extremes_sims)){
+#restemp<-simsinCI[extremes_sims[i],]
+#worsemodel_t<- restemp %>% select(rate,max) %>% pivot_wider(names_from=rate,values_from=max) %>% ungroup
+#bestmodels.fitted.0er<-predict_models(worsemodel_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=mymodel,timest=seq(0,72,timeresolution))
+#}
 }
+

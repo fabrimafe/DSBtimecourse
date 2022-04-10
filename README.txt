@@ -54,15 +54,16 @@ mkdir -p ~/workspace/daniela/input_datasets/stratifiedbootstraps2
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*Psy1x5.txt )
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.cleanedandnov2021*.txt )
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*allb.txt )
+myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.49and50bp_all.txt )
 #myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*all.txt )
 for i in $myfiles;do
 echo $i
 xname=$(basename $i .txt )
-newpath=~/workspace/daniela/input_datasets/stratifiedbootstraps/${xname}
+newpath=~/workspace/daniela/input_datasets/stratifiedbootstraps2/${xname}
 #newpath=~/workspace/daniela/input_datasets/stratifiedbootstraps2/${xname}
 rm -r $newpath;mkdir -p $newpath
-./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 2
-#./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 3
+#./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 2
+./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 3
 #newpath=~/workspace/daniela/input_datasets/stationarybootstraps/${xname}
 #rm -r $newpath;mkdir -p $newpath
 #./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 0

@@ -14,63 +14,6 @@ library(deSolve)
 
 source("likelihood_functions.R")
 
-###################################################################################
-################### DEFINE FUNCTIONS ##############################################
-###################################################################################
-
-if (FALSE){
-predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0) {
-dfl<-unlist(df)
-res_parms<-as.numeric(dfl[(nheaders+1):(nheaders+nparms)]);
-names(res_parms)<-names(dfl[(nheaders+1):(nheaders+nparms)])
-times<-seq(0,72,0.1)
-yini<-c(y1 = 1, y2 = 0, y3 = 0,y4 = 0, y5 = 0, y6 = 0)
-if (ntypes==3) { yini<-c(y1 = 1, y2 = 0, y3 = 0) }
-if (ntypes==4) { yini<-c(y1 = 1, y2 = 0, y3 = 0, y4 = 0) }
-if (is(xmodel)[1]!="function"){
-mydata.fitted <- ode (times = times, y = yini, func = get(as.character(df[["model"]])[1]), parms = res_parms)} else {
-mydata.fitted <- ode (times = times, y = yini, func = mymodel, parms = res_parms)
-}
-mydata.fitted.df<-as.data.frame(mydata.fitted)
-mydata.fitted.df[,2:ncol(mydata.fitted.df)]<-t(sapply(1:nrow(mydata.fitted.df), function(x) as.matrix(mydata.fitted.df)[x,2:ncol(mydata.fitted.df)] %*% errormatrix))
-if (ntypes==6) { names(mydata.fitted.df)<-c("time","x0","x+","x-","y0","y+","y-") }
-if (ntypes==3) { names(mydata.fitted.df)<-c("time","intact","DSB","indels") } 
-if (ntypes==4) { names(mydata.fitted.df)<-c("time","intact","indels","preciseDSB","impreciseDSB") } 
-tidy.mydata.fitted.df<-mydata.fitted.df %>% pivot_longer(names(mydata.fitted.df)[2:(ntypes+1)],names_to = "types", values_to = "p")
-return(tidy.mydata.fitted.df)
-}
-
-
-loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  erDSB2indel<-parms[length(parms)]
-  penalty<-0
-  if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.7)^2 }
-  E.matrix_t<-E.matrix
-  E.matrix_t[3,1]<-erDSB2indel/2
-  E.matrix_t[4,1]<-erDSB2indel/2
-  E.matrix_t[3,2]<-erDSB2indel/2
-  E.matrix_t[3,2]<-erDSB2indel/2
-  E.matrix_t[3,3]<-1-erDSB2indel
-  E.matrix_t[4,4]<-1-erDSB2indel
-  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
-  }
-
-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  erDSB2indel<-parms[length(parms)]
-  penalty<-0
-  if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.7)^2 }
-  E.matrix_t<-E.matrix
-  E.matrix_t[3,3]<-1-erDSB2indel
-  E.matrix_t[3,4]<-erDSB2indel
-  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
-  }
-}
-
-
 ################################################################################
 ################## READ ARGUMENTS ##############################################
 ################################################################################
@@ -106,11 +49,6 @@ if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
 if (is.na(nparamsind)){ nparamsind<-2 }
 define_ODE.functions(nparamsind)
 
-
-
-
-
-
 ########################################################################################################
 ##################### LOAD DATA ########################################################################
 ########################################################################################################
@@ -123,43 +61,14 @@ ntypes<-4
 #mydata<-read.table(input.file, header=TRUE)
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
 nameparms<-model2nameparams(mymodel,nparamsind)
+loglik_er_f.pen<-model2likelihoodfunction(mymodel,optimize_errorDSB2indel)
+ntypes<-model2ntypes(mymodel)
+xmodel<-model2xmodel(mymodel)
 
 normalize_k11.t<-FALSE
 if (nparamsind==4){ normalize_k11.t=TRUE }
-if (mymodel=="model5i1" || mymodel=="model5i1_nor11")
-                {
-                ntypes<-3
-                };
-if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
-                {
-                loglik_er_f.pen<-loglik_er_f.pen_modelinductionx3
-                xmodel<-get("modelDSBs1i1_realimprecise")
-                };
-if ( mymodel=="modelDSBs1i1_mini.bytarget")
-                {
-                loglik_er_f.pen<-loglik_er_f.pen_model.mini.bytarget
-                xmodel<-get("modelDSBs1i1_mini")
-                };
-if ( optimize_errorDSB2indel==1 ) 
-	{ 
-	loglik_er_f.pen<-loglik_er_f.pen_errorDBS2indel_4states_m1
-	nameparms<-c(nameparms,"er1");
-	print("error model is 1")
-	} else 
-if ( optimize_errorDSB2indel==2 )
-	{
-	loglik_er_f.pen<-loglik_er_f.nopen
-	print("error model is 2")
-	}  else 
-if ( optimize_errorDSB2indel==3 )
-	{
-	loglik_er_f.pen<-loglik_er_f.pen_errorimpDSB2pDSB_4states_m1
-	nameparms<-c(nameparms,"er1")
-	};
-
 if (optimize_errorDSB2indel==2) { mydelay<-0 } 
 
-if (!"function" %in% is(xmodel)) { xmodel<-get(mymodel) }
 nrates<-length(nameparms)
 
 #################################################################################
