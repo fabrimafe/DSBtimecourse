@@ -445,9 +445,10 @@ return(mydata.fitted)
 
 
 loglik_er_f.pen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
+  penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
   penalty<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
+  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty-penaltyk
   }
 
 loglik_er_f.nopen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
@@ -465,9 +466,10 @@ loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc
   E.matrix_t[4,2]<-erDSB2indel
   E.matrix_t[3,3]<-1-erDSB2indel
   E.matrix_t[4,4]<-1-erDSB2indel
-  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
+  penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
+  penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])+penaltyk
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
+  loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty-penaltyk
   }
 
 loglik_er_f.pen_3x4<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
@@ -477,9 +479,10 @@ loglik_er_f.pen_3x4<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error
   E.matrix_t<-E.matrix
   E.matrix_t[3,3]<-1-erDSB2indel
   E.matrix_t[3,4]<-erDSB2indel
+  penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
   penalty<-penalty+induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty
+  loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty-penaltyk
   }
 
 loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
@@ -493,9 +496,10 @@ loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E
   parms.1<-parms[c(seq(1,length(parms)-6,3),(length(parms)-3):length(parms))]
   parms.2<-parms[c(seq(2,length(parms)-5,3),(length(parms)-3):length(parms))]
   parms.3<-parms[c(seq(3,length(parms)-4,3),(length(parms)-3):length(parms))]
+  penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
   penalty<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty
+  loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty-penaltyk
   }
 
 loglik_er_f.pen_model.mini.bytarget<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
@@ -511,9 +515,10 @@ loglik_er_f.pen_model.mini.bytarget<-function(parms,my_data=mydata,ODEfunc=model
   #parms.3<-parms[c(seq(3,length(parms)-4,3),(length(parms)-3):length(parms))]
   penalty1<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   penalty2<-induction_curve_vectorized(0,parms[(length(parms)-2*nind+1):(length(parms)-nind)])
+  penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
   if (penalty1>0.00001){ penalty1<-(10^7)*(penalty1-0.00001)^2 } else {penalty1<-0}
   if (penalty2>0.00001){ penalty2<-(10^7)*(penalty2-0.00001)^2 } else {penalty2<-0}
-  loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)-penalty1-penalty2
+  loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)-penalty1-penalty2-penaltyk
   #loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty
   }
 
@@ -530,9 +535,10 @@ loglik_er_f.pen_model.nok12.bytarget<-function(parms,my_data=mydata,ODEfunc=mode
   #parms.3<-parms[c(seq(3,length(parms)-4,3),(length(parms)-3):length(parms))]
   penalty1<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   penalty2<-induction_curve_vectorized(0,parms[(length(parms)-2*nind+1):(length(parms)-nind)])
+  penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
   if (penalty1>0.00001){ penalty1<-(10^7)*(penalty1-0.00001)^2 } else {penalty1<-0}
   if (penalty2>0.00001){ penalty2<-(10^7)*(penalty2-0.00001)^2 } else {penalty2<-0}
-  loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)-penalty1-penalty2
+  loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)-penalty1-penalty2-penaltyk
   #loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty
   }
 
@@ -548,17 +554,19 @@ loglik_er_f.pen_model.3x4.bytarget<-function(parms,my_data=mydata,ODEfunc=model1
   parms.2<-parms[c(1:3,6:8)]
   penalty1<-induction_curve_vectorized(0,parms[(length(parms)-nind):(length(parms)-1)])
   penalty2<-induction_curve_vectorized(0,parms[(length(parms)-2*nind):(length(parms)-nind-1)])
+  penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
   if (penalty1>0.00001){ penalty1<-(10^7)*(penalty1-0.00001)^2 } else {penalty1<-0}
   if (penalty2>0.00001){ penalty2<-(10^7)*(penalty2-0.00001)^2 } else {penalty2<-0}
-  loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix_t) +loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix_t)-penalty1-penalty2
+  loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix_t) +loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix_t)-penalty1-penalty2-penaltyk
   }
 
 #function for unconstrained optimization
 loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   penalty<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
+  penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
   penalty<-penalty+sum(apply(cbind(parms,rep(0,length(parms))),MARGIN=1,min)^2)*10^16
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty
+  loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty-penaltyk
   }
 
 

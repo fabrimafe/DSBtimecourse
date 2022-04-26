@@ -56,6 +56,7 @@ myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.cleanedan
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*allb.txt )
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.49and50bp_all.txt )
 #myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*all.txt )
+myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.nov202.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.nov2021.49and50.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2_R2_Feb2022.txt ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1_R2_Feb2022.txt )
 for i in $myfiles;do
 echo $i
 xname=$(basename $i .txt )

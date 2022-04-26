@@ -212,6 +212,9 @@ print(bestmodels_t)
 
 
 #calculate mean induction
+print(nparms)
+print(nparms_induction)
+
 bestmodels.cfitted<-predict_induction(bestmodels_t,nparms=nparms-nparms_induction,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized)
 #extract induction at time 6h to calculate k11-no-induction
 induction_for_normalized_k11<-bestmodels.cfitted %>% filter(time==6) %>% select(curve_fitted) %>% as.numeric
@@ -224,14 +227,14 @@ if (normalize.byind==1)
 		k12<-bestmodels_t$k12/induction_for_normalized_k11
 		bestmodels_t$k12<-k12
 		}
-	}
-if ("k12" %in% nameparms)	
-	{ 
-	#rescale mean induction in terms of induction*k11 (cutting flow)
-	bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11+k12)
-	} else 
-	{
-	bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11)
+	if ("k12" %in% nameparms)	
+		{ 
+		#rescale mean induction in terms of induction*k11 (cutting flow)
+		bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11+k12)
+		} else 
+		{
+		bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11)
+		}
 	}
 bestmodels.cfitted<-left_join(bestmodels.cfitted,bestmodels.cfitted.CI)
 #calculate mean trajectory with k11-no-induction

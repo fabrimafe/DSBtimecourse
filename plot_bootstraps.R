@@ -174,12 +174,11 @@ if(length(grep(".RData",input_file)))
     simsinCI<-allmaxs
     xsims<-2:nsims
     #FIT TRAJECTORY FROM ACTUAL DATA#
-    i<-1
-#print('boom')
-bestmodels.fitted.0er<-predict_models(allmaxs[i,],ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,72,timeresolution))
-    bestmodels_t<-allmaxs[i,]
+    i<-1; bestmodels_t<-allmaxs[i,]
   }
 
+
+bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,72,timeresolution))
 
 ########FIT TRAJECTORIES AND INDUCTION FROM BOOTSTRAPS #####################
 print("FIT TRAJECTORIES AND INDUCTION FROM BOOTSTRAPS")
@@ -202,15 +201,18 @@ for (x.dupl in c(".0",x.dupls))
         if ( (isim %% 10)==0){print(isim)};
         bestmodels_t.cfitted.sims<-predict_induction(simsinCI[isim,],nparms=nparms-nparms_induction,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized)
         induction_for_normalized_k11<-bestmodels_t.cfitted.sims %>% filter(time==6) %>% select(curve_fitted) %>% as.numeric
-        if (normalize.byind==1){ k11<-simsinCI[isim,1]/induction_for_normalized_k11 } else { k11<-as.numeric(simsinCI[isim,1]) }
-        if ("k12" %in% nameparms)
-                {
-                if (normalize.byind==1){ k12<-simsinCI[isim,2]/induction_for_normalized_k11 } else { k12<-as.numeric(simsinCI[isim,2]) }
-                bestmodels_t.cfitted.sims$curve_fitted<-bestmodels_t.cfitted.sims$curve_fitted*(k11+k12)
-                } else
-                {
-                bestmodels_t.cfitted.sims$curve_fitted<-bestmodels_t.cfitted.sims$curve_fitted*k11
-                }
+        if (normalize.byind==1) { k11<-simsinCI[isim,1]/induction_for_normalized_k11 } else { k11<-as.numeric(simsinCI[isim,1]) }
+	if (normalize.byind==1) 
+		{
+	        if ("k12" %in% nameparms)
+        	        {
+                	if (normalize.byind==1){ k12<-simsinCI[isim,2]/induction_for_normalized_k11 } else { k12<-as.numeric(simsinCI[isim,2]) }
+	                bestmodels_t.cfitted.sims$curve_fitted<-bestmodels_t.cfitted.sims$curve_fitted*(k11+k12)
+        	        } else
+                	{
+	                bestmodels_t.cfitted.sims$curve_fitted<-bestmodels_t.cfitted.sims$curve_fitted*k11
+        	        }
+		}
         if (isim==2) { bestmodels.cfitted.CI<-bestmodels_t.cfitted.sims } else { bestmodels.cfitted.CI<-rbind(bestmodels.cfitted.CI,bestmodels_t.cfitted.sims) }
         simsinCI[isim,1]<-k11
         if ("k12" %in% nameparms) {simsinCI[isim,2]<-k12}
@@ -256,15 +258,15 @@ for (x.dupl in c(".0",x.dupls))
                 k12<-bestmodels_t$k12/induction_for_normalized_k11
                 bestmodels_t$k12<-k12
                 }
-        }
-  if ("k12" %in% nameparms)
-        {
-        #rescale mean induction in terms of induction*k11 (cutting flow)
-        bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11+k12)
-        } else
-        {
-        bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11)
-        }
+     	if ("k12" %in% nameparms)
+        	{
+	        #rescale mean induction in terms of induction*k11 (cutting flow)
+        	bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11+k12)
+	        } else
+        	{
+	        bestmodels.cfitted$curve_fitted<-bestmodels.cfitted$curve_fitted*(k11)
+        	}
+	}
   bestmodels.cfitted <- bestmodels.cfitted %>% mutate(replicate=x.dupl)
   #calculate mean trajectory with k11-no-induction
   bestmodels.fitted<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=errormatrix,mymodel=xmodel)

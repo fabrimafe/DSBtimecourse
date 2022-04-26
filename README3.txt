@@ -11,9 +11,9 @@
 
 for MYDELAY in '';do # _mydelay0.25;do #''
 for MYINDUCTION in RNP;do #RNP; do # gRNA;do
-for MYINDUCTION_CURVE in 2;do # 3 4; do # 2 4
-for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_mini modelDSBs1i1_3x4 modelDSBs1i1_nok12;do # modelDSBs1i1_mini modelDSBs1i1_3x4 modelDSBs1i1_nok12; do 
-for MYTARGET in CRTISO_allb CRTISO.49and50bp_allb;do # Psy1_allb; do #Psy1_allb PhyB2.2_allb CRTISO_allb;do #CRTISO Psy1 CRTISO_all; do #PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022;do #CRTISO.cleanedandnov2021 CRTISO.nov2021.49and50 Psy1 PhyB2.2.nov2021 CRTISO.nov2021; do 
+for MYINDUCTION_CURVE in 2;do # 
+for mymodel in modelDSBs1i1_mini modelDSBs1i1_3x4 modelDSBs1i1_nok12;do  
+for MYTARGET in CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb Psy1 PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021;do  
 MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' | sed 's/_mydelay0.25//' | sed 's/_R2_Feb2022//' )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
@@ -21,7 +21,7 @@ if [ $mymodel == "model5i1" ];then
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix3_${MYTARGETM}_errorsfromunbroken.tsv
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}_3states.txt
 fi
-OUTPUT=~/workspace/daniela/resultsv4/results_${mymodel}_${MYINDUCTION}_ind.c${MYINDUCTION_CURVE}_${MYTARGET}${MYDELAY}
+OUTPUT=~/workspace/daniela/resultsv5/results_${mymodel}_${MYINDUCTION}_ind.c${MYINDUCTION_CURVE}_${MYTARGET}${MYDELAY}
 likfun=0; #if [ $mymodel == "modelDSBs1i1_3x4" ];then likfun=3; fi
 echo $OUTPUTA; NAMESIMS=v4 #${MYTARGET};
 MEMS=18000; NITER=1250;
