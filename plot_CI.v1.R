@@ -343,7 +343,7 @@ if ( optimize_errorDSB2indel==2 )
 	loglik_er_f.pen<-loglik_er_f.nopen
 	print("error model is 2")
 	};
-xmodel=get(mymodel);
+#xmodel=get(mymodel);
 nrates<-length(nameparms)
 
     if (mymodel=="modelDSBs1i1_fullimpreciseDSB"){ 

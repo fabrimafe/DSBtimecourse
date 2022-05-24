@@ -4,7 +4,7 @@
 ########################################################################################################
 setwd("~/workspace/daniela")
 #mydelay<-0
-mydelay<-0.25
+mydelay<-0
 ntypes<-4
 library(tidyverse)
 #errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
@@ -22,12 +22,13 @@ mydata_l<-list()
 mydata.p_l<-list()
 #in addition CRTISO0h0 was edited manually by introducing 0 counts at time 0
 #
-for (mytarget_i in c("CRTISO.49and50bp","CRTISO","Psy1","PhyB2.1","PhyB2.2","PhyB2.3"))
+for (mytarget_i in c("PhyB2")) #c("Psy1_R2_Feb2022","PhyB2.2_R2_Feb2022")) #, "CRTISO.cleanedandnov2021.49and50","CRTISO.nov2021.49and50")) #c("CRTISO.cleanedandnov2021","CRTISO.nov2021","PhyB2.2.nov2021")) #c("CRTISOcleaned")) #,"CRTISO.49and50bp","CRTISO","Psy1","PhyB2.1","PhyB2.2","PhyB2.3"))
         {
-        for (myinduction in c("gRNA","RNP"))
+        for (myinduction in c("gRNA")) #,"RNP"))
                 {
 #                mytarget<-mytarget_i
                     nophyB2<-(myinduction=="RNP" || (myinduction=="gRNA" && ( mytarget_i!="PhyB2.1" && mytarget_i!="PhyB2.2" && mytarget_i!="PhyB2.3" )))
+		    print(paste0("~/workspace/daniela/csv/",mytarget_i,"_",myinduction,"_Types_MH_df.csv"))
                     if (nophyB2)
                             {
                             mydata<-read.csv(paste0("~/workspace/daniela/csv/",mytarget_i,"_",myinduction,"_Types_MH_df.csv"))
