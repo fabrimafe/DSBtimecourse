@@ -47,7 +47,7 @@ argv <- add_argument(argv, "-E", help="error matrix")
 argv <- add_argument(argv, "-n", help="n iterations", default=100)
 argv <- add_argument(argv, "-z", help="n parameters in induction curve", default=2)
 argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
-argv <- add_argument(argv, "-k", help="maximum value of k", default=10)
+argv <- add_argument(argv, "-k", help="maximum value of cutting rate k11", default=10)
 
 
 

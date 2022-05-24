@@ -29,11 +29,13 @@ argv <- add_argument(argv, "-z", help="n parameters in induction curve", default
 argv <- add_argument(argv, "-E", help="error matrix")
 argv <- add_argument(argv, "-m", help="model - mandatory, with no default")
 argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
+argv <- add_argument(argv, "-k", help="maximum value of cutting rate k11", default=10)
 
 
 args <- parse_args(argv)
 
 n.max<-as.numeric(args$n)
+k.max<-as.numeric(args$k)
 input_file<-args$i
 output_file<-args$o
 myerrorE<-args$E
@@ -43,7 +45,7 @@ optimize_errorDSB2indel<-as.numeric(args$l)
 nparamsind<-as.numeric(args$z)
 
 
-
+if (is.na(k.max)){ k.max<-10 }
 inputf<-read.table(input_file,header=TRUE)
 if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
 if (is.na(nparamsind)){ nparamsind<-2 }

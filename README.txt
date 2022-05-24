@@ -50,21 +50,24 @@ module load R/4.1.0
 mkdir -p ~/workspace/daniela/input_datasets/stationarybootstraps
 mkdir -p ~/workspace/daniela/input_datasets/MEbootstraps
 mkdir -p ~/workspace/daniela/input_datasets/stratifiedbootstraps
-mkdir -p ~/workspace/daniela/input_datasets/stratifiedbootstraps2
+#mkdir -p ~/workspace/daniela/input_datasets/stratifiedbootstraps2
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*Psy1x5.txt )
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.cleanedandnov2021*.txt )
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*allb.txt )
 myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.49and50bp_all.txt )
 #myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_*all.txt )
-myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.nov202.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.nov2021.49and50.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2_R2_Feb2022.txt ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1_R2_Feb2022.txt )
+#myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.nov202.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.nov2021.49and50.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2_R2_Feb2022.txt ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1_R2_Feb2022.txt )
+#myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.nov2021.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.nov2021.49and50.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO.49and50bp_allb.txt ~/workspace/daniela/input_datasets/timecourse_RNP_CRTISO_allb.txt  )
+myfiles=$( ls ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2.nov2021.txt ~/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.2_R2_Feb2022.txt ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1.txt ~/workspace/daniela/input_datasets/timecourse_RNP_Psy1_R2_Feb2022.txt  )
+myfiles=$(  ls /home/labs/alevy/fabrizio/workspace/daniela/input_datasets/timecourse_gRNA_Psy1.txt /home/labs/alevy/fabrizio/workspace/daniela/input_datasets/timecourse_gRNA_PhyB2.txt /home/labs/alevy/fabrizio/workspace/daniela/input_datasets/timecourse_gRNA_CRTISO.cleaned.txt )
 for i in $myfiles;do
 echo $i
 xname=$(basename $i .txt )
-newpath=~/workspace/daniela/input_datasets/stratifiedbootstraps2/${xname}
 #newpath=~/workspace/daniela/input_datasets/stratifiedbootstraps2/${xname}
+newpath=~/workspace/daniela/input_datasets/stratifiedbootstraps/${xname}
 rm -r $newpath;mkdir -p $newpath
-#./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 2
-./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 3
+./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 2
+#./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 3
 #newpath=~/workspace/daniela/input_datasets/stationarybootstraps/${xname}
 #rm -r $newpath;mkdir -p $newpath
 #./timeseriesbootstraps.R -i $i -o ${newpath} -n 100 -m 0
