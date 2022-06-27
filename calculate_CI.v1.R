@@ -77,14 +77,15 @@ nrates<-length(nameparms)
 ##################### START OPTIMIZATION ########################################
 #################################################################################
 
-maxl<-max(inputf$value)
+inputf<-inputf[inputf$r0>0 & inputf$k11>0,]
+inputf<-inputf[!is.na(inputf$k11),]
+maxl<-max(inputf$value,na.rm=T)
 print(maxl)
 #bestmodel<-inputf[tail(order(inputf$value)),]
 bestmodel<-inputf[maxl==inputf$value,][1,]
 #bestmodels_l_rates_t<-bestmodels_l_rates %>%  filter(target==mytarget_i,induction==myinduction)
-
 print("start calculations");
-res<-generate_CI(bestmodel,inputasrates=FALSE,likfunction=function(zz) loglik_er_f.pen(zz,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix),npermutations=n.max,returnonlyCI=TRUE,addpreviouslysampled="inputf",normalize_k11=normalize_k11.t)
+res<-generate_CI(bestmodel,inputasrates=FALSE,likfunction=function(zz) loglik_er_f.pen(zz,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix,nind=nparamsind),npermutations=n.max,returnonlyCI=TRUE,addpreviouslysampled="inputf",normalize_k11=normalize_k11.t)
 
 #print(paste0("finished calculations, now saving to file ",output_file))
 #print(res[[1]])

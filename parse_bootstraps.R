@@ -54,9 +54,9 @@ res.filtered<-apply(maxls[,1:which(names(maxls)=="value")],MARGIN=2,FUN=function
 
 
 
-for mymodel in modelDSBs1i1_mini modelDSBs1i1_3x4 modelDSBs1i1_nok12;do
-for mytarget in PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022;do # PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021 CRTISO.49and50bp_allb CRTISO_allb Psy1_allb PhyB2.2_allb;do
-myfolder=/home/labs/alevy/fabrizio/workspace/daniela/resultsv5/stratifiedbootstraps/timecourse_RNP_${mytarget}/${mymodel}/results_${mymodel}_RNP_ind.c2_${mytarget}
+for mymodel in modelDSBs1i1_realimprecise;do #modelDSBs1i1_mini modelDSBs1i1_3x4 modelDSBs1i1_nok12;do
+for mytarget in Psy1 PhyB2.2.nov2021 CRTISO.nov2021.49and50 CRTISO.nov2021;do #PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021 CRTISO.49and50bp_allb CRTISO_allb Psy1_allb PhyB2.2_allb;do
+myfolder=/home/labs/alevy/fabrizio/workspace/daniela/resultsv5/stratifiedbootstraps/timecourse_RNP_${mytarget}/${mymodel}/results_${mymodel}_RNP_ind.c3_${mytarget}
 rm ${myfolder}/results.tot
 echo $myfolder
 for i in `seq 1 100`;do
@@ -76,21 +76,23 @@ done
 done
 
 
-
+dotablerates=FALSE
+dotableflows=TRUE
 bootstrap_type="stratifiedbootstraps"  #    "stationarybootstraps2" #"MEbootstraps"
 mymodel="modelDSBs1i1_nok12" #"modelDSBs1i1_mini.bytarget" # "modelDSBs1i1_3x4" #"modelDSBs1i1_mini" #"modelDSBs1i1_nok12"
-ninduction<-2
+ninduction<-3
 mytarget<-"PhyB2.2_allb" #"CRTISO_all" #PhyB2.2_allb" #"Psy1_all" #"CRTISO_all" # "CRTISO_allb"
 library(data.table)
 library(tidyverse)
 for (bootstrap_type in "stratifiedbootstraps"){
 for (mymodel in c("modelDSBs1i1_3x4","modelDSBs1i1_mini","modelDSBs1i1_nok12")){
-for (mytarget in #c("Psy1")){ #c("Psy1_allb","CRTISO_allb","PhyB2.2_allb","CRTISO.49and50bp_allb",
-#"Psy1","PhyB2.2.nov2021","CRTISO.nov2021.49and50","CRTISO.nov2021")){ #,
-c("PhyB2.2_R2_Feb2022","Psy1_R2_Feb2022")){
+for (mytarget in #c("Psy1","Psy1_allb","CRTISO_allb","PhyB2.2_allb","CRTISO.49and50bp_allb",
+c("Psy1","PhyB2.2.nov2021","CRTISO.nov2021.49and50","CRTISO.nov2021","PhyB2.2_allb")){ #,
+#c("PhyB2.2_R2_Feb2022","Psy1_R2_Feb2022")){
 #for (bootstrap_type in "stratifiedbootstraps2"){
 #for (mymodel in c("modelDSBs1i1_nok12.bytarget")){ #,"modelDSBs1i1_3x4.bytarget","modelDSBs1i1_mini.bytarget")){
 #for (mytarget in c("Psy1_all","CRTISO_all","PhyB2.2_all","CRTISO.49and50bp_all")){
+if (dotablerates){
 myfile=paste0("/home/labs/alevy/fabrizio/workspace/daniela/resultsv5/",bootstrap_type,"/timecourse_RNP_",mytarget,"/",mymodel,"/results_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"/results.tot")
 #myfile="results.tot"
 xdata<-fread(myfile,header=TRUE)
@@ -105,18 +107,24 @@ xdata[[inames]] <- as.numeric(xdata[[inames]])
 #xdata<-xdata %>% filter(er1<0.3)
 maxl<- xdata  %>% group_by(bootstrap) %>% summarize(maxl=max(value)) %>% ungroup
 maxls<-left_join(xdata,maxl) %>% filter(value==maxl,k11!="k11",as.numeric(maxl)>-900000)
+maxls<-maxls[!duplicated(maxls$value),]
 res.all<-apply(maxls[,1:which(names(maxls)=="value")],MARGIN=2,FUN=function(x) quantile(as.numeric(x),c(0.01,0.05,0.10,0.25,0.5,0.95,0.99)))
 res.all
 write.table(res.all,file=paste0(myfile,".table"),quote=FALSE,sep="\t")
-
-myfileflow=paste0("/home/labs/alevy/fabrizio/workspace/daniela/resultsv5/",bootstrap_type,"/timecourse_RNP_",mytarget,"/",mymodel,"/results_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"/results.tot_plot.flow.tab")
-xdata<-fread(myfileflow,header=FALSE)
-names(xdata)<-c("param","value")
-
-xdata$repl=c(sapply(1:100, function(x) rep(x,nrow(xdata)/100)))
-maxls<- xdata %>% pivot_wider(names_from=param,values_from=value) 
-res.all<-apply(maxls,MARGIN=2,FUN=function(x) quantile(as.numeric(x),c(0.01,0.05,0.10,0.25,0.5,0.95,0.99)))
-write.table(res.all,file=paste0(myfileflow,"le"),quote=FALSE,sep="\t")
+}
+if (dotableflows)
+	{
+	myfileflow=paste0("/home/labs/alevy/fabrizio/workspace/daniela/resultsv5/",bootstrap_type,"/timecourse_RNP_",mytarget,"/",mymodel,"/results_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"/results.tot_plot.flow.tab")
+	xdata<-fread(myfileflow,header=FALSE)
+	duplicated(xdata$param=="value")
+	names(xdata)<-c("param","value")
+	print(sum(xdata$param=="AIC"))
+	xdata$repl=c(sapply(1:sum(xdata$param=="AIC"), function(x) rep(x,nrow(xdata)/sum(xdata$param=="AIC"))))
+	#maxls<-maxls[!duplicated(paste0(maxls$value,maxls$repl)),]
+	maxls<- xdata %>% pivot_wider(names_from=param,values_from=value) 
+	res.all<-apply(maxls,MARGIN=2,FUN=function(x) quantile(as.numeric(x),c(0.01,0.05,0.10,0.25,0.5,0.95,0.99)))
+	write.table(res.all,file=paste0(myfileflow,"le"),quote=FALSE,sep="\t")
+	}
 }
 }
 }
