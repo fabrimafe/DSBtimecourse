@@ -242,7 +242,7 @@ MEMS=18000; NITER=1250;
 #WITH STRATIFIED
 #bsub -q new-short -J plotshort -e ~/mylogs4/plot.e%J -o ~/mylogs4/plot.o%J -R rusage[mem=16000] ./plot.v1.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 1000 ${OUTPUTA}.plot $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION}
 #WITH STRATIFIED2
-#bsub -q new-short -J plotshort -e ~/mylogs4/plot.e%J -o ~/mylogs4/plot.o%J -R rusage[mem=16000] ./plot.v2.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 100 ${OUTPUTA}.plot $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION} 1
+bsub -q new-short -J plotshort -e ~/mylogs4/plot.e%J -o ~/mylogs4/plot.o%J -R rusage[mem=16000] ./plot.v2.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 100 ${OUTPUTA}.plot $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION} 1
 
 #        fi
 done
