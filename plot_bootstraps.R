@@ -48,16 +48,11 @@ define_ODE.functions(nparamsind)
 #myerrorE<-"/home/labs/alevy/fabrizio/workspace/daniela/error_matrices/error_matrix4_Psy1_errorsfromunbroken.tsv"
 #mymodel<-"modelDSBs1i1_mini"
 
-#normalize.byind<-0
-#timeresolution<-0.01
-#optimize_errorDSB2indel<-0
-#nparamsind<-2
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
 nameparms<-model2nameparams(mymodel,nparamsind)
 if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
 if (is.na(normalize.byind)) { normalize.byind<-0 }
 if (is.na(timeresolution)) { timeresolution<-0.01 }
-#print(nameparms)
 
 ################################################################################
 ################# ADDITIONAL FUNCTIONS FOR CI ##################################
@@ -83,8 +78,7 @@ mydata<-read.table(data_file,header=TRUE)
 time_courses_begins<-c(which(mydata$time[-1]-mydata$time[-length(mydata$time)]<0)+1)
 mydelay<-0
 ntypes<-4
-mxmodel<-0
-#mydata<-read.table(input.file, header=TRUE)
+xmodel<-0
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
 define_ODE.functions(nparamsind)
 loglik_er_f.pen<-model2likelihoodfunction(mymodel,optimize_errorDSB2indel)
@@ -134,6 +128,8 @@ errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
 #ls /home/labs/alevy/fabrizio/workspace/daniela/resultsv4/results_modelDSBs1i1_mini_RNP_ind.c2_Psy1_allb.all_n500000.CI > /home/labs/alevy/fabrizio/workspace/daniela/resultsv4/stratifiedbootstraps/timecourse_RNP_Psy1_allb/modelDSBs1i1_mini/results_modelDSBs1i1_mini_RNP_ind.c2_Psy1_allb/listCIfiles.txt
 #ls /home/labs/alevy/fabrizio/workspace/daniela/resultsv4/stratifiedbootstraps/timecourse_RNP_Psy1_allb/modelDSBs1i1_mini/results_modelDSBs1i1_mini_RNP_ind.c2_Psy1_allb/results*.tab_n50000.CI >> /home/labs/alevy/fabrizio/workspace/daniela/resultsv4/stratifiedbootstraps/timecourse_RNP_Psy1_allb/modelDSBs1i1_mini/results_modelDSBs1i1_mini_RNP_ind.c2_Psy1_allb/listCIfiles.txt
 if (mymodel %in% c("modelDSBs1i1_3x4","modelDSBs1i1_3x4.bytarget")){ xmodel="modelDSBs1i1_3x4" }
+if (mymodel %in% c("modelDSBs1i1_3x4nor11")){ xmodel="modelDSBs1i1_3x4nor11" }
+
 
 #PARSE INPUT FILE AND DECIDE FROM THAT IF LIST OF CI FILES (THEN BOOTSTRAP) OR SINGLE CI.RData FILE
 print("PARSE INPUT FILE")
@@ -171,7 +167,6 @@ if(length(grep(".RData",input_file)))
     res<-read.table(listfiles[iit],sep="\t",header=TRUE)
     restemp<-res  %>% select(rate,max) %>% pivot_wider(names_from=rate,values_from=max)
     if (iit==1) { allmaxs<-restemp } else { allmaxs<-rbind(allmaxs,restemp) }
-    #print(restemp)    
     }
     nsims<-nrow(allmaxs)
     simsinCI<-allmaxs
@@ -284,7 +279,9 @@ for (x.dupl in c(".0",x.dupls))
 #  bestmodels_t00[which(names(bestmodels_t0)=="r2")]<-0
 #  bestmodels_t00[which(names(bestmodels_t0)=="x0")]<-0.0000001
 #---------------------------------------------------------------------
-  if (mymodel %in% c("modelDSBs1i1_3x4","modelDSBs1i1_3x4.bytarget")){ bestmodels_t00[names(bestmodels_t00)=="er1"]<-0 }
+  if (mymodel %in% c("modelDSBs1i1_3x4","modelDSBs1i1_3x4nor11","modelDSBs1i1_3x4.bytarget")){ bestmodels_t00[names(bestmodels_t00)=="er1"]<-0 }
+  print(bestmodels_t00)
+  print(xmodel)
   bestmodels.fitted.0er<-predict_models(bestmodels_t00,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,72,timeresolution))
   bestmodels.fitted.0er %>% mutate(replicate=x.dupl)
   if (x.dupl==".0")
@@ -331,10 +328,7 @@ ggsave(myplot,filename=paste0(output_file,"_plot.induction.pdf"))
 if (calculate_flow){
 print("calculate flow")
 print(bestmodels_t)
-#print(bestmodels.fitted)
-#y.fitted<-bestmodels.fitted %>% pivot_wider(names_from="types",values_from="p")
 y.fitted<-bestmodels.fitted.0er %>% pivot_wider(names_from="types",values_from="p",values_fill=0)
-#print(y.fitted)
 if (ntypes==4){
 names(y.fitted)<-c("time","y1","y2","y3","y4")
 y.fitted <- y.fitted %>% group_by(time) %>% summarise(y1=sum(y1),y2=sum(y2),y3=sum(y3),y4=sum(y4)) #%>% select(y1,y2,y3,y4)
@@ -352,9 +346,6 @@ bestmodels_t0[which(names(bestmodels_t0)=="r0")]<-999999999999
 bestmodels_t0[which(names(bestmodels_t0)=="r2")]<-0
 bestmodels_t0[which(names(bestmodels_t0)=="K")]<-1
 if (nparamsind==3){ bestmodels_t0[which(names(bestmodels_t0)=="K")]<-0 }
-#bestmodels_t0[which(names(bestmodels_t0)=="x0")]<-0.0000001
-#bestmodels_t0[which(names(bestmodels_t0)=="er1")]<-0
-#bestmodels.cfitted<-predict_induction(bestmodels_t,nparms=nparms-nparms_induction-nparamserr,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized_default,times=seq(0,72,timeresolution))
 bestmodels.cfitted<-predict_induction(bestmodels_t,nparms=nparms-nparms_induction-nparamserr,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized,times=seq(0,72,timeresolution),yno1=1-y.fitted$y1)
 #rescale k11 to have induction inside
 for (ipar in 1:(nparms-nparms_induction-nparamserr)){

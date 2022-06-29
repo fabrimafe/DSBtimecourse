@@ -440,7 +440,7 @@ if (length(yinit)>1){yini<-yinit}
 errormatrix_t<-errormatrix
 if (is(mymodel)[1]!="function")
 	{ 
-	if (mymodel=="modelDSBs1i1_3x4")
+	if (mymodel=="modelDSBs1i1_3x4" || mymodel=="modelDSBs1i1_3x4nor11")
 		{
 		errormatrix_t[3,3]<-1-res_parms[nparms]
 		errormatrix_t[3,4]<-res_parms[nparms]
@@ -683,7 +683,7 @@ model2nameparams<-function(mymodel,nind=2,optimize_errorDSB2indel=0){
 	        nameparms <-c("k11","rr12","r11","r12","r21","r22","r0","r2")
 		};
 if (nind==2) { nameparms<-c(nameparms,"r0","r2")} else if (nind==4){ nameparms<-c(nameparms,"K","x0","r0","r2")} else if (nind==3){ nameparms<-c(nameparms,"K","r0","r2")} 
-if ( optimize_errorDSB2indel==1 || mymodel=="modelDSBs1i1_3x4" || mymodel=="modelDSBs1i1_3x4.bytarget" )
+if ( optimize_errorDSB2indel==1 || mymodel=="modelDSBs1i1_3x4" || mymodel=="modelDSBs1i1_3x4nor11" || mymodel=="modelDSBs1i1_3x4.bytarget" )
         {
         nameparms<-c(nameparms,"er1")
 	}
@@ -718,7 +718,7 @@ if ( mymodel=="modelDSBs1i1_nok12.bytarget")
                 {
                 loglik_er_f.pen<-loglik_er_f.pen_model.nok12.bytarget
                 } else
-if ( mymodel=="modelDSBs1i1_3x4")
+if ( mymodel=="modelDSBs1i1_3x4" || mymodel=="modelDSBs1i1_3x4nor11" )
                 {
 		loglik_er_f.pen<-loglik_er_f.pen_3x4
 		} else
