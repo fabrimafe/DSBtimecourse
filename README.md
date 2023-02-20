@@ -48,10 +48,10 @@ Particularly when boostrapping is not an option, one can calculate likelihood-ra
 ./calculate_CI.R -i test/output_3states.tsv -d test/timecourse_RNP_Psy1.txt -o output.CI -z 3 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_3states_CI.tsv
 ```
 This provides two output files. An .RData file containing all the temporary object obtained during the confidence intervals computation; and a summary file, which takes the names provided in the -o flag, and which shows a table with 4 fields:
-max: the maximum likelihood estimate
-CIlow: the lowest 95% confidence interval obtained with a Monte-Carlo approximation of the asymptotic likelihood ratio based confidence interval.
-CIhigh: the highest 95% confidence interval obtained with a Monte-Carlo approximation of the asymptotic likelihood ratio based confidence interval.
-rate: the rate for which the estimate is reported.
+- max: the maximum likelihood estimate
+- CIlow: the lowest 95% confidence interval obtained with a Monte-Carlo approximation of the asymptotic likelihood ratio based confidence interval.
+- CIhigh: the highest 95% confidence interval obtained with a Monte-Carlo approximation of the asymptotic likelihood ratio based confidence interval.
+- rate: the rate for which the estimate is reported.
 
 The previous steps can be iterated for independent bootstraps of the data.
 
