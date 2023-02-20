@@ -60,7 +60,7 @@ The previous steps can be iterated for independent bootstraps of the data. Boots
 
 ### 4) plotting and summarizing
 The program plot_bootstraps.R print flows and plots trajectories and induction curves. It can be run individually on a single time course or bootstrap or on mean-data+boostraps. In the former case likelihood-ratio based confidence intervals are used, in the latter bootstrap based confidence intervals. Use
-``
+```
 ./plot_bootstraps.R --help
 ```
 for information on the usage. The flag -i specifies the input data. If this is a .RData, this is assumed to be a single raw confidence interval file computed with calculate_CI.R. Otherwise, a text file containing the path of individual bootstraps is expected, and formatted as described in the --help. In the former case, if run on the test data:
