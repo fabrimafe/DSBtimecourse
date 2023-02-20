@@ -9,7 +9,7 @@ README*.txt document the development and testing stage for Ben Tov*, Mafessoni *
 The procedure for the modeling follows this general scheme:
 
 ### 1) data preparation
-Prepare input files: a time-course-file with the abundance of the different types of molecules, and an error-matrix file, specifying the expected error rates. Example files can be found in test/. The files should be tab separated files. The time-course file has five columns, the first describing the time and the others the count of molecules for each type, for example:
+Prepare input files: a time-course-file with the abundance of the different types of molecules, and an error-matrix file, specifying the expected error rates. Example files can be found in test/. The files should be tab separated files. The time-course file has five columns, the first describing the time and the others the count of molecules for each type. For example:
 
 |time|    y1|      y2|      y3|      y4|
 |----|------|--------|--------|--------|
@@ -21,7 +21,7 @@ Prepare input files: a time-course-file with the abundance of the different type
 ....
 
 where y1 indicates the intact molecules, y2 the precise DSBs, y3 processed DSBs and y4 indels. Several replicates can be provided with a same time.
-Error-matrix files are four-entries tab separated matrices specifying the probability that a molecule (in row) is observed as such or as other types, e.g.
+Error-matrix files are four-entries tab separated matrices specifying the probability that a molecule (in row) is observed as such or as other types. For example:
 
 |from\observed as|intact           |precise DSB         |processed DSB       |indels             |
 |----------------|-----------------|--------------------|--------------------|-------------------|
@@ -34,6 +34,7 @@ indicates that intact molecules have a ~0.5% chance of being classified as indel
 
 ### 2) optimization
 This is the core of the procedure, fitting the maximum likelihood parameters for the selected model. Use optimize_model_backbone.v1.R on the original dataset and on the bootstrapped data.
+
 
 ### 3) likelihood confidence intervals
 Particularly when boostrapping is not an option, one can calculate likelihood-ratio based confidence intervals with calculate_CI.v1.R. While this would not be necessary per se, the output of this file can be used to generates plots in step 4)
