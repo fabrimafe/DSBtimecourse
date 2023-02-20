@@ -1,6 +1,7 @@
-# DSBtimecourse
+# DSBtimecourse: Inference of kinetic parameters for time-courses sequenced with the UMI-DSBseq protocol 
 
-Repository for Ben Tov*, Mafessoni* et al.
+Repository for "Uncovering the Dynamics of Precise Repair at CRISPR/Cas9-induced Double-Strand Breaks", Ben Tov*, Mafessoni* et al., biorXiv (2023). 
+https://doi.org/10.1101/2023.01.10.523377 
 
 For documentation of the R scripts, just use the --help flag.
 .sh scripts are wrappers to run the R scripts on a cluster.
