@@ -73,3 +73,15 @@ which will generate two files:
 - plot3states_plot.trajectories.pdf: a plot of the fitted trajectories of the timecourse
 - plot3states_plot.induction.pdf: a plot of the induction curve
 
+### Notation
+
+Rates are referred to with the following nomenclature:
+- k11: cutting rate from intact to precise DSBs (or any DSBs if no difference is made between precise DSBs and processed DSBs, i.e. 3 state model);
+- k12: cutting rate from intact to processed DSBs;
+- r11: repair from precise DSBs to intact molecules (or from any DSBs if no difference is made between precise DSBs and processed DSBs, i.e. 3 state model), i.e. *precise repair
+- r12: repair from precise DSBs to indels, i.e. *error-prone repair;
+- r21: repair from processed DSBs to intact molecules;
+- r21: repair from processed DSBs to indels;
+- r0: speed of induction;
+- K: maximum level of induction;
+- r2: exponential decay in cutting rate over time;
