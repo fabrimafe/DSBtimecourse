@@ -44,5 +44,9 @@ where the arguments -z sets the shape of the induction curve to have 3 degrees o
 ### 3) likelihood confidence intervals
 Particularly when boostrapping is not an option, one can calculate likelihood-ratio based confidence intervals with calculate_CI.v1.R. While this would not be necessary per se, the output of this file can be used to generates plots in step 4)
 
+```
+./calculate_CI.R -i test/output_3states.tsv -d test/timecourse_RNP_Psy1.txt -o output.CI -z 3 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_3states_CI.tsv
+```
+
 ### 4) plotting and summarizing
 The program plot_bootstraps.R print flows and plots trajectories and induction curves. It can be run individually on a single time course or bootstrap or on mean-data+boostraps. In the former case likelihood-ratio based confidence intervals are used, in the latter bootstrap based confidence intervals.
