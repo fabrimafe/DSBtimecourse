@@ -45,7 +45,7 @@ where the arguments -z sets the shape of the induction curve to have 3 degrees o
 Particularly when boostrapping is not an option, one can calculate likelihood-ratio based confidence intervals with calculate_CI.v1.R. While this would not be necessary per se, the output of this file can be used to generates plots in step 4). Here, the output of the optimization step is given as an input with the flag -i, together with the original timecourse and the error matrix. 
 
 ```
-./calculate_CI.R -i test/output_3states.tsv -d test/timecourse_RNP_Psy1.txt -o output.CI -z 3 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_3states_CI.tsv
+./calculate_CI.R -i test/output_3states.tsv -d test/timecourse_RNP_Psy1.txt -z 3 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_3states_CI.tsv
 ```
 This provides two output files. An .RData file containing all the temporary object obtained during the confidence intervals computation; and a summary file, which takes the names provided in the -o flag, and which shows a table with 4 fields:
 - max: the maximum likelihood estimate
@@ -59,7 +59,15 @@ The previous steps can be iterated for independent bootstraps of the data. Boots
 ```
 
 ### 4) plotting and summarizing
-The program plot_bootstraps.R print flows and plots trajectories and induction curves. It can be run individually on a single time course or bootstrap or on mean-data+boostraps. In the former case likelihood-ratio based confidence intervals are used, in the latter bootstrap based confidence intervals.
-
-
+The program plot_bootstraps.R print flows and plots trajectories and induction curves. It can be run individually on a single time course or bootstrap or on mean-data+boostraps. In the former case likelihood-ratio based confidence intervals are used, in the latter bootstrap based confidence intervals. Use
+``
+./plot_bootstraps.R --help
+```
+for information on the usage. The flag -i specifies the input data. If this is a .RData, this is assumed to be a single raw confidence interval file computed with calculate_CI.R. Otherwise, a text file containing the path of individual bootstraps is expected, and formatted as described in the --help. In the former case, if run on the test data:
+```
+./plot_bootstraps.R -i test/output_3states_CI.tsv.RData -d test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -n 100 -z 3 -o test/plot3states
+```
+which will generate two files: 
+- plot3states_plot.trajectories.pdf: a plot of the fitted trajectories of the timecourse
+- plot3states_plot.induction.pdf: a plot of the induction curve
 
