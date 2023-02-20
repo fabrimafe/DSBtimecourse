@@ -73,4 +73,3 @@ which will generate two files:
 - plot3states_plot.trajectories.pdf: a plot of the fitted trajectories of the timecourse
 - plot3states_plot.induction.pdf: a plot of the induction curve
 
-
