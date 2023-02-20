@@ -23,10 +23,11 @@ Prepare input files: a time-course-file with the abundance of the different type
 where y1 indicates the intact molecules, y2 the precise DSBs, y3 processed DSBs and y4 indels. Several replicates can be provided with a same time.
 Error-matrix files are four-entries tab separated matrices specifying the probability that a molecule (in row) is observed as such or as other types, e.g.
 
-|0.985826643022484|       0.00901705556457197|     0.000276158814197761|    0.00488014259874579|
-|0       |0.994843698587056|       0.000276158814197761|    0.00488014259874579|
-|0       |0       |1       |0|
-|0       |0       |0       |1|
+|--|--|--|--|
+|0.985826643022484|0.00901705556457197|0.000276158814197761|0.00488014259874579|
+|0                |0.994843698587056  |0.000276158814197761|0.00488014259874579|
+|0                |0                  |1                   |                  0|
+|0                |0                  |0                   |                  1|
 
 indicates that intact molecules have a ~0.5% chance of being classified as indels. Such files can be prepared following prepare_data.R, and error matrices using calculate_error_matrix.R. If necessary create input bootstraps files with create_stbootstrap.R. If for your data stratified bootstrapping is not possible due to the absence of repeated measures, alternative bootstrapping procedures are implemented in timeseriesbootstraps.R.
 
