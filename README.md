@@ -9,8 +9,22 @@ README*.txt document the development and testing stage for Ben Tov*, Mafessoni *
 The procedure for the modeling follows this general scheme:
 
 ### 1) data preparation
-Prepare input files following prepare_data.R, and error matrices using calculate_error_matrix.R.
-If necessary create input bootstraps files with create_stbootstrap.R. If for your data stratified bootstrapping is not possible due to the absence of repeated measures, alternative bootstrapping procedures are implemented in timeseriesbootstraps.R.
+Prepare input files: a time-course-file with the abundance of the different types of molecules, and an error-matrix file, specifying the expected error rates. Example files can be found in test/. The files should be tab separated files. The time-course file has five columns, the first describing the time and the others the count of molecules for each type, for example:
+time    y1      y2      y3      y4
+0       3095    0       62      9
+0       1608    0       34      16
+6       2289    29      41      21
+6       3259    34      162     33
+....
+where y1 indicates the intact molecules, y2 the precise DSBs, y3 processed DSBs and y4 indels. Several replicates can be provided with a same time.
+Error-matrix files are four-entries tab separated matrices specifying the probability that a molecule (in row) is observed as such or as other types, e.g.
+
+0.985826643022484       0.00901705556457197     0.000276158814197761    0.00488014259874579
+0       0.994843698587056       0.000276158814197761    0.00488014259874579
+0       0       1       0
+0       0       0       1
+
+indicates that intact molecules have a ~0.5% chance of being classified as indels. Such files can be prepared following prepare_data.R, and error matrices using calculate_error_matrix.R. If necessary create input bootstraps files with create_stbootstrap.R. If for your data stratified bootstrapping is not possible due to the absence of repeated measures, alternative bootstrapping procedures are implemented in timeseriesbootstraps.R.
 
 ### 2) optimization
 This is the core of the procedure, fitting the maximum likelihood parameters for the selected model. Use optimize_model_backbone.v1.R on the original dataset and on the bootstrapped data.
