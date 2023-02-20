@@ -34,9 +34,11 @@ indicates that intact molecules have a ~0.5% chance of being classified as indel
 
 ### 2) optimization
 This is the core of the procedure, fitting the maximum likelihood parameters for the selected model. Use DSBtimecourse_optimizer.R on the original dataset and on the bootstrapped data. To run on the test dataset using the 4 state model in Ben Tov et al.,2023:
+```
 ./DSBtimecourse_optimizer.R -T test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_nok12 -o test/output_4states.tsv -z 3 -n 20
  The 3-state model can be run with:
 ./DSBtimecourse_optimizer.R -T test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_3states.tsv -z 3 -n 20
+```
 where the arguments -z sets the shape of the induction curve to have 3 degrees of freedom, and n is the number of independent iterations. The default is 100 iterations, but more are recommended, especially for more complex models like the 4-states. In Ben Tov et al. (2023) we used 50000 iterations, though a smaller number is usually sufficient. 
 
 ### 3) likelihood confidence intervals
