@@ -23,7 +23,7 @@ Prepare input files: a time-course-file with the abundance of the different type
 where y1 indicates the intact molecules, y2 the precise DSBs, y3 processed DSBs and y4 indels. Several replicates can be provided with a same time.
 Error-matrix files are four-entries tab separated matrices specifying the probability that a molecule (in row) is observed as such or as other types, e.g.
 
-|--|--|--|--|
+|-----------------|-------------------|--------------------|-------------------|
 |0.985826643022484|0.00901705556457197|0.000276158814197761|0.00488014259874579|
 |0                |0.994843698587056  |0.000276158814197761|0.00488014259874579|
 |0                |0                  |1                   |                  0|
