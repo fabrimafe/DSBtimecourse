@@ -75,13 +75,14 @@ which will generate two files:
 
 ### Notation
 
-Rates are referred to with the following nomenclature:
-- k11: cutting rate from intact to precise DSBs (or any DSBs if no difference is made between precise DSBs and processed DSBs, i.e. 3 state model);
+Rates are referred to with the following nomenclature, with names in brackets corresponding to the terminology used in Ben Tov et al.,2023:
+- k11 (K<sub>cut<cut>): cutting rate from intact to precise DSBs (or any DSBs if no difference is made between precise DSBs and processed DSBs, i.e. 3 state model);
 - k12: cutting rate from intact to processed DSBs;
-- r11: repair from precise DSBs to intact molecules (or from any DSBs if no difference is made between precise DSBs and processed DSBs, i.e. 3 state model), i.e. *precise repair*;
-- r12: repair from precise DSBs to indels, i.e. *error-prone repair*;
-- r21: repair from processed DSBs to intact molecules;
-- r21: repair from processed DSBs to indels;
-- r0: speed of induction;
-- K: maximum level of induction;
-- r2: exponential decay in cutting rate over time;
+- rr12 (K<sub>processing<cut>): processing rate from precise DSBs to processed DSBs; 
+- r11 (P<sub>direct<cut>): repair from precise DSBs to intact molecules (or from any DSBs if no difference is made between precise DSBs and processed DSBs, i.e. 3 state model), i.e. *precise repair* or *precise repair from precise DSBs*;
+- r12 (E<sub>direct<cut>): repair from precise DSBs to indels, i.e. *repair-error from precised DSBs*;
+- r21 (P<sub>processed<cut>): repair from processed DSBs to intact molecules;
+- r22: (E<sub>procesed<cut>): repair from processed DSBs to indels;
+- r0 (r): speed of induction;
+- K (U): maximum level of induction (untransfected fraction);
+- r2 (decay): exponential decay in cutting rate over time;
