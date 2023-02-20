@@ -67,7 +67,9 @@ for information on the usage. The flag -i specifies the input data. If this is a
 ```
 ./plot_bootstraps.R -i test/output_3states_CI.tsv.RData -d test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -n 100 -z 3 -o test/plot3states
 ```
+
 which will generate two files: 
+
 - plot3states_plot.trajectories.pdf: a plot of the fitted trajectories of the timecourse
 - plot3states_plot.induction.pdf: a plot of the induction curve
 
