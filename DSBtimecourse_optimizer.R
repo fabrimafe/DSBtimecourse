@@ -40,14 +40,14 @@ loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix)
 argv<- arg_parser("Parse arguments")
 
 argv <- add_argument(argv, "-T", help="time course of target site. A dataset with time as 1st column and then the number of molecules")
-argv <- add_argument(argv, "-m", help="model")
+argv <- add_argument(argv, "-m", help="model. One of modelDSBs1i1_3x4,modelDSBs1i1_nok12,modelDSBs1i1_mini,modelDSBs1i1_realimprecise,modelDSBs1i1_3x4nor11.")
 argv <- add_argument(argv, "-o", help="output file", default="output.txt")
-argv <- add_argument(argv, "-e", help="errors")
-argv <- add_argument(argv, "-E", help="error matrix")
+#argv <- add_argument(argv, "-e", help="errors")
+argv <- add_argument(argv, "-E", help="error matrix. A tab separated matrix specifying in the rows the source type and in the column the observed type, e.g. the second row/first column indicates the proportion of y2 (precise DSB) that are observed as intact molecules (y1)")
 argv <- add_argument(argv, "-n", help="n iterations", default=100)
-argv <- add_argument(argv, "-z", help="n parameters in induction curve", default=2)
+argv <- add_argument(argv, "-z", help="n parameters in induction curve.", default=3)
 argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
-argv <- add_argument(argv, "-k", help="maximum value of cutting rate k11", default=10)
+argv <- add_argument(argv, "-k", help="maximum value of cutting rate (k11)", default=10)
 
 
 

@@ -16,7 +16,7 @@ source("likelihood_functions.R")
 argv<- arg_parser("Parse arguments")
 argv <- add_argument(argv, "-i", help="input_files; a text file specifying in each row an RData file, output from CI.R, for each of the bootstrap estimates")
 argv <- add_argument(argv, "-d", help="data_file; time course used to calculate likelihood with optimization.R")
-argv <- add_argument(argv, "-o", help="roof for output_files")
+argv <- add_argument(argv, "-o", help="root for output_files")
 argv <- add_argument(argv, "-E", help="error matrix")
 argv <- add_argument(argv, "-m", help="model")
 argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
@@ -25,6 +25,7 @@ argv <- add_argument(argv, "-z", help="n parameters in induction curve", default
 argv <- add_argument(argv, "-r", help="time resolution; default is 0.01")
 argv <- add_argument(argv, "-w", help="calculate_flow. Default is 0, which indicates FALSE. Select 1 to calculate it.", default=0)
 argv <- add_argument(argv, "-n", help="maximum number of curves used for CI, when using likelihood based CI..")
+argv <- add_argument(argv, "-j", help="plot processed. choose 0 for no.", default=1)
 
 args <- parse_args(argv)
 input_file<-args$i
@@ -38,9 +39,15 @@ maxnsims<-as.numeric(args$n)
 optimize_errorDSB2indel<-as.numeric(args$l)
 normalize.byind<-as.numeric(args$y)
 nparamsind<-as.numeric(args$z)
+noplotprocessedDSB<-as.numeric(args$j)
+
 if (is.na(nparamsind)){ nparamsind<-2 }
 if (is.na(calculate_flow)){ calculate_flow<-0 }
 if ( calculate_flow!=1){ calculate_flow<-FALSE } else { calculate_flow<-TRUE }
+if (is.na(noplotprocessedDSB)){ noplotprocessedDSB<-1 }
+if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
+if (is.na(normalize.byind)) { normalize.byind<-0 }
+if (is.na(timeresolution)) { timeresolution<-0.01 }
 define_ODE.functions(nparamsind)
 
 #input_file<-"/home/labs/alevy/fabrizio/workspace/daniela/resultsv4/stratifiedbootstraps/timecourse_RNP_Psy1_allb/modelDSBs1i1_mini/results_modelDSBs1i1_mini_RNP_ind.c2_Psy1_allb/listCIfiles.txt"
@@ -50,9 +57,6 @@ define_ODE.functions(nparamsind)
 
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
 nameparms<-model2nameparams(mymodel,nparamsind)
-if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
-if (is.na(normalize.byind)) { normalize.byind<-0 }
-if (is.na(timeresolution)) { timeresolution<-0.01 }
 
 ################################################################################
 ################# ADDITIONAL FUNCTIONS FOR CI ##################################
@@ -102,23 +106,34 @@ mypalette_t<-c("intact"="chartreuse3", "preciseDSB"="firebrick","impreciseDSB"="
 
 mydata<-read.table(data_file,header=TRUE)
 time_courses_begins<-c(which(mydata$time[-1]-mydata$time[-length(mydata$time)]<0)+1)
+print(data_file)
+print(mydata)
 mydelay<-0
 
-if (ntypes==4){
-mydata.p<-as.data.frame(cbind(mydata$time,t(apply(mydata[,2:5],MARGIN=1,FUN=function(x) x/sum(x)))))
-names(mydata.p)<-c("time","y1","y2","y3","y4")
-mydata0.p<-mydata.p
-names(mydata0.p)<-c("time","intact","indels","preciseDSB","impreciseDSB")
-tidy.mydata0.p<-mydata0.p %>% pivot_longer(names(mydata0.p)[2:5],names_to = "types", values_to = "p")
-} else if (ntypes==3){
-mydata.p<-as.data.frame(cbind(mydata$time,t(apply(mydata[,2:4],MARGIN=1,FUN=function(x) x/sum(x)))))
-names(mydata.p)<-c("time","y1","y2","y3")
-mydata0.p<-mydata.p
-names(mydata0.p)<-c("time","intact","DSB","indels")
-tidy.mydata0.p<-mydata0.p %>% pivot_longer(names(mydata0.p)[2:4],names_to = "types", values_to = "p")
-}
+if (ntypes==4)
+	{
+	mydata.p<-as.data.frame(cbind(mydata$time,t(apply(mydata[,2:5],MARGIN=1,FUN=function(x) x/sum(x)))))
+	names(mydata.p)<-c("time","y1","y2","y3","y4")
+	mydata0.p<-mydata.p
+	names(mydata0.p)<-c("time","intact","indels","preciseDSB","impreciseDSB")
+	tidy.mydata0.p<-mydata0.p %>% pivot_longer(names(mydata0.p)[2:5],names_to = "types", values_to = "p")
+	if (noplotprocessedDSB!=1)
+		{
+		mydata0.p<-mydata0.p %>% mutate(preciseDSB=preciseDSB+impreciseDSB,impreciseDSB=NULL)
+		tidy.mydata0.p<-mydata0.p %>% pivot_longer(names(mydata0.p)[2:4],names_to = "types", values_to = "p")
+		}
+	} else if (ntypes==3)
+	{
+	mydata.p<-as.data.frame(cbind(mydata$time,t(apply(mydata[,2:4],MARGIN=1,FUN=function(x) x/sum(x)))))
+	names(mydata.p)<-c("time","y1","y2","y3")
+	mydata0.p<-mydata.p
+	names(mydata0.p)<-c("time","intact","DSB","indels")
+	tidy.mydata0.p<-mydata0.p %>% pivot_longer(names(mydata0.p)[2:4],names_to = "types", values_to = "p")
+	}
 
+print(tidy.mydata0.p)
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
+if ( noplotprocessedDSB == 0 && ntypes==4) { errormatrix[,4]<-0 }
 
 ################################################################################
 ############ PARSE BOOTSTRAP AND EXTRACT BOOTSTRAPPED CURVES ###################
@@ -176,7 +191,7 @@ if(length(grep(".RData",input_file)))
   }
 
 
-bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,72,timeresolution))
+bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,72,timeresolution),noplotprocessedDSB=noplotprocessedDSB)
 
 ########FIT TRAJECTORIES AND INDUCTION FROM BOOTSTRAPS #####################
 print("FIT TRAJECTORIES AND INDUCTION FROM BOOTSTRAPS")
@@ -217,7 +232,7 @@ for (x.dupl in c(".0",x.dupls))
         if (isim==2) { bestmodels.cfitted.CI<-bestmodels_t.cfitted.sims } else { bestmodels.cfitted.CI<-rbind(bestmodels.cfitted.CI,bestmodels_t.cfitted.sims) }
         simsinCI[isim,1]<-k11
         if ("k12" %in% nameparms) {simsinCI[isim,2]<-k12}
-        bestmodels_t.fitted.sims<-predict_models(simsinCI[isim,],ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=errormatrix,mymodel=xmodel) #"E_errorsfromunbroken"
+        bestmodels_t.fitted.sims<-predict_models(simsinCI[isim,],ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=errormatrix,mymodel=xmodel,noplotprocessedDSB=noplotprocessedDSB) #"E_errorsfromunbroken"
         if (isim==2) { bestmodels.fitted.CI<-bestmodels_t.fitted.sims } else { bestmodels.fitted.CI<-rbind(bestmodels.fitted.CI,bestmodels_t.fitted.sims) }
         }
 bestmodels.fitted.CI<-bestmodels.fitted.CI %>% group_by(time,types) %>% summarise(lowCI=min(p),highCI=max(p)) %>% ungroup %>% mutate(replicate=x.dupl)
@@ -270,7 +285,7 @@ for (x.dupl in c(".0",x.dupls))
 	}
   bestmodels.cfitted <- bestmodels.cfitted %>% mutate(replicate=x.dupl)
   #calculate mean trajectory with k11-no-induction
-  bestmodels.fitted<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=errormatrix,mymodel=xmodel)
+  bestmodels.fitted<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=errormatrix,mymodel=xmodel,noplotprocessedDSB=noplotprocessedDSB)
   bestmodels.fitted <- bestmodels.fitted %>% mutate(replicate=x.dupl)
   #calculate mean trajectory with no errors
   bestmodels_t00<-bestmodels_t
@@ -282,7 +297,7 @@ for (x.dupl in c(".0",x.dupls))
   if (mymodel %in% c("modelDSBs1i1_3x4","modelDSBs1i1_3x4nor11","modelDSBs1i1_3x4.bytarget")){ bestmodels_t00[names(bestmodels_t00)=="er1"]<-0 }
   print(bestmodels_t00)
   print(xmodel)
-  bestmodels.fitted.0er<-predict_models(bestmodels_t00,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,72,timeresolution))
+  bestmodels.fitted.0er<-predict_models(bestmodels_t00,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,72,timeresolution),noplotprocessedDSB=noplotprocessedDSB)
   bestmodels.fitted.0er %>% mutate(replicate=x.dupl)
   if (x.dupl==".0")
 	{
@@ -301,8 +316,10 @@ for (x.dupl in c(".0",x.dupls))
 
 #output_file="./"
 print("PLOT")
+print(tidy.mydata0.p)
 #====PLOT TRAJECTORIES====
-
+if (length(unique(bestmodels.fitted$replicate))>1)
+{
 myplot <- bestmodels.fitted %>% ggplot(aes(x=time,y=p,colour=types)) +
 xlim(0,72.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,6,12,24,36,48,72), limits=c(0,72.5))+
 scale_color_manual(values=mypalette_t)+scale_fill_manual(values=mypalette_t)+
@@ -311,6 +328,17 @@ geom_line()+geom_point(data=tidy.mydata0.p)+
 theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank(),strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 16))+
 #theme_bw()+theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank())
 facet_wrap(~replicate)
+} else
+{
+print("running this")
+myplot <- bestmodels.fitted %>% ggplot(aes(x=time,y=p,colour=types)) +
+xlim(0,72.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,6,12,24,36,48,72), limits=c(0,72.5))+
+scale_color_manual(values=mypalette_t)+scale_fill_manual(values=mypalette_t)+
+geom_ribbon(aes(ymin = lowCI, ymax = highCI,fill=types), alpha = 0.2,outline.type="both",linetype="blank")+ #,linetype="1F")+
+geom_line()+geom_point(data=tidy.mydata0.p)+
+theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank(),strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 24))
+#theme_bw()+theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank())
+}
 
 ggsave(myplot,filename=paste0(output_file,"_plot.trajectories.pdf"))
 
@@ -325,7 +353,7 @@ geom_ribbon(aes(ymin = lowCI, ymax = highCI), alpha=0.1,linetype="dotted")
 ggsave(myplot,filename=paste0(output_file,"_plot.induction.pdf"))
 
 #====CALCULATE FLOW====
-if (calculate_flow){
+if (calculate_flow && noplotprocessedDSB==1){
 print("calculate flow")
 print(bestmodels_t)
 y.fitted<-bestmodels.fitted.0er %>% pivot_wider(names_from="types",values_from="p",values_fill=0)

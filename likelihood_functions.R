@@ -428,7 +428,7 @@ if (nparams.ind==3)
 ###################################################################################
 ################### DEFINE FUNCTIONS ##############################################
 ###################################################################################
-predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0,yinit=0,timest=0) {
+predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0,yinit=0,timest=0,noplotprocessedDSB=1) {
 dfl<-unlist(df)
 res_parms<-as.numeric(dfl[(nheaders+1):(nheaders+nparms)]);
 names(res_parms)<-names(dfl[(nheaders+1):(nheaders+nparms)])
@@ -453,6 +453,7 @@ mydata.fitted.df[,2:ncol(mydata.fitted.df)]<-t(sapply(1:nrow(mydata.fitted.df), 
 if (ntypes==6) { names(mydata.fitted.df)<-c("time","x0","x+","x-","y0","y+","y-") }
 if (ntypes==3) { names(mydata.fitted.df)<-c("time","intact","DSB","indels") }
 if (ntypes==4) { names(mydata.fitted.df)<-c("time","intact","indels","preciseDSB","impreciseDSB") }
+if (noplotprocessedDSB!=1){mydata.fitted.df<-mydata.fitted.df %>% mutate(preciseDSB=preciseDSB+impreciseDSB,impreciseDSB=NULL);ntypes<-3; print("noplot working")};
 tidy.mydata.fitted.df<-mydata.fitted.df %>% pivot_longer(names(mydata.fitted.df)[2:(ntypes+1)],names_to = "types", values_to = "p")
 return(tidy.mydata.fitted.df)
 }

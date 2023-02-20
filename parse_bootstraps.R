@@ -54,8 +54,9 @@ res.filtered<-apply(maxls[,1:which(names(maxls)=="value")],MARGIN=2,FUN=function
 
 
 
-for mymodel in modelDSBs1i1_3x4nor11 modelDSBs1i1_realimprecise;do #modelDSBs1i1_mini modelDSBs1i1_3x4 modelDSBs1i1_nok12;do
-for mytarget in Psy1 PhyB2.2.nov2021 CRTISO.nov2021.49and50 CRTISO.nov2021;do #PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021 CRTISO.49and50bp_allb CRTISO_allb Psy1_allb PhyB2.2_allb;do
+for mymodel in modelDSBs1i1_3x4 modelDSBs1i1_nok12;do #modelDSBs1i1_3x4nor11 modelDSBs1i1_realimprecise;do #modelDSBs1i1_mini 
+#for mytarget in Psy1 PhyB2.2.nov2021 CRTISO.nov2021.49and50 CRTISO.nov2021;do #PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021 CRTISO.49and50bp_allb CRTISO_allb Psy1_allb PhyB2.2_allb;do
+for mytarget in Psy1.no72h PhyB2.2.nov2021.no72h CRTISO.nov2021.49and50.no72h Psy1_mydelay0.25 PhyB2.2.nov2021_mydelay0.25 CRTISO.nov2021.49and50_mydelay0.25;do
 myfolder=/home/labs/alevy/fabrizio/workspace/daniela/resultsv5/stratifiedbootstraps/timecourse_RNP_${mytarget}/${mymodel}/results_${mymodel}_RNP_ind.c3_${mytarget}
 rm ${myfolder}/results.tot
 echo $myfolder

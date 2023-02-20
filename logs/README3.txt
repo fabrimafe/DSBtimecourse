@@ -9,12 +9,12 @@
 
 #-------------------------------SINGLE RUNS---------------------------------
 
-for MYDELAY in '';do # _mydelay0.25;do #''
+for MYDELAY in '';do #_mydelay0.25 .no72h;do #'';do
 for MYINDUCTION in RNP;do #RNP; do # gRNA;do #Psy1 PhyB2 CRTISO.cleaned for gRNA
 for MYINDUCTION_CURVE in 3;do # 2
-for mymodel in modelDSBs1i1_3x4nor11;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4 modelDSBs1i1_nok12;do #modelDSBs1i1_mini
-for MYTARGET in Psy1 CRTISO.nov2021.49and50 CRTISO.nov2021 PhyB2.2.nov2021 Psy1_allb PhyB2.2_allb;do #PhyB2 CRTISO.cleaned CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb Psy1 PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021;do  
-MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' | sed 's/_mydelay0.25//' | sed 's/_R2_Feb2022//' )
+for mymodel in modelDSBs1i1_3x4 modelDSBs1i1_nok12;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4 modelDSBs1i1_3x4nor11 modelDSBs1i1_nok12;do #modelDSBs1i1_mini
+for MYTARGET in Psy1.9timepoint12h CRTISO.9timepoint12h PhyB2.9timepoint12h;do #Psy1.9timepoint CRTISO.9timepoint PhyB2.9timepoint;do #Psy1 CRTISO.nov2021.49and50 PhyB2.2.nov2021;do # CRTISO.nov2021 Psy1_allb PhyB2.2_allb;do #PhyB2 CRTISO.cleaned CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb Psy1 PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021;do  
+MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' | sed 's/0h//' | sed 's/m$//' | sed 's/.no72h//' | sed 's/_mydelay0.25//' | sed 's/_R2_Feb2022//' | sed 's/.9timepoint12h//' | sed 's/.9timepoint//' )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
 if [ $mymodel == "model5i1" ];then
@@ -54,17 +54,17 @@ done;done;done;done;done;done
 #------------------------------------BOOTSTRAPS----------------------------------
 
 #stratifiedbootstraps2 goes with all and modelDSBs1i1_mini.bytarget; stratifiedbootstraps with allb
-for MYDELAY in '';do # _mydelay0.25;do
+for MYDELAY in '';do #_mydelay0.25;do # .no72h;do #'';do
 for MYINDUCTION in RNP; do # gRNA;do #Psy1 PhyB2 CRTISO.cleaned x gRNA
 for MYINDUCTION_CURVE in 3;do # 2
 #for mymodel in modelDSBs1i1_3x4.bytarget;do #modelDSBs1i1_nok12.bytarget;do #modelDSBs1i1_3x4.bytarget modelDSBs1i1_mini.bytarget;do 
 #for MYTARGET in Psy1_all PhyB2.2_all CRTISO_all;do # CRTISO.49and50bp_all;do #Psy1_allb PhyB2.2_allb;do #CRTISO_allb Psy1_allb PhyB2.2_allb;do #CRTISO.cleanedandnov2021;do
 #for bootstraptype in stratifiedbootstraps2;do 
-for mymodel in modelDSBs1i1_3x4nor11;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4 modelDSBs1i1_nok12 modelDSBs1i1_mini; do # modelDSBs1i1_3x4;do #modelDSBs1i1_mini modelDSBs1i1_nok12 modelDSBs1i1_mini modelDSBs1i1_3x4 modelDSBs1i1_nok12; do 
-for MYTARGET in Psy1 CRTISO.nov2021.49and50 CRTISO.nov2021 PhyB2.2.nov2021;do #Psy1_allb PhyB2.2_allb;do #CRTISO.cleaned PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021 CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb;do
+for mymodel in modelDSBs1i1_3x4 modelDSBs1i1_nok12;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4nor11 modelDSBs1i1_mini; do # modelDSBs1i1_3x4;do #modelDSBs1i1_mini modelDSBs1i1_nok12 modelDSBs1i1_mini modelDSBs1i1_3x4 modelDSBs1i1_nok12; do 
+for MYTARGET in Psy1.9timepoint CRTISO.9timepoint PhyB2.9timepoint;do #CRTISO.nov2021.49and50;do #Psy1 CRTISO.nov2021.49and50 CRTISO.nov2021 PhyB2.2.nov2021;do #Psy1_allb PhyB2.2_allb;do #CRTISO.cleaned PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021 CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb;do
 for bootstraptype in stratifiedbootstraps;do #stratifiedbootstraps;do #stationarybootstraps MEbootstraps; do #MEbootstraps stationarybootstraps
 for ip in `seq 1 100`;do
-MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' |  sed 's/_all//' | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' | sed 's/_R2_Feb2022//' )
+MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' |  sed 's/_all//' | sed 's/0h//' | sed 's/m$//' | sed 's/.no72h//' | sed 's/_R2_Feb2022//' | sed 's/_mydelay0.25//' | sed 's/.9timepoint//' )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
 TIMECOURSEPATH=~/workspace/daniela/input_datasets/${bootstraptype}/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}
 TIMECOURSE=${TIMECOURSEPATH}/timecourse.bs${ip}.txt
@@ -92,14 +92,14 @@ done;done;done;done;done;done;done
 #-------------------------------------SINGLE RUNS----------------------------------------
 
 for MYN in 50000;do # 500000;do # 150000 2000000
-for MYDELAY in '';do # _mydelay0.25;do #''
+for MYDELAY in '';do #_mydelay0.25 .no72h;do #''
 for MYINDUCTION in RNP;do #RNP
 for MYINDUCTION_CURVE in 3; do #3 4; do # gRNA;do
 #for mymodel in modelDSBs1i1_nok12.bytarget;do #modelDSBs1i1_mini.bytarget modelDSBs1i1_3x4.bytarget modelDSBs1i1_nok12.bytarget;do 
 #for MYTARGET in CRTISO_all CRTISO.49and50bp_all Psy1_all PhyB2.2_all;do # CRTISO_all;do #PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 Psy1_allb PhyB2.2_allb CRITSO_allb CRTISO Psy1;do #CRTISO.nov2021.49and50 Psy1 PhyB2.2.nov2021 CRTISO.nov2021;do 
-for mymodel in modelDSBs1i1_3x4nor11;do # modelDSBs1i1_realimprecise;do #modelDSBs1i1_nok12 modelDSBs1i1_mini modelDSBs1i1_3x4; do #modelDSBs1i1_realimprecise model5i1 modelDSBs1i1_realimpnor11;do
-for MYTARGET in Psy1 CRTISO.nov2021.49and50 CRTISO.nov2021 PhyB2.2.nov2021;do # Psy1_allb PhyB2.2_allb;do #CRTISO.cleaned PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021 CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb;do
-MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' |  sed 's/_all//' | sed 's/_R2_Feb2022//' | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' )
+for mymodel in modelDSBs1i1_3x4 modelDSBs1i1_nok12;do # modelDSBs1i1_realimprecise;do #modelDSBs1i1_nok12 modelDSBs1i1_mini modelDSBs1i1_3x4nor11; do #modelDSBs1i1_realimprecise model5i1 modelDSBs1i1_realimpnor11;do
+for MYTARGET in Psy1.9timepoint CRTISO.9timepoint PhyB2.9timepoint;do #Psy1 CRTISO.nov2021.49and50 PhyB2.2.nov2021;do #CRTISO.nov2021 Psy1_allb PhyB2.2_allb;do #CRTISO.cleaned PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021 CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb;do
+MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' |  sed 's/_all//' | sed 's/_R2_Feb2022//' | sed 's/0h//' | sed 's/m$//' | sed 's/.no72h//' | sed 's/_R2_Feb2022//' | sed 's/_mydelay0.25//'  | sed 's/72h//' | sed 's/.9timepoint//' )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
 if [ $mymodel == "model5i1" ];then
@@ -124,17 +124,17 @@ done;done;done;done;done;done
 
 #stratifiedbootstraps2 goes with all and modelDSBs1i1_mini.bytarget; stratifiedbootstraps with allb
 for MYN in 50000;do #20000 150000 2000000
-for MYDELAY in '';do # _mydelay0.25;do
+for MYDELAY in '';do #_mydelay0.25 .no72h;do 
 for MYINDUCTION in RNP;do # RNP;do
 for MYINDUCTION_CURVE in 3;do # 3 4; do # 2 4
 #for mymodel in modelDSBs1i1_nok12.bytarget;do #modelDSBs1i1_mini.bytarget modelDSBs1i1_3x4.bytarget;do 
 #for MYTARGET in Psy1_all PhyB2.2_all CRTISO_all CRTISO.49and50bp_all;do
 #for bootstraptype in stratifiedbootstraps2;do #stratifiedbootstraps2;do #stationarybootstraps MEbootstraps; do #MEbootstraps stationarybootstraps
-for mymodel in modelDSBs1i1_3x4nor11;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4 modelDSBs1i1_mini modelDSBs1i1_nok12;do # modelDSBs1i1_3x4;do #modelDSBs1i1_mini modelDSBs1i1_nok12;do 
-for MYTARGET in Psy1 CRTISO.nov2021.49and50 CRTISO.nov2021 PhyB2.2.nov2021;do # Psy1_allb PhyB2.2_allb;do
+for mymodel in modelDSBs1i1_3x4 modelDSBs1i1_nok12;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4 modelDSBs1i1_mini modelDSBs1i1_nok12;do # modelDSBs1i1_3x4nor11;do #modelDSBs1i1_mini modelDSBs1i1_nok12;do 
+for MYTARGET in Psy1.9timepoint CRTISO.9timepoint PhyB2.9timepoint;do #Psy1 CRTISO.nov2021.49and50 PhyB2.2.nov2021;do # CRTISO.nov2021 Psy1_allb PhyB2.2_allb;do
 for bootstraptype in stratifiedbootstraps;do #stratifiedbootstraps2;do #stationarybootstraps MEbootstraps; do #MEbootstraps stationarybootstraps
 for ip in `seq 1 100`;do
-MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' |  sed 's/_all//' | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' | sed 's/_R2_Feb2022//' )
+MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' |  sed 's/_all//' | sed 's/0h//' | sed 's/m$//' |  sed 's/.no72h//' | sed 's/_R2_Feb2022//' | sed 's/_mydelay0.25//'  | sed 's/72h//' | sed 's/.9timepoint//' )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
 TIMECOURSEPATH=~/workspace/daniela/input_datasets/${bootstraptype}/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}
 TIMECOURSE=${TIMECOURSEPATH}/timecourse.bs${ip}.txt
@@ -161,15 +161,15 @@ done;done;done;done;done;done;done;done
 #in plot use z!=1 not to normalize flow on induction curve (with new induction function)
 TIMERESOLUTION=0.002
 #echo "aaa" | awk '{printf "max\tCIlow\tCIhigh\trate\ttarget\tinduction\tmodel\terror\ttimecourse\n"}' > ~/workspace/daniela/resultsv2/table.CI
-for MYDELAY in '';do # _mydelay0.25;do #''
+for MYDELAY in '';do #_mydelay0.25 .no72h;do #''
 for MYINDUCTION in RNP;do #RNP
 for MYINDUCTION_CURVE in 3; do #3 gRNA;do
 #for mymodel in modelDSBs1i1_mini.bytarget modelDSBs1i1_3x4.bytarget modelDSBs1i1_nok12.bytarget;do
 #for MYTARGET in Psy1_all CRTISO_all CRTISO.49and50bp_all PhyB2.2_all;do #PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 Psy1_allb PhyB2.2_allb CRITSO_allb; do #Psy1 PhyB2.2.nov2021 CRTISO.nov2021 CRTISO.cleanedandnov2021 CRTISO.nov2021.49and50 ;do 
 #modelDSBs1i1_mini modelDSBs1i1_3x4 modelDSBs1i1_nok12;do 
-for mymodel in modelDSBs1i1_3x4 modelDSBs1i1_3x4nor11;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4nor11;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4 modelDSBs1i1_nok12 modelDSBs1i1_mini;do
-for MYTARGET in Psy1 CRTISO.nov2021.49and50 CRTISO.nov2021 PhyB2.2.nov2021;do #PhyB2 CRTISO.cleaned CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb Psy1 PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021;do 
-MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' |  sed 's/_all//' | sed 's/_R2_Feb2022//' | sed 's/0h//' | sed 's/m$//' | sed 's/72h//' )
+for mymodel in modelDSBs1i1_3x4 modelDSBs1i1_nok12;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4nor11;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4nor11 modelDSBs1i1_nok12 modelDSBs1i1_mini;do
+for MYTARGET in Psy1.9timepoint CRTISO.9timepoint PhyB2.9timepoint;do #Psy1 CRTISO.nov2021.49and50 PhyB2.2.nov2021;do #CRTISO.nov2021 PhyB2 CRTISO.cleaned CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb Psy1 PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021;do 
+MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' |  sed 's/_all//' | sed 's/_R2_Feb2022//' | sed 's/0h//' | sed 's/m$//' | sed 's/.no72h//' | sed 's/_R2_Feb2022//' | sed 's/_mydelay0.25//'  | sed 's/72h//' |  sed 's/.9timepoint//'  )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
 TIMECOURSE=~/workspace/daniela/input_datasets/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}.txt
 likfun=0; if [ $mymodel == "modelDSBs1i1_3x4" ] || [ $mymodel == "modelDSBs1i1_3x4nor11" ];then likfun=3; fi
@@ -191,7 +191,10 @@ if [ -f ${OUTPUT}.a ];then
 		echo $myfile
                 # cat ${myfile}.CI | awk -v var1=$MYTARGET -v var2=$MYINDUCTION -v var3=$mymodel -v var4=$ERRORMATRIXM -v var5=$TIMECOURSEM '{print $0,var1,var2,var3,var4,var5}' | grep -v max >> ~/workspace/daniela/resultsv5/table.CI
 #               bsub -q new-short -J plotshort -e ~/mylogs/plot.e%J -o ~/mylogs/plot.o%J -R rusage[mem=16000] ./plot.v1.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 1000 ~/workspace/daniela/resultsv4/plots/plot_${mymodel}_${MYINDUCTION}_ind.c${MYINDUCTION_CURVE}_${MYTARGET}${MYDELAY} $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION}
-	bsub -q new-short -J plotshort -e ~/mylogs/plot.e%J -o ~/mylogs/plot.o%J -R rusage[mem=16000] ./plot.v2.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 1000 ~/workspace/daniela/resultsv5/plots/plot_${mymodel}_${MYINDUCTION}_ind.c${MYINDUCTION_CURVE}_${MYTARGET}${MYDELAY} $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION} 1
+	bsub -q new-short -J plotshort -e ~/mylogs/plot.e%J -o ~/mylogs/plot.o%J -R rusage[mem=16000] ./plot.v2.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 1000 ~/workspace/daniela/resultsv5/plots/plot_${mymodel}_${MYINDUCTION}_ind.c${MYINDUCTION_CURVE}_${MYTARGET}${MYDELAY} $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION} 1 1
+	if [ $mymodel == "modelDSBs1i1_3x4" ] || [ $mymodel == "modelDSBs1i1_3x4nor11" ];then
+	bsub -q new-short -J plotshort -e ~/mylogs/plot.e%J -o ~/mylogs/plot.o%J -R rusage[mem=16000] ./plot.v2.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 1000 ~/workspace/daniela/resultsv5/plots/plot_${mymodel}_${MYINDUCTION}_ind.c${MYINDUCTION_CURVE}_${MYTARGET}${MYDELAY}_noprocessed $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION} 1 0
+	fi
         fi
 fi
 done;done;done;done;done
@@ -203,7 +206,7 @@ done;done;done;done;done
 
 TIMERESOLUTION=0.002
 #stratifiedbootstraps2 goes with all and modelDSBs1i1_mini.bytarget; stratifiedbootstraps with allb
-for MYDELAY in '';do # _mydelay0.25;do
+for MYDELAY in '';do #_mydelay0.25 .no72h;do #''
 for MYINDUCTION in RNP; do # RNP;do
 for MYINDUCTION_CURVE in 3;do # 3 4; do # 2 4
 #TWO INDUCTION CURVES
@@ -213,11 +216,11 @@ for MYINDUCTION_CURVE in 3;do # 3 4; do # 2 4
 #SINGLE INDUCTION CURVE
 #for mymodel in modelDSBs1i1_realimprecise modelDSBs1i1_3x4 modelDSBs1i1_mini modelDSBs1i1_nok12;do 
 #for MYTARGET in PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 Psy1 PhyB2 CRTISO.cleaned Psy1 PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021 CRTISO.49and50bp_allb CRTISO_allb Psy1_allb PhyB2.2_allb;do 
-for mymodel in modelDSBs1i1_3x4nor11;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4 modelDSBs1i1_nok12 modelDSBs1i1_mini;do
-for MYTARGET in Psy1 CRTISO.nov2021.49and50 CRTISO.nov2021 PhyB2.2.nov2021;do #PhyB2 CRTISO.cleaned CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb Psy1 PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021;do 
+for mymodel in modelDSBs1i1_3x4 modelDSBs1i1_nok12;do #modelDSBs1i1_3x4nor11;do #modelDSBs1i1_realimprecise;do #modelDSBs1i1_3x4 modelDSBs1i1_nok12 modelDSBs1i1_mini;do
+for MYTARGET in Psy1.9timepoint CRTISO.9timepoint PhyB2.9timepoint;do #Psy1 CRTISO.nov2021.49and50 PhyB2.2.nov2021;do # CRTISO.nov2021 PhyB2 CRTISO.cleaned CRTISO_allb CRTISO.49and50bp_allb Psy1_allb PhyB2.2_allb Psy1 PhyB2.2.nov2021 PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021.49and50 CRTISO.nov2021;do 
 for bootstraptype in stratifiedbootstraps;do #stationarybootstraps MEbootstraps; do #MEbootstraps stationarybootstraps
 for ip in `seq 1 100`;do
-MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' |  sed 's/_all//' | sed 's/0h//' | sed 's/m$//' | sed 's/72h//'  | sed 's/_R2_Feb2022//' )
+MYTARGETM=$( echo $MYTARGET | sed 's/_allb//' |  sed 's/_all//' | sed 's/_R2_Feb2022//' | sed 's/0h//' | sed 's/m$//' | sed 's/.no72h//' | sed 's/_R2_Feb2022//' | sed 's/_mydelay0.25//'  | sed 's/72h//' |  sed 's/.9timepoint//'   )
 ERRORMATRIX=~/workspace/daniela/error_matrices/error_matrix4_${MYTARGETM}_errorsfromunbroken.tsv
 TIMECOURSEPATH=~/workspace/daniela/input_datasets/${bootstraptype}/timecourse_${MYINDUCTION}_${MYTARGET}${MYDELAY}
 TIMECOURSE=${TIMECOURSEPATH}/timecourse.bs${ip}.txt
@@ -242,7 +245,7 @@ MEMS=18000; NITER=1250;
 #WITH STRATIFIED
 #bsub -q new-short -J plotshort -e ~/mylogs4/plot.e%J -o ~/mylogs4/plot.o%J -R rusage[mem=16000] ./plot.v1.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 1000 ${OUTPUTA}.plot $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION}
 #WITH STRATIFIED2
-bsub -q new-short -J plotshort -e ~/mylogs4/plot.e%J -o ~/mylogs4/plot.o%J -R rusage[mem=16000] ./plot.v2.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 100 ${OUTPUTA}.plot $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION} 1
+bsub -q new-short -J plotshort -e ~/mylogs4/plot.e%J -o ~/mylogs4/plot.o%J -R rusage[mem=16000] ./plot.v2.sh $myfile $TIMECOURSE $ERRORMATRIX $mymodel 100 ${OUTPUTA}.plot $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION} 1 1
 
 #        fi
 done
@@ -259,7 +262,10 @@ echo $ifile
 done
 ls /home/labs/alevy/fabrizio/workspace/daniela/resultsv5/results_${mymodel}_${MYINDUCTION}_ind.c${MYINDUCTION_CURVE}_${MYTARGET}.all_n50000.CI.t.CI > $listCIFILE 
 ls /home/labs/alevy/fabrizio/workspace/daniela/resultsv5/${bootstraptype}/timecourse_${MYINDUCTION}_${MYTARGET}/${mymodel}/results_${mymodel}_${MYINDUCTION}_ind.c${MYINDUCTION_CURVE}_${MYTARGET}/results*.tab_n50000.CI.t.CI >> $listCIFILE
-bsub -q new-short -J plotshort -e ~/mylogs4/plot.e%J -o ~/mylogs4/plot.o%J -R rusage[mem=16000] ./plot.v2.sh $listCIFILE $TIMECOURSE $ERRORMATRIX $mymodel 1000 ${OUTPUTTOT}.plot $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION} 1
+bsub -q new-short -J plotshort -e ~/mylogs4/plot.e%J -o ~/mylogs4/plot.o%J -R rusage[mem=16000] ./plot.v2.sh $listCIFILE $TIMECOURSE $ERRORMATRIX $mymodel 1000 ${OUTPUTTOT}.plot $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION} 1 1
+        if [ $mymodel == "modelDSBs1i1_3x4" ] || [ $mymodel == "modelDSBs1i1_3x4nor11" ];then
+        bsub -q new-short -J plotshort -e ~/mylogs4/plot.e%J -o ~/mylogs4/plot.o%J -R rusage[mem=16000] ./plot.v2.sh $listCIFILE $TIMECOURSE $ERRORMATRIX $mymodel 1000 ${OUTPUTTOT}.plot.noproc $likfun ${MYINDUCTION_CURVE} ${TIMERESOLUTION} 1 0
+        fi
 done;done;done;done;done;done
 
 

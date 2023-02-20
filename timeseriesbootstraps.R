@@ -27,8 +27,8 @@ argv<- arg_parser("Parse arguments")
 argv <- add_argument(argv, "-i", help="input timecourse file")
 argv <- add_argument(argv, "-o", help="output folder")
 argv <- add_argument(argv, "-n", help="number of permutations")
-argv <- add_argument(argv, "-m", help="type of bootstrap method: default is stationary bootstrap; 1 selects maximum entropy (ME) bootstrap")
-argv <- add_argument(argv, "-r", help="number of replicated. needed when running ME bootstrap")
+argv <- add_argument(argv, "-m", help="type of bootstrap method: default is time stratified bootstrap (2); to select stationary bootstrap choose 0; 1 selects maximum entropy (ME) bootstrap; 3 selects a stratified bootstrap for which not only time but also potential batch-effects are included, and these must be specified in an additional column", default=2)
+argv <- add_argument(argv, "-r", help="number of replicated runs. needed when running ME bootstrap")
 
 
 args <- parse_args(argv)

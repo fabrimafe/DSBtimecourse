@@ -22,9 +22,9 @@ mydata_l<-list()
 mydata.p_l<-list()
 #in addition CRTISO0h0 was edited manually by introducing 0 counts at time 0
 #
-for (mytarget_i in c("PhyB2")) #c("Psy1_R2_Feb2022","PhyB2.2_R2_Feb2022")) #, "CRTISO.cleanedandnov2021.49and50","CRTISO.nov2021.49and50")) #c("CRTISO.cleanedandnov2021","CRTISO.nov2021","PhyB2.2.nov2021")) #c("CRTISOcleaned")) #,"CRTISO.49and50bp","CRTISO","Psy1","PhyB2.1","PhyB2.2","PhyB2.3"))
+for (mytarget_i in c("Psy1.9timepoint12h","CRTISO.9timepoint12h","PhyB2.9timepoint12h"))#c("PhyB2")) #c("Psy1_R2_Feb2022","PhyB2.2_R2_Feb2022")) #, "CRTISO.cleanedandnov2021.49and50","CRTISO.nov2021.49and50")) #c("CRTISO.cleanedandnov2021","CRTISO.nov2021","PhyB2.2.nov2021")) #c("CRTISOcleaned")) #,"CRTISO.49and50bp","CRTISO","Psy1","PhyB2.1","PhyB2.2","PhyB2.3"))
         {
-        for (myinduction in c("gRNA")) #,"RNP"))
+        for (myinduction in c("RNP")) #,"gRNA"))
                 {
 #                mytarget<-mytarget_i
                     nophyB2<-(myinduction=="RNP" || (myinduction=="gRNA" && ( mytarget_i!="PhyB2.1" && mytarget_i!="PhyB2.2" && mytarget_i!="PhyB2.3" )))
