@@ -82,7 +82,15 @@ Rates are referred to with the following nomenclature, with names in brackets co
 - r11 (P<sub>direct</sub>): repair from precise DSBs to intact molecules (or from any DSBs if no difference is made between precise DSBs and processed DSBs, i.e. 3 state model), i.e. *precise repair* or *precise repair from precise DSBs*;
 - r12 (E<sub>direct</sub>): repair from precise DSBs to indels, i.e. *repair-error from precised DSBs*;
 - r21 (P<sub>processed</sub>): repair from processed DSBs to intact molecules;
-- r22: (E<sub>procesed</sub>): repair from processed DSBs to indels;
+- r22: (E<sub>processed</sub>): repair from processed DSBs to indels;
 - r0 (r): speed of induction;
 - K (U): maximum level of induction (untransfected fraction);
 - r2 (decay): exponential decay in cutting rate over time;
+
+### Other models
+
+The scripts can also be used to test additional models in respect to the 3-states and 4-states models used in Ben Tov et al.,2023, using the -m flag of DSBtimecourse_optimizer. Specifically:
+- *modelDSBs1i1_mini*: 4 state model with same degrees of freedom as the 3 states, in which indels are assumed to come from processed DSBs and precise repair through precise DSB, i.e. r12=0 and r21=0  
+- *modelDSBs1i1_fullimprecise*: identical to the 4-state model except that also processed DSBs are not assumed to come from processing, but also from imprecise cutting of intact moleculels, i.e. k12 is estimated and not fixed to 0.
+
+
