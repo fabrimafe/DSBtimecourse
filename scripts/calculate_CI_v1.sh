@@ -16,7 +16,7 @@ inductioncurve=$7
 outputf=$( basename $inputf .tsv )
 outputf2=$( dirname $inputf )
 #if [ ! -f ${outputf2}/${outputf}_n${NMAX}.CI ];then
-./calculate_CI.v1.R -i ${inputf} -o ${outputf2}/${outputf}_n${NMAX}.CI -d $data_file -n ${NMAX} -E ${ERRORMATRIX} -m $MYMODEL -l $errorflag -z $inductioncurve
+./calculate_CI.R -i ${inputf} -o ${outputf2}/${outputf}_n${NMAX}.CI -d $data_file -n ${NMAX} -E ${ERRORMATRIX} -m $MYMODEL -l $errorflag -z $inductioncurve
 #fi
 #done
 #done

@@ -13,10 +13,11 @@ INDUCTIONCURVE=$8
 TIMERESOLUTION=$9
 CALCULATEFLOW=${10}
 PLOTPROCESSED=${11}
+TIMEFLOW=${12}
 outputf=$( basename $inputf .tsv )
 outputf2=$( dirname $inputf )
 #if [ ! -f ${outputf2}/${outputf}_plot.flow.tab ];then
-./plot_bootstraps.R -i ${inputf} -d $data_file -n ${NMAX} -E ${ERRORMATRIX} -m ${model} -o ${OUTPUT} -l $likfun -z ${INDUCTIONCURVE} -r ${TIMERESOLUTION} -w $CALCULATEFLOW -j ${PLOTPROCESSED} #{outputf2}/${outputf}
+./plot_bootstraps.R -i ${inputf} -d $data_file -n ${NMAX} -E ${ERRORMATRIX} -m ${model} -o ${OUTPUT} -l $likfun -z ${INDUCTIONCURVE} -r ${TIMERESOLUTION} -w $CALCULATEFLOW -j ${PLOTPROCESSED} -T $TIMEFLOW #{outputf2}/${outputf}
 #fi
 #done
 #done

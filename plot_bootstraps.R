@@ -22,7 +22,8 @@ argv <- add_argument(argv, "-m", help="model")
 argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
 argv <- add_argument(argv, "-y", help="condition flow to induction curve, i.e. calculate the flow in ideal system in which full induction", default=2)
 argv <- add_argument(argv, "-z", help="n parameters in induction curve", default=2)
-argv <- add_argument(argv, "-r", help="time resolution; default is 0.01")
+argv <- add_argument(argv, "-r", help="time resolution; default is 1/100 hours, represented as 0.01", default=0.01)
+argv <- add_argument(argv, "-T", help="final time in hours; default is 72h",default=72)
 argv <- add_argument(argv, "-w", help="calculate_flow. Default is 0, which indicates FALSE. Select 1 to calculate it.", default=0)
 argv <- add_argument(argv, "-n", help="maximum number of curves used for CI, when using likelihood based CI..")
 argv <- add_argument(argv, "-j", help="plot processed. choose 0 for no.", default=1)
@@ -40,6 +41,7 @@ optimize_errorDSB2indel<-as.numeric(args$l)
 normalize.byind<-as.numeric(args$y)
 nparamsind<-as.numeric(args$z)
 noplotprocessedDSB<-as.numeric(args$j)
+finalTime<-as.numeric(args$T)
 
 if (is.na(nparamsind)){ nparamsind<-2 }
 if (is.na(calculate_flow)){ calculate_flow<-0 }
@@ -48,6 +50,7 @@ if (is.na(noplotprocessedDSB)){ noplotprocessedDSB<-1 }
 if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
 if (is.na(normalize.byind)) { normalize.byind<-0 }
 if (is.na(timeresolution)) { timeresolution<-0.01 }
+if (is.na(finalTime)) { finalTime<-72 }
 define_ODE.functions(nparamsind)
 
 #input_file<-"/home/labs/alevy/fabrizio/workspace/daniela/resultsv4/stratifiedbootstraps/timecourse_RNP_Psy1_allb/modelDSBs1i1_mini/results_modelDSBs1i1_mini_RNP_ind.c2_Psy1_allb/listCIfiles.txt"
@@ -191,7 +194,7 @@ if(length(grep(".RData",input_file)))
   }
 
 
-bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,72,timeresolution),noplotprocessedDSB=noplotprocessedDSB)
+bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,finalTime,timeresolution),noplotprocessedDSB=noplotprocessedDSB)
 
 ########FIT TRAJECTORIES AND INDUCTION FROM BOOTSTRAPS #####################
 print("FIT TRAJECTORIES AND INDUCTION FROM BOOTSTRAPS")
@@ -297,7 +300,7 @@ for (x.dupl in c(".0",x.dupls))
   if (mymodel %in% c("modelDSBs1i1_3x4","modelDSBs1i1_3x4nor11","modelDSBs1i1_3x4.bytarget")){ bestmodels_t00[names(bestmodels_t00)=="er1"]<-0 }
   print(bestmodels_t00)
   print(xmodel)
-  bestmodels.fitted.0er<-predict_models(bestmodels_t00,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,72,timeresolution),noplotprocessedDSB=noplotprocessedDSB)
+  bestmodels.fitted.0er<-predict_models(bestmodels_t00,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,finalTime,timeresolution),noplotprocessedDSB=noplotprocessedDSB)
   bestmodels.fitted.0er %>% mutate(replicate=x.dupl)
   if (x.dupl==".0")
 	{
@@ -321,7 +324,7 @@ print(tidy.mydata0.p)
 if (length(unique(bestmodels.fitted$replicate))>1)
 {
 myplot <- bestmodels.fitted %>% ggplot(aes(x=time,y=p,colour=types)) +
-xlim(0,72.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,6,12,24,36,48,72), limits=c(0,72.5))+
+xlim(0,finalTime+0.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,2,4,6,12,24,36,48,72), limits=c(0,finalTime+0.5))+
 scale_color_manual(values=mypalette_t)+scale_fill_manual(values=mypalette_t)+
 geom_ribbon(aes(ymin = lowCI, ymax = highCI,fill=types), alpha = 0.2,outline.type="both",linetype="blank")+ #,linetype="1F")+
 geom_line()+geom_point(data=tidy.mydata0.p)+
@@ -332,7 +335,7 @@ facet_wrap(~replicate)
 {
 print("running this")
 myplot <- bestmodels.fitted %>% ggplot(aes(x=time,y=p,colour=types)) +
-xlim(0,72.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,6,12,24,36,48,72), limits=c(0,72.5))+
+xlim(0,finalTime+0.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,2,4,6,12,24,36,48,72), limits=c(0,finalTime+0.5))+
 scale_color_manual(values=mypalette_t)+scale_fill_manual(values=mypalette_t)+
 geom_ribbon(aes(ymin = lowCI, ymax = highCI,fill=types), alpha = 0.2,outline.type="both",linetype="blank")+ #,linetype="1F")+
 geom_line()+geom_point(data=tidy.mydata0.p)+
@@ -345,9 +348,9 @@ ggsave(myplot,filename=paste0(output_file,"_plot.trajectories.pdf"))
 #====PLOT INDUCTION CURVES====
 #datatmpnor11<-bestmodels.cfitted %>% filter(target==mytarget,induction==myinduction,model=="modelDSBs1i1_realimpnor11")
 myplot <- bestmodels.cfitted %>% ggplot(aes(x=time,y=curve_fitted)) +
-xlim(0,72.2) +
-scale_y_continuous("p", trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,6,12,24,36,48,72), limits=c(0,72.5)) +
-geom_line()+xlim(0,72.2) +scale_y_continuous("precise cuts/intact DNA per hour",trans = 'sqrt') +
+xlim(0,finalTime+0.2) +
+scale_y_continuous("p", trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,6,12,24,36,48,72), limits=c(0,finalTime+0.5)) +
+geom_line()+xlim(0,finalTime+0.2) +scale_y_continuous("precise cuts/intact DNA per hour",trans = 'sqrt') +
 theme(strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 16)) +
 geom_ribbon(aes(ymin = lowCI, ymax = highCI), alpha=0.1,linetype="dotted")
 ggsave(myplot,filename=paste0(output_file,"_plot.induction.pdf"))
@@ -374,12 +377,12 @@ bestmodels_t0[which(names(bestmodels_t0)=="r0")]<-999999999999
 bestmodels_t0[which(names(bestmodels_t0)=="r2")]<-0
 bestmodels_t0[which(names(bestmodels_t0)=="K")]<-1
 if (nparamsind==3){ bestmodels_t0[which(names(bestmodels_t0)=="K")]<-0 }
-bestmodels.cfitted<-predict_induction(bestmodels_t,nparms=nparms-nparms_induction-nparamserr,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized,times=seq(0,72,timeresolution),yno1=1-y.fitted$y1)
+bestmodels.cfitted<-predict_induction(bestmodels_t,nparms=nparms-nparms_induction-nparamserr,nheaders=0,nparms_induction=nparms_induction,induction_function=induction_curve_vectorized,times=seq(0,finalTime,timeresolution),yno1=1-y.fitted$y1)
 #rescale k11 to have induction inside
 for (ipar in 1:(nparms-nparms_induction-nparamserr)){
 bestmodels_tt<-bestmodels_t0
 bestmodels_tt[ipar]<-bestmodels_t[ipar]
-bestmodels_tt.df<-sapply(1:length(seq(0,72,timeresolution)), function(x) unlist(bestmodels_tt)) %>% t %>% as.data.frame
+bestmodels_tt.df<-sapply(1:length(seq(0,finalTime,timeresolution)), function(x) unlist(bestmodels_tt)) %>% t %>% as.data.frame
 if (names(bestmodels_t0)[ipar]=="k11" || names(bestmodels_t0)[ipar]=="k12" )
 {
 #bestmodels_tt.df[,ipar]<-bestmodels_tt.df[,ipar]*as.numeric(bestmodels.cfitted$curve_fitted)
@@ -404,7 +407,9 @@ flow_l[[nameparms[ipar]]]<-sum(flows)
 #print("flow")
 #print(unlist(flow_l))
 #write.table(unlist(flow_l),file=paste0(output_file,"_plot.flow.tab"))
-AIC<-2*(ncol(res[[2]])-4)-2*res[[2]]$maxll[1]
+AIC<-0
+myerror<-try( AIC<-2*(ncol(res[[2]])-4)-2*res[[2]]$maxll[1] )
+print(myerror)
 AICtable<-data.frame(AICt="AIC",AICv=AIC)
 write.table(AICtable,file=paste0(output_file,"_plot.flow.tab"),quote=FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
 write.table(unlist(flow_l),file=paste0(output_file,"_plot.flow.tab"),quote=FALSE,sep="\t",append=TRUE,col.names=FALSE)

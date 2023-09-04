@@ -56,7 +56,7 @@ res.filtered<-apply(maxls[,1:which(names(maxls)=="value")],MARGIN=2,FUN=function
 
 for mymodel in modelDSBs1i1_3x4 modelDSBs1i1_nok12;do #modelDSBs1i1_3x4nor11 modelDSBs1i1_realimprecise;do #modelDSBs1i1_mini 
 #for mytarget in Psy1 PhyB2.2.nov2021 CRTISO.nov2021.49and50 CRTISO.nov2021;do #PhyB2.2_R2_Feb2022 Psy1_R2_Feb2022 CRTISO.nov2021 CRTISO.49and50bp_allb CRTISO_allb Psy1_allb PhyB2.2_allb;do
-for mytarget in Psy1.no72h PhyB2.2.nov2021.no72h CRTISO.nov2021.49and50.no72h Psy1_mydelay0.25 PhyB2.2.nov2021_mydelay0.25 CRTISO.nov2021.49and50_mydelay0.25;do
+for mytarget in "Psy1.24h" "Psy1.june2023" "Psy1.june2023.24h";do #Psy1.no72h PhyB2.2.nov2021.no72h CRTISO.nov2021.49and50.no72h Psy1_mydelay0.25 PhyB2.2.nov2021_mydelay0.25 CRTISO.nov2021.49and50_mydelay0.25;do
 myfolder=/home/labs/alevy/fabrizio/workspace/daniela/resultsv5/stratifiedbootstraps/timecourse_RNP_${mytarget}/${mymodel}/results_${mymodel}_RNP_ind.c3_${mytarget}
 rm ${myfolder}/results.tot
 echo $myfolder
@@ -77,8 +77,8 @@ done
 done
 
 
-dotablerates=FALSE
-dotableflows=TRUE
+dotablerates=TRUE
+dotableflows=FALSE
 bootstrap_type="stratifiedbootstraps"  #    "stationarybootstraps2" #"MEbootstraps"
 mymodel="modelDSBs1i1_nok12" #"modelDSBs1i1_mini.bytarget" # "modelDSBs1i1_3x4" #"modelDSBs1i1_mini" #"modelDSBs1i1_nok12"
 ninduction<-3
@@ -86,9 +86,11 @@ mytarget<-"PhyB2.2_allb" #"CRTISO_all" #PhyB2.2_allb" #"Psy1_all" #"CRTISO_all" 
 library(data.table)
 library(tidyverse)
 for (bootstrap_type in "stratifiedbootstraps"){
-for (mymodel in c("modelDSBs1i1_3x4","modelDSBs1i1_mini","modelDSBs1i1_nok12")){
+for (mymodel in c("modelDSBs1i1_3x4","modelDSBs1i1_nok12")){
 for (mytarget in #c("Psy1","Psy1_allb","CRTISO_allb","PhyB2.2_allb","CRTISO.49and50bp_allb",
-c("Psy1","PhyB2.2.nov2021","CRTISO.nov2021.49and50","CRTISO.nov2021","PhyB2.2_allb")){ #,
+#c("Psy1","PhyB2.2.nov2021","CRTISO.nov2021.49and50","CRTISO.nov2021","PhyB2.2_allb")){ #,
+#c("Psy1.9timepoint24h","PhyB2.9timepoint24h","CRTISO.9timepoint24h")){ #,
+c("Psy1.24h","Psy1.june2023","Psy1.june2023.24h")){
 #c("PhyB2.2_R2_Feb2022","Psy1_R2_Feb2022")){
 #for (bootstrap_type in "stratifiedbootstraps2"){
 #for (mymodel in c("modelDSBs1i1_nok12.bytarget")){ #,"modelDSBs1i1_3x4.bytarget","modelDSBs1i1_mini.bytarget")){
