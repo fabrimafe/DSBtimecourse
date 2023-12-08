@@ -156,11 +156,17 @@ if(length(grep(".RData",input_file)))
   print("input_file is a .RData file. Plotting CI from this file.")
   load(input_file)
   simsinCI<-res[[2]][res[[2]]$ok==1,];
+  if (sum(res[[2]]$ok==1)<2)
+    {
+    print("WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("UNRELIABLE CI!!!")
+    simsinCI<-res[[2]][998:1000,];
+    }
   nsims<-nrow(simsinCI)
   simsinCI<-simsinCI[order(simsinCI$loglik),]#[1:nsims,]
   nsims<-min(maxnsims,nsims)
   xsims<-sample(1:nsims)
-  xsims[1]<-2
+  xsims[1]<-2 #commented out 22/11/2023 to avoid crashing when no sims in CI
   #FIT TRAJECTORY FROM ACTUAL DATA#
   restemp<-res[[1]]
   #parsing to avoid duplicate parameters
@@ -195,7 +201,6 @@ if(length(grep(".RData",input_file)))
 
 
 bestmodels.fitted.0er<-predict_models(bestmodels_t,ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=diag(ntypes),mymodel=xmodel,timest=seq(0,finalTime,timeresolution),noplotprocessedDSB=noplotprocessedDSB)
-
 ########FIT TRAJECTORIES AND INDUCTION FROM BOOTSTRAPS #####################
 print("FIT TRAJECTORIES AND INDUCTION FROM BOOTSTRAPS")
 names(simsinCI)[1:length(bestmodels_t)]<-names(bestmodels_t)
@@ -232,11 +237,11 @@ for (x.dupl in c(".0",x.dupls))
 	                bestmodels_t.cfitted.sims$curve_fitted<-bestmodels_t.cfitted.sims$curve_fitted*k11
         	        }
 		}
-        if (isim==2) { bestmodels.cfitted.CI<-bestmodels_t.cfitted.sims } else { bestmodels.cfitted.CI<-rbind(bestmodels.cfitted.CI,bestmodels_t.cfitted.sims) }
+        if (isim==2) { bestmodels.cfitted.CI<-bestmodels_t.cfitted.sims } else { bestmodels.cfitted.CI<-rbind(bestmodels.cfitted.CI,bestmodels_t.cfitted.sims) } #changed on 22/11/2023 from 2
         simsinCI[isim,1]<-k11
         if ("k12" %in% nameparms) {simsinCI[isim,2]<-k12}
         bestmodels_t.fitted.sims<-predict_models(simsinCI[isim,],ntypes=ntypes,nparms=nrates,nheaders=0,errormatrix=errormatrix,mymodel=xmodel,noplotprocessedDSB=noplotprocessedDSB) #"E_errorsfromunbroken"
-        if (isim==2) { bestmodels.fitted.CI<-bestmodels_t.fitted.sims } else { bestmodels.fitted.CI<-rbind(bestmodels.fitted.CI,bestmodels_t.fitted.sims) }
+        if (isim==2) { bestmodels.fitted.CI<-bestmodels_t.fitted.sims } else { bestmodels.fitted.CI<-rbind(bestmodels.fitted.CI,bestmodels_t.fitted.sims)} #changed on 22/11/2023 from 2
         }
 bestmodels.fitted.CI<-bestmodels.fitted.CI %>% group_by(time,types) %>% summarise(lowCI=min(p),highCI=max(p)) %>% ungroup %>% mutate(replicate=x.dupl)
 bestmodels.cfitted.CI<-bestmodels.cfitted.CI %>% group_by(time) %>% summarise(lowCI=min(curve_fitted),highCI=max(curve_fitted)) %>% ungroup %>% mutate(replicate=x.dupl)
