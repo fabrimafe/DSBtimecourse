@@ -325,11 +325,12 @@ for (x.dupl in c(".0",x.dupls))
 #output_file="./"
 print("PLOT")
 print(tidy.mydata0.p)
+if (finalTime==24){ xbreaks=c(0,2,4,6,12,24) } else if (finalTime==72) { xbreaks=c(0,6,12,24,36,48,72) }
 #====PLOT TRAJECTORIES====
 if (length(unique(bestmodels.fitted$replicate))>1)
 {
 myplot <- bestmodels.fitted %>% ggplot(aes(x=time,y=p,colour=types)) +
-xlim(0,finalTime+0.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,2,4,6,12,24,36,48,72), limits=c(0,finalTime+0.5))+
+xlim(0,finalTime+0.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=xbreaks, limits=c(0,finalTime+0.5))+
 scale_color_manual(values=mypalette_t)+scale_fill_manual(values=mypalette_t)+
 geom_ribbon(aes(ymin = lowCI, ymax = highCI,fill=types), alpha = 0.2,outline.type="both",linetype="blank")+ #,linetype="1F")+
 geom_line()+geom_point(data=tidy.mydata0.p)+
@@ -340,9 +341,11 @@ facet_wrap(~replicate)
 {
 print("running this")
 myplot <- bestmodels.fitted %>% ggplot(aes(x=time,y=p,colour=types)) +
-xlim(0,finalTime+0.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,2,4,6,12,24,36,48,72), limits=c(0,finalTime+0.5))+
+xlim(0,finalTime+0.2) + 
+scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + 
+scale_x_continuous("time (hours)", breaks=xbreaks, limits=c(0,finalTime+0.5))+
 scale_color_manual(values=mypalette_t)+scale_fill_manual(values=mypalette_t)+
-geom_ribbon(aes(ymin = lowCI, ymax = highCI,fill=types), alpha = 0.2,outline.type="both",linetype="blank")+ #,linetype="1F")+
+geom_ribbon(aes(ymin = lowCI, ymax = highCI,fill=types), alpha = 0.2,outline.type="both",linetype="blank")+
 geom_line()+geom_point(data=tidy.mydata0.p)+
 theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank(),strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 24))
 #theme_bw()+theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank())
@@ -353,11 +356,13 @@ ggsave(myplot,filename=paste0(output_file,"_plot.trajectories.pdf"))
 #====PLOT INDUCTION CURVES====
 #datatmpnor11<-bestmodels.cfitted %>% filter(target==mytarget,induction==myinduction,model=="modelDSBs1i1_realimpnor11")
 myplot <- bestmodels.cfitted %>% ggplot(aes(x=time,y=curve_fitted)) +
-xlim(0,finalTime+0.2) +
-scale_y_continuous("p", trans='sqrt') + scale_x_continuous("time (hours)", breaks=c(0,6,12,24,36,48,72), limits=c(0,finalTime+0.5)) +
-geom_line()+xlim(0,finalTime+0.2) +scale_y_continuous("precise cuts/intact DNA per hour",trans = 'sqrt') +
-theme(strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 16)) +
-geom_ribbon(aes(ymin = lowCI, ymax = highCI), alpha=0.1,linetype="dotted")
+xlim(0,finalTime+0.2) + 
+scale_y_continuous("precise cuts/intact DNA per hour", breaks=c(0,0.01,0.1,0.25,0.5,0.75,1), trans='sqrt') + 
+scale_x_continuous("time (hours)", breaks=xbreaks, limits=c(0,finalTime+0.5)) +
+geom_ribbon(aes(ymin = lowCI, ymax = highCI), alpha=0.1,linetype="dotted")+
+geom_line()+
+theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank(),strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 24))
+#theme(strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 24))
 ggsave(myplot,filename=paste0(output_file,"_plot.induction.pdf"))
 
 #====CALCULATE FLOW====

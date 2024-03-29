@@ -61,6 +61,8 @@ mutate( target=case_when(
   target == "PhyB2.20231130.I72h" ~ "PhyB2",
   target == "Psy1.20231130.I72h" ~ "Psy1",
   target == "CRTISO.49and50.20231130.I72h" ~ "CRTISO.49and50",
+  target == "CRTISO.nov2021" ~ "CRTISO(-4bp Processed DSB)",
+  target == "CRTISO.20230909" ~ "CRTISO(-4bp Processed DSB)",
   .default = as.character(target)
 )) %>% 
 mutate( rate=case_when(
