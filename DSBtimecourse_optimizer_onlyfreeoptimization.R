@@ -1,15 +1,22 @@
 #!/usr/bin/env Rscript
 #example to run
+#./optimize_model_backbone.R  -t CRTISO -i RNP -m modelDSBs1i1_fullimpreciseDSB -e E_errorsfromunbroken -n 10000 -o CRTISO_RNP_optimization.tsv 
 
 library(argparser, quietly=TRUE,warn.conflicts=FALSE)
 library(tidyverse)
 library(optimx)
+#library(ggplot2)
 library(deSolve)
 
-###################################################################################
-#################### IMPORT AND DEFINE FUNCTIONS ##################################
-###################################################################################
+################################################################
+# DRAW THE MODEL (an ODE function) AND GENERATE SOME RANDOM DATA
+################################################################
+
 source("likelihood_functions.R")
+
+###################################################################################
+################### DEFINE FUNCTIONS ##############################################
+###################################################################################
 
 loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix){
   #ODEfunc: a function of class desolve 
@@ -26,25 +33,27 @@ loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix)
 
 
 ################################################################################
-################## READ AND PARSE ARGUMENTS ####################################
+################## READ ARGUMENTS ##############################################
 ################################################################################
 
-###import arguments###
+
 argv<- arg_parser("Parse arguments")
 
 argv <- add_argument(argv, "-T", help="time course of target site. A dataset with time as 1st column and then the number of molecules")
 argv <- add_argument(argv, "-m", help="model. One of modelDSBs1i1_3x4,modelDSBs1i1_nok12,modelDSBs1i1_mini,modelDSBs1i1_realimprecise,modelDSBs1i1_3x4nor11.")
 argv <- add_argument(argv, "-o", help="output file", default="output.txt")
+#argv <- add_argument(argv, "-e", help="errors")
 argv <- add_argument(argv, "-E", help="error matrix. A tab separated matrix specifying in the rows the source type and in the column the observed type, e.g. the second row/first column indicates the proportion of y2 (precise DSB) that are observed as intact molecules (y1)")
 argv <- add_argument(argv, "-n", help="n iterations", default=100)
 argv <- add_argument(argv, "-z", help="n parameters in induction curve.", default=3)
 argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
 argv <- add_argument(argv, "-k", help="maximum value of cutting rate (k11)", default=10)
-argv <- add_argument(argv, "-u", help="file with pre-defined induction curve")
 
-###parse arguments###
+
+
 args <- parse_args(argv)
 input.file<-args$T
+#myerror<-args$e
 myerrorE<-args$E
 mymodel<-args$m
 nparamsind<-as.numeric(args$z)
@@ -52,33 +61,24 @@ k.max<-as.numeric(args$k)
 output.file<-args$o
 n.max<-as.numeric(args$n)
 optimize_errorDSB2indel<-as.numeric(args$l)
-fixedinduction_file<-args$u
 
-###deal with missing arguments and set default variables###
+#if (is.na(myerror)){ myerror<-"error" }
 if (is.na(k.max)){ k.max<-10 }
 if (is.na(n.max)){ n.max<-100 }
 if (is.na(output.file)){ output.file<-"DSBtimecourse_optimize.tsv" }
 if (is.na(optimize_errorDSB2indel)){ optimize_errorDSB2indel<-0 }
 if (is.na(nparamsind)){ nparamsind<-2 }
-if (is.na(fixedinduction_file)){ fixedinduction<-FALSE } else 
-	{ 
-	fixedinduction<-TRUE 
-	fixedinduction_table<-read.table(fixedinduction_file,header=TRUE)
-	#preset_induction<-unname(unlist(fixedinduction_table$max))
-}
 define_ODE.functions(nparamsind)
 
 
-mydelay<-0
-ntypes<-4
 ########################################################################################################
 ##################### LOAD DATA ########################################################################
 ########################################################################################################
+mydelay<-0
+ntypes<-4
 
-#read time course
 mydata<-read.table(input.file, header=TRUE)
 time_courses_begins<-c(which(mydata$time[-1]-mydata$time[-length(mydata$time)]<0)+1)
-#parse model to extract parameters, number of states (ntypes), and set the model function
 nameparms<-model2nameparams(mymodel,nparamsind,optimize_errorDSB2indel)
 errormatrix<-as.matrix(read.table(myerrorE, header=FALSE))
 loglik_er_f.pen<-model2likelihoodfunction(mymodel,optimize_errorDSB2indel)
@@ -92,10 +92,9 @@ if (optimize_errorDSB2indel==2) { mydelay<-0 }
 #################################################################################
 print("prepare optimization")
 
-###Loop over n.max iterations to ensure to find global maximum with optimix ###
-for ( counter in 1:n.max) 
+#if (mytarget_i=="CRTISO_49and50bp") {mytarget<-"CRTISO"} else {mytarget<-mytarget_i};
+for ( counter in 1:n.max)
 	{
-	### Define optimization hyperparameters (scales, exploration ranges) ###
         nrates<-length(nameparms)
 	step_exp<-sample(6:8,1);mysteps<-rep(10^(-step_exp),nrates)
 	parscales_exp<-sample(1:3,nrates,replace=TRUE);myparscale<-10^(-parscales_exp)
@@ -105,31 +104,9 @@ for ( counter in 1:n.max)
 	mylmm<-sample(5:8,1)
 	myfactr<-10^(-sample(c(7,8,10),1))
 	names(xparms)<-nameparms
-	print(xparms)
-	### Use optmix numerical optimization for two possible cases ###
-        if (fixedinduction) 
-		{ 
-		## case 1: using predefined induction parameters. Constrain by preventing induction parameters to change.
-		#print(paste("start constrained optimization with predefined induction parameters",fixedinduction_table$rate))
-		for (ifi in 1:nrow(fixedinduction_table)){
-		xparms[which(nameparms==fixedinduction_table$rate[ifi])]<-fixedinduction_table$max[ifi]
-		}
-		print(xparms)
-		constrained_loglik<-function(z) 
-			{
-			for (ifi in 1:nrow(fixedinduction_table)){
-			z[which(nameparms==fixedinduction_table$rate[ifi])]<-fixedinduction_table$max[ifi]
-			}
-			loglik_er_f.pen(z,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix)
-			}
-		res<-optimx(par=xparms,fn=function(z) constrained_loglik(z),control=list(maximize=TRUE,maxit=1000,parscale=myparscale,ndeps=mysteps,lmm=mylmm,factr=myfactr),method="L-BFGS-B",lower=lower_bound,hessian=FALSE,gr=NULL) #dowarn=FALSE
-		} else 
-		{
-		## case 2: induction parameters are estimated along the rates
-		print("start free optimization")
-		res<-optimx(par=xparms,fn=function(z) loglik_er_f.pen(z,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix),control=list(maximize=TRUE,maxit=1000,parscale=myparscale,ndeps=mysteps,lmm=mylmm,factr=myfactr),method="L-BFGS-B",lower=lower_bound,hessian=FALSE,gr=NULL) #dowarn=FALSE
-		}
-	### Parse optimx output and save results ###
+print(xparms)
+	res<-optimx(par=xparms,fn=function(z)
+        loglik_er_f.pen(z,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix),control=list(maximize=TRUE,maxit=1000,parscale=myparscale,ndeps=mysteps,lmm=mylmm,factr=myfactr),method="L-BFGS-B",lower=lower_bound,hessian=FALSE,gr=NULL) #dowarn=FALSE
 	names(myparscale)<-paste0("parscale",1:nrates)
         names(xparms)<-paste0("init_",names(xparms))
         names(mysteps)<-paste0("step",1:nrates)
@@ -138,4 +115,3 @@ for ( counter in 1:n.max)
         write.table(res_allinfo,file=output.file,quote=FALSE,row.names=FALSE,append=TRUE,col.names=print_header,sep="\t")
         };
 print("done") 
-

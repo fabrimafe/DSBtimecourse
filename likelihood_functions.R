@@ -17,14 +17,12 @@
 parms_induction<-c(K=1,x0=1,r0=10,r2=1)
 #induction_curve_logistic<-function(x,K,x0,x2,r0,r2) K/(1+exp(-r0*(x-x0)))/(1+exp(+r2*(x-x2)))
 induction_curve_4params<-function(x,K,x0,r0,r2) K*2^(-x*r2)/(1+exp(-r0*(x-x0)))
-induction_curve_vectorized_4params<-function(x,params) { return(induction_curve(x,params[1],params[2],params[3],params[4])) }
+induction_curve_vectorized_4params<-function(x,params) { return(induction_curve(x,params[1],params[2],params[3],params[4]))}
 #induction_curve_3params<-function(x,x0,r0,r2) 2^(-x*r2)/(1+exp(-r0*(x-x0)))
 #induction_curve_vectorized_3params<-function(x,params) { return(induction_curve(x,params[1],params[2],params[3])) }
 induction_curve_3params<-function(x,K,r0,r2,yno1=0) { K1<-(1-K)*2^(-x*r2)/(1+exp(-r0*(x-log(10^6)/(r0+10^(-12)))))-yno1; if (K1<0){K1<-0};K1 }
-induction_curve_vectorized_3params<-function(x,params) {induction_curve(x,params[1],params[2],params[3],params[4])
-}
-induction_curve_vectorized_3params_default<-function(x,params) {induction_curve(x,params[1],params[2],params[3],0)
-}
+induction_curve_vectorized_3params<-function(x,params) {induction_curve(x,params[1],params[2],params[3],params[4])}
+induction_curve_vectorized_3params_default<-function(x,params) {induction_curve(x,params[1],params[2],params[3],0)}
 induction_curve<-function(x,r0,r2) { 2^(-x*r2)/(1+exp(-r0*(x-log(10^6)/(r0+10^(-12))))) }
 induction_curve_vectorized<-function(x,params) induction_curve(x,params[1],params[2])
 induction_curve_vectorized_default<-induction_curve_vectorized
@@ -771,10 +769,13 @@ loglik_er_f<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix)
 }
 
 
+#Function to generate CI using a Montecarlo exploration of the log-likelihood space with a maximum number of sampled point equal to 'npermutations' and using a gaussian approximation of likelihood-ratio confidence intervals. 
+#This is only a fast preliminary exploration, which is not considered when Confidence-Intervals are calculated through bootstrap. The limitation of this method is that it only considers variability in the sampling of molecules, and not between-sample variability due to other external unaccounted factors. We recommend to use the bootstrap-based confidence intervals to better account for this variation.  
 generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermutations=1000,nameparams=nameparms, exploration.radius=1,returnonlyCI=FALSE,addpreviouslysampled="0",normalize_k11=TRUE)
 {
     nameparams.full<-names(bestmodels_l_rates_t)[1:(which(names(bestmodels_l_rates_t)=="value")-1)]
-    print("calculate CI")
+    print("Calculate CI")
+    print("Step 1: the top iterations of the optimization procedure are retained as starting point for the exploration of the likelihood space.")
     res<-c();res_temp<-c()
     counterpar<-1
     xxparams<-rep(0,length(nameparams.full))
@@ -795,7 +796,7 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
         	counterpar<-counterpar+1
         	}
     	};
-    print("Generate parameters to explore")
+    print("Step 2: Generate random parameters to explore in the surrounding of the likelihood maxima")
     counter00<-1
     names(xxparams)<-nameparams
     maxl2<-likfunction(xxparams)
@@ -814,7 +815,7 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
     newpars<-rbind(newpars.m5,newpars.m4,newpars.m3,newpars.m2,newpars.m1)
     newpars[newpars<0]<-0
     colnames(newpars)<-nameparams.full
-    print("Compute likelihood for new parameters")
+    print("Step 3: Compute the likelihood for the new sampled points (combination of parameters)")
     for (iit in 1:npermutations)
             {
             newpars_t<-newpars[iit,]
@@ -859,7 +860,8 @@ generate_CI<-function(bestmodels_l_rates_t,inputasrates=TRUE,likfunction,npermut
      res$ok[abs(res$maxll-res$loglik)<1.92]<-1
      if (!returnonlyCI){return(res[res$ok==1,])} else 
 	    {
-            #Monte Carlo exploration returns points retained in CI, so biased towards underestimation.
+            print("Step 4: Mid-point interpolation between sampled points within and outside the confidence interval range of to refine the confidence intervals")
+	    #Monte Carlo exploration returns points retained in CI, so biased towards underestimation.
             #To correct run mid-point interpolation.
             maxCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=max)
             minCI.biased<-apply(res[res$ok==1,1:length(nameparams),],MARGIN=2,FUN=min)

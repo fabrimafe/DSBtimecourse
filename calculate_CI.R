@@ -30,6 +30,7 @@ argv <- add_argument(argv, "-E", help="error matrix")
 argv <- add_argument(argv, "-m", help="model - mandatory, with no default")
 argv <- add_argument(argv, "-l", help="switch to change likelihood function. To estimate a common error from DSB select 1. Default is no estimate from data, only from controls, to sample 0.2h after induction (0). To set induction curve without delay select 2. To model imprecise DSB as misread precise DSB select 3", default=0)
 argv <- add_argument(argv, "-k", help="maximum value of cutting rate k11", default=10)
+argv <- add_argument(argv, "-u", help="file with pre-defined induction curve")
 
 
 args <- parse_args(argv)
@@ -43,12 +44,19 @@ data_file<-args$d
 mymodel<-args$m
 optimize_errorDSB2indel<-as.numeric(args$l)
 nparamsind<-as.numeric(args$z)
+fixedinduction_file<-args$u
 
 
 if (is.na(k.max)){ k.max<-10 }
 inputf<-read.table(input_file,header=TRUE)
 if (is.na(optimize_errorDSB2indel)) { optimize_errorDSB2indel<-0 }
 if (is.na(nparamsind)){ nparamsind<-2 }
+if (is.na(fixedinduction_file)){ fixedinduction<-FALSE } else
+        {
+        fixedinduction<-TRUE
+        fixedinduction_table<-read.table(fixedinduction_file,header=TRUE)
+        #preset_induction<-unname(unlist(fixedinduction_table$max))
+}
 define_ODE.functions(nparamsind)
 
 ########################################################################################################
@@ -73,6 +81,26 @@ if (optimize_errorDSB2indel==2) { mydelay<-0 }
 
 nrates<-length(nameparms)
 
+
+if (fixedinduction)
+		{
+                print("## case 1: likelihood function using predefined induction parameters. Constrain by preventing induction parameters to change.")
+                x_loglik<-function(zz)
+                        {
+                        for (ifi in 1:nrow(fixedinduction_table)){
+                        zz[which(nameparms==fixedinduction_table$rate[ifi])]<-fixedinduction_table$max[ifi]
+                        }
+                        loglik_er_f.pen(zz,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix,nind=nparamsind)
+                        }
+		} else
+		{
+                print("## case 2: likelihood functions for unconstrained optimization")
+		x_loglik<-function(zz) 
+			{
+			loglik_er_f.pen(zz,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix,nind=nparamsind)
+			}
+		}
+
 #################################################################################
 ##################### START OPTIMIZATION ########################################
 #################################################################################
@@ -85,7 +113,8 @@ print(maxl)
 bestmodel<-inputf[maxl==inputf$value,][1,]
 #bestmodels_l_rates_t<-bestmodels_l_rates %>%  filter(target==mytarget_i,induction==myinduction)
 print("start calculations");
-res<-generate_CI(bestmodel,inputasrates=FALSE,likfunction=function(zz) loglik_er_f.pen(zz,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix,nind=nparamsind),npermutations=n.max,returnonlyCI=TRUE,addpreviouslysampled="inputf",normalize_k11=normalize_k11.t)
+#res<-generate_CI(bestmodel,inputasrates=FALSE,likfunction=function(zz) loglik_er_f.pen(zz,my_data=mydata,ODEfunc=xmodel,E.matrix=errormatrix,nind=nparamsind),npermutations=n.max,returnonlyCI=TRUE,addpreviouslysampled="inputf",normalize_k11=normalize_k11.t)
+res<-generate_CI(bestmodel,inputasrates=FALSE,likfunction=function(zz) x_loglik(zz),npermutations=n.max,returnonlyCI=TRUE,addpreviouslysampled="inputf",normalize_k11=normalize_k11.t)
 
 #print(paste0("finished calculations, now saving to file ",output_file))
 #print(res[[1]])

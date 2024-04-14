@@ -10,5 +10,5 @@ mymodel=$4
 myn=$5
 errorflag=$6
 inductioncurve=$7
-
+echo "run ./DSBtimecourse_optimizer.R -m ${mymodel} -n $myn -E $errormatrix -T $inputfile -o $outputfile -l $errorflag -z ${inductioncurve}"
 ./DSBtimecourse_optimizer.R -m ${mymodel} -n $myn -E $errormatrix -T $inputfile -o $outputfile -l $errorflag -z ${inductioncurve}

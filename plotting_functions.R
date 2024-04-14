@@ -239,6 +239,21 @@ set_filenames<-function(beforejune2023=FALSE)
       	}
 }
 
+set_filenames_FACS<-function(beforejune2023=FALSE)
+{
+    myfile<<-paste0("/home/labs/alevy/fabrizio/workspace/daniela/FACS/5/results_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"/results.tot")
+    myfilemean<<-paste0("/home/labs/alevy/fabrizio/workspace/daniela/FACS/5/results_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"/timecourse_rates.all_n50000.CI")
+    if (beforejune2023)
+      	{
+      	myfileflow<<-paste0("/home/labs/alevy/fabrizio/workspace/daniela/FACS/5/",bootstrap_type,"/timecourse_RNP_",mytarget,"/",mymodel,"/results_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"/results.tot_plot.flow.tab")
+      myfileflowmean<<-paste0("/home/labs/alevy/fabrizio/workspace/daniela/FACS/5/plots/plot_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"_plot.flow.tab")
+      	} else
+      	{
+      	myfileflow<<-paste0("/home/labs/alevy/fabrizio/workspace/daniela/FACS/5/results_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"/results.totall_",timeflow,"h.plot.flow.tab")
+      	myfileflowmean<<-paste0("/home/labs/alevy/fabrizio/workspace/daniela/FACS/5/results_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"/results.totall_",timeflow,"h.plot.flow.tab")
+      	}
+}
+
 write_table_flow<-function(outputfile="table1.tab",orderforplotting=orderforplotting,typetable=1)
 {
 print(orderforplotting)
