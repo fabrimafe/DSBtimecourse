@@ -93,6 +93,7 @@ which will generate two files:
 
 - plot3states_plot.trajectories.pdf: a plot of the fitted trajectories of the timecourse
 - plot3states_plot.induction.pdf: a plot of the induction curve
+- plot3states_plot.flow.tab: a table showing AIC values and the flow (in terms of proportion of initial molecules) for each rate. Note that proportions can be higher than 1 when molecules go through a given process more than once.
 
 ### Notation
 
