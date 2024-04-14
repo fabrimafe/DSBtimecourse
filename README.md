@@ -35,19 +35,31 @@ indicates that intact molecules have a ~0.5% chance of being classified as indel
 A possible way to create example data is to simulate them using the script DSBtimecourse_simulate.R. This script takes as input a set of parameters (specified in the format of file test/params_modelDSBs1i1_3x4_k0.05_r0.01_induction.CI and fed as input flag -p) and a set of times specifying total number of reads and time of sampling (example file test/timecourse_n2k_72h.txt), a model (with flag -m, as example a 3-state model "modelDSBs1i1_3x4") and an output file with flag -o.
 Example:
 ```
-./DSBtimecourse_simulate.R -T test/timecourse_n2k_72h.txt -p test/params_modelDSBs1i1_3x4_k0.05_r0.01_induction.CI -m modelDSBs1i1_3x4 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -o test/output.tsv
+./DSBtimecourse_simulate.R -T test/timecourse_n2k_72h.txt -p test/params_modelDSBs1i1_3x4_k0.05_r0.01_induction.CI -m modelDSBs1i1_3x4 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -o test/simulateddata.tsv
 ```
-Here test/output.tsv can be used for subsequent analyses.
+Here test/simulateddata.tsv can be used for subsequent analyses.
 
 
 ### 2) optimization
 This is the core of the procedure, fitting the maximum likelihood parameters for the selected model. Use DSBtimecourse_optimizer.R on the original dataset and on the bootstrapped data. To run on the test dataset using the 4 state model in Ben Tov et al.,2023:
 ```
 ./DSBtimecourse_optimizer.R -T test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_nok12 -o test/output_4states.tsv -z 3 -n 20
+```
  The 3-state model can be run with:
+```
 ./DSBtimecourse_optimizer.R -T test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_3states.tsv -z 3 -n 20
 ```
 where the arguments -z sets the shape of the induction curve to have 3 degrees of freedom, and n is the number of independent iterations. The default is 100 iterations, but more are recommended, especially for more complex models like the 4-states. In Ben Tov et al. (2023) we used 50000 iterations, though a smaller number is usually sufficient. 
+To run the optimization on the simulated data for the 3 state model, run
+```
+./DSBtimecourse_optimizer.R -T test/simulateddata.tsv -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_simulated_3states.tsv -z 3 -n 20
+```
+
+If an induction curve is estimated or known a priori, for example through FACS or lucifase data, optimization can be constrained to the estimated curve. This can be done using the -u flag. With this flag, one can specify induction parameters in a file with the same format as the file used to simulate time-courses with known rate parameters. For example:
+```
+./DSBtimecourse_optimizer.R -T test/simulateddata.tsv -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_simulated_3states.tsv -z 3 -n 20 -u test/params_FACStable.5.txt
+```
+where the file test/params_FACStable.5.txt describes an induction curve estimated for tomato protoplast one the basis of FACS data.
 
 ### 3) likelihood confidence intervals
 Particularly when boostrapping is not an option, one can calculate likelihood-ratio based confidence intervals with calculate_CI.v1.R. While this would not be necessary per se, the output of this file can be used to generates plots in step 4). Here, the output of the optimization step is given as an input with the flag -i, together with the original timecourse and the error matrix. 
@@ -55,11 +67,12 @@ Particularly when boostrapping is not an option, one can calculate likelihood-ra
 ```
 ./calculate_CI.R -i test/output_3states.tsv -d test/timecourse_RNP_Psy1.txt -z 3 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_3states_CI.tsv
 ```
+
 This provides two output files. An .RData file containing all the temporary object obtained during the confidence intervals computation; and a summary file, which takes the names provided in the -o flag, and which shows a table with 4 fields:
 - max: the maximum likelihood estimate
 - CIlow: the lowest 95% confidence interval obtained with a Monte-Carlo approximation of the asymptotic likelihood ratio based confidence interval.
 - CIhigh: the highest 95% confidence interval obtained with a Monte-Carlo approximation of the asymptotic likelihood ratio based confidence interval.
-- rate: the rate for which the estimate is reported.
+- rate: the rate for which the estimate is reported. These files CI can also be used to simulate new data (for example to generate parametric bootstraps).
 
 The previous steps can be iterated for independent bootstraps of the data. Bootstraps of the data can be generated using timeseriesbootstraps.R. Use ./timeseriesbootstraps.R --help to see arguments and options, as different bootstrapping strategies are implemented (maximum entropy bootstrap, stationary bootstrap). To generate a stratified bootstrap (i.e. data points are resampled within a single time-point; possible only when repeated measures are available):
 ```
