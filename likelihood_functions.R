@@ -1,25 +1,19 @@
 ################################################################
-# DRAW THE MODEL (an ODE function) AND GENERATE SOME RANDOM DATA
+#=============DEFINE INDUCTION CURVES==========================#
 ################################################################
+#A set of induction curve functions (vectorized or not to be used in optimx)
+#are defined and specified with different parametrizations with different
+#levels of complexity/number of parameters. The induction curve that proves
+#best in most applications is one with 3 parameters (nparams.ind==3)
+#and used and described in Ben Tov*,Mafessoni* et al.,2023.
+#Below, on the basis of nparams.ind a set of functions describing the different
+#models and systems of differential equations (ODEs) that can be selected.
 
 #-->Logistic decay -> discard and change to make decay constant as Daniela suggests and Brinkam does
-#parms_induction<-c(K=3.5,x0=1,x2=0.7,r0=0,r2=0.02)
-#induction_curve<-function(x,K,x0,x2,r0,r2) K/(1+exp(-r0*(x-x0)))/(1+exp(+r2*(x-x2)))
-#induction_curve_vectorized<-function(x,params) 
-#  {
-#  K<-params[1];x0<-params[2];x2<-params[3];r0<-params[4];r2<-params[5];
-#  return(K/(1+exp(-r0*(x-x0)))/(1+exp(+r2*(x-x2))))
-#  }
-#x<-seq(0,2,0.01)
-#plot(x,induction_curve(x,parms_induction[1],parms_induction[2],parms_induction[3],parms_induction[4],parms_induction[5]),type="l")
 #-->Half-life decay as in Brinkman. r2 is 1/half life
-#load("RData/notebook_2errormatrices.RData")
 parms_induction<-c(K=1,x0=1,r0=10,r2=1)
-#induction_curve_logistic<-function(x,K,x0,x2,r0,r2) K/(1+exp(-r0*(x-x0)))/(1+exp(+r2*(x-x2)))
 induction_curve_4params<-function(x,K,x0,r0,r2) K*2^(-x*r2)/(1+exp(-r0*(x-x0)))
 induction_curve_vectorized_4params<-function(x,params) { return(induction_curve(x,params[1],params[2],params[3],params[4]))}
-#induction_curve_3params<-function(x,x0,r0,r2) 2^(-x*r2)/(1+exp(-r0*(x-x0)))
-#induction_curve_vectorized_3params<-function(x,params) { return(induction_curve(x,params[1],params[2],params[3])) }
 induction_curve_3params<-function(x,K,r0,r2,yno1=0) { K1<-(1-K)*2^(-x*r2)/(1+exp(-r0*(x-log(10^6)/(r0+10^(-12)))))-yno1; if (K1<0){K1<-0};K1 }
 induction_curve_vectorized_3params<-function(x,params) {induction_curve(x,params[1],params[2],params[3],params[4])}
 induction_curve_vectorized_3params_default<-function(x,params) {induction_curve(x,params[1],params[2],params[3],0)}
@@ -426,6 +420,8 @@ if (nparams.ind==3)
 ###################################################################################
 ################### DEFINE FUNCTIONS ##############################################
 ###################################################################################
+
+#function that predict mean data given a set of parameters. Used to predict trajectories and plotting
 predict_models <- function(df,nparms=6,ntypes=6,nheaders=3,errormatrix=error_matrices3_l,mymodel=0,yinit=0,timest=0,noplotprocessedDSB=1) {
 dfl<-unlist(df)
 res_parms<-as.numeric(dfl[(nheaders+1):(nheaders+nparms)]);
@@ -458,15 +454,11 @@ return(tidy.mydata.fitted.df)
 
 
 
-
-
+#function used to predict induction curves from induction parameters. Used for plotting
 predict_induction <- function(df,nparms=6,nparms_induction=5,nheaders=3,induction_function=induction_curve_vectorized,times=seq(0,72,0.1),yno1=0) {
-#nparms=3;nparms_induction=5;ntypes=6;induction_function=induction_curve_vectorized
-#df<-bestmodels_l[1,]
 dfl<-unlist(df)
 res_parms<-as.numeric(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)]);
 names(res_parms)<-names(dfl[(nheaders+nparms+1):(nheaders+nparms+nparms_induction)])
-#print(res_parms)
 if (length(yno1)==1) 
 	{
 	mydata.fitted <-data.frame(time=times,curve_fitted=induction_function(times,res_parms))
@@ -480,25 +472,24 @@ return(mydata.fitted)
 }
 
 
-
+#Wrapper function used to calculate the likelihood given a set of parameters.
+#.pen indicates that it assigns a likelihood penalty to constrain rate values to be >=0 and to constrain cutting rate
 loglik_er_f.pen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
   indparms<-parms[(length(parms)-nind+1):length(parms)]
-  #print(indparms)
   if (nind==3) { indparms<-c(indparms,1) }
   penalty<-induction_curve_vectorized(0,indparms) 
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
   loglik_er_f(parms,my_data,ODEfunc,E.matrix)-penalty-penaltyk
-  #print(c("end lik",res))
-  #return(res)
 }
 
+#Wrapper function used to calculate the likelihood given a set of parameters, with no penalty assigned
 loglik_er_f.nopen<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized){
-  #penalty<-induction_curve_vectorized(0,parms[(length(parms)-3):length(parms)])
-  #if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
-  loglik_er_f(parms,my_data,ODEfunc,E.matrix) #-penalty
+  loglik_er_f(parms,my_data,ODEfunc,E.matrix)
   }
 
+
+#Wrapper function used to calculate the likelihood given a set of parameters, with penalty assigned and estimation of the error matrix (DSB can lead to indels)
 loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   erDSB2indel<-parms[length(parms)]
   penalty<-0
@@ -514,6 +505,7 @@ loglik_er_f.pen_errorDBS2indel_4states_m1<-function(parms,my_data=mydata,ODEfunc
   loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty-penaltyk
   }
 
+#Wrapper function used to calculate the likelihood given a set of parameters, with penalty assigned, and matrix error inferred as described for the 3 state model
 loglik_er_f.pen_3x4<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   erDSB2indel<-parms[length(parms)]
   penalty<-0
@@ -530,6 +522,7 @@ loglik_er_f.pen_3x4<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error
   loglik_er_f(parms,my_data,ODEfunc,E.matrix_t)-penalty-penaltyk
   }
 
+#Wrapper function used to calculate the likelihood given a set of parameters, with penalty assigned, for a model in which multiple targets are analyzed at once (obsolete)
 loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   mydata.1<-my_data[1:(time_courses_begins[1]-1),]		
   mydata.2<-my_data[time_courses_begins[1]:(time_courses_begins[2]-1),]		
@@ -537,7 +530,6 @@ loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E
   E.matrix.1<-E.matrix[1:4,]
   E.matrix.2<-E.matrix[5:8,]
   E.matrix.3<-E.matrix[9:12,]
-  #xmodel<-get("modelDSBs1i1_realimprecise")
   parms.1<-parms[c(seq(1,length(parms)-6,3),(length(parms)-3):length(parms))]
   parms.2<-parms[c(seq(2,length(parms)-5,3),(length(parms)-3):length(parms))]
   parms.3<-parms[c(seq(3,length(parms)-4,3),(length(parms)-3):length(parms))]
@@ -547,46 +539,39 @@ loglik_er_f.pen_modelinductionx3<-function(parms,my_data=mydata,ODEfunc=model1,E
   loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty-penaltyk
   }
 
+#Wrapper function used to calculate the likelihood given a set of parameters, with penalty assigned, for a model in which multiple targets and the "mini" model (obsolete)
 loglik_er_f.pen_model.mini.bytarget<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   mydata.1<-my_data[1:(time_courses_begins[1]-1),]
   mydata.2<-my_data[time_courses_begins[1]:nrow(my_data),]
-  #mydata.3<-my_data[time_courses_begins[2]:nrow(mydata),]
   E.matrix.1<-E.matrix[1:4,]
   E.matrix.2<-E.matrix[1:4,]
-  #E.matrix.3<-E.matrix[9:12,]
-  #xmodel<-get("modelDSBs1i1_realimprecise")
   parms.1<-parms[1:6]
   parms.2<-parms[c(1:4,7:8)]
-  #parms.3<-parms[c(seq(3,length(parms)-4,3),(length(parms)-3):length(parms))]
   penalty1<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   penalty2<-induction_curve_vectorized(0,parms[(length(parms)-2*nind+1):(length(parms)-nind)])
   penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
   if (penalty1>0.00001){ penalty1<-(10^7)*(penalty1-0.00001)^2 } else {penalty1<-0}
   if (penalty2>0.00001){ penalty2<-(10^7)*(penalty2-0.00001)^2 } else {penalty2<-0}
   loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)-penalty1-penalty2-penaltyk
-  #loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty
   }
 
+#Wrapper function used to calculate the likelihood given a set of parameters for the 4 state model, with penalty assigned, when more targets are analyzed at once (obsolete)
 loglik_er_f.pen_model.nok12.bytarget<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   mydata.1<-my_data[1:(time_courses_begins[1]-1),]
   mydata.2<-my_data[time_courses_begins[1]:nrow(my_data),]
-  #mydata.3<-my_data[time_courses_begins[2]:nrow(mydata),]
   E.matrix.1<-E.matrix[1:4,]
   E.matrix.2<-E.matrix[1:4,]
-  #E.matrix.3<-E.matrix[9:12,]
-  #xmodel<-get("modelDSBs1i1_realimprecise")
   parms.1<-parms[1:8]
   parms.2<-parms[c(1:6,9:10)]
-  #parms.3<-parms[c(seq(3,length(parms)-4,3),(length(parms)-3):length(parms))]
   penalty1<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   penalty2<-induction_curve_vectorized(0,parms[(length(parms)-2*nind+1):(length(parms)-nind)])
   penaltyk<-(parms[1]>k.max)*10^7*(parms[1]-k.max)^2
   if (penalty1>0.00001){ penalty1<-(10^7)*(penalty1-0.00001)^2 } else {penalty1<-0}
   if (penalty2>0.00001){ penalty2<-(10^7)*(penalty2-0.00001)^2 } else {penalty2<-0}
   loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)-penalty1-penalty2-penaltyk
-  #loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix.1)+loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix.2)+loglik_er_f(parms.3,mydata.3,ODEfunc,E.matrix.3)-penalty
   }
 
+#Wrapper function used to calculate the likelihood given a set of parameters for the 3 state model, with penalty assigned, when more targets are analyzed at once (obsolete)
 loglik_er_f.pen_model.3x4.bytarget<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   erDSB2indel<-parms[length(parms)]
   if (erDSB2indel>0.5) { penalty<-100000*(erDSB2indel-0.999)^2 }
@@ -605,7 +590,7 @@ loglik_er_f.pen_model.3x4.bytarget<-function(parms,my_data=mydata,ODEfunc=model1
   loglik_er_f(parms.1,mydata.1,ODEfunc,E.matrix_t) +loglik_er_f(parms.2,mydata.2,ODEfunc,E.matrix_t)-penalty1-penalty2-penaltyk
   }
 
-#function for unconstrained optimization
+#Wrapper function used to calculate the likelihood given a set of parameters, without any constrain except for cutting rate (obsolete)
 loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E.matrix=error_matrix,induction_curve=induction_curve_vectorized,nind=nparamsind){
   penalty<-induction_curve_vectorized(0,parms[(length(parms)-nind+1):length(parms)])
   if (penalty>0.00001){ penalty<-(10^7)*(penalty-0.00001)^2 } else {penalty<-0}
@@ -615,7 +600,7 @@ loglik_er_f.pen.unconstrainedopt<-function(parms,my_data=mydata,ODEfunc=model1,E
   }
 
 
-
+#Function to specify global variables and rates to be estimated on the basis of the model selected
 model2nameparams<-function(mymodel,nind=2,optimize_errorDSB2indel=0){
 	if (mymodel=="modelDSBs1i1_fullimpreciseDSB")
 		{
@@ -691,6 +676,7 @@ if ( optimize_errorDSB2indel==1 || mymodel=="modelDSBs1i1_3x4" || mymodel=="mode
 	return(nameparms)
 }
 
+#Return the number of states given the model
 model2ntypes<-function(mymodel){
 if (mymodel=="model5i1" || mymodel=="model5i1_nor11")
                 {
@@ -700,6 +686,7 @@ return(ntypes)
 }
 
 
+#Select the appropriate likelihood function given the chosen model
 model2likelihoodfunction<-function(mymodel,optimize_errorDSB2indel=0){
 if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
                 {
@@ -729,6 +716,7 @@ if ( mymodel=="modelDSBs1i1_3x4" || mymodel=="modelDSBs1i1_3x4nor11" )
 return(loglik_er_f.pen)
 }
 
+#transform string to model
 model2xmodel<-function(mymodel){
 if ( mymodel=="modelDSBs1i1_realimprecise.inductionx3")
                 {
@@ -750,6 +738,7 @@ if (!"function" %in% is(xmodel)) { xmodel<-get(mymodel) }
 return(xmodel)
 }
 
+#assign 2 curves when analyzing multiple targets at once (obsolete)
 model2ncurves<-function(mymodel){ if ( length(grep("bytarget",mymodel)==1)){ return(2) } else { return(1) } }
 
 

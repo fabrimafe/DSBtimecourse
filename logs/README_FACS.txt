@@ -1,6 +1,10 @@
-#FACS
-#ESTIMATE INDUCTION CURVES
-cd /home/labs/alevy/fabrizio/workspace/daniela/FACStable
+############################################################################################
+#COMMANDS USED TO GENERATE FACS-constrained estimates for Ben Tov*,Mafessoni* et al.,2024############################################################################################
+
+#---------------------------------------#
+#ESTIMATE INDUCTION CURVES FROM FACS DATA
+#---------------------------------------#
+#cd /home/labs/alevy/fabrizio/workspace/daniela/FACStable
 library(tidyverse)
 library(optimx)
 
@@ -32,7 +36,10 @@ output<-data.frame(max=unlist(res[1,1:3]),rate=names(res[1,1:3]))
 write.table(output,file=paste0("params_",xFACS,".txt"),quote=FALSE,row.names=FALSE,sep="\t")
 }
 
-for fixedinduction in 5 90sec;do
+#-------------------------------------------------------------------------#
+#RUN CONSTRAINED OPTIMIZATION ON ALL TIMECOURSES ANALYZED IN THE MANUSCRIPT
+#-------------------------------------------------------------------------#
+for fixedinduction in 5;do #90sec
 for MYDELAY in '';do 
 for MYINDUCTION in RNP;do 
 for MYINDUCTION_CURVE in 3;do
@@ -54,8 +61,10 @@ if [ ! -f ${OUTPUT}.${IITER} ];then
 bsub -q new-long -J ${NAMESIMS} -e ~/mylogs/${NAMESIMS}-%J.e -o ~/mylogs/${NAMESIMS}-%J.o -R rusage[mem=${MEMS}] scripts/run_optimizationc.sh $TIMECOURSE $ERRORMATRIX ${OUTPUT}.${IITER} ${mymodel} ${NITER} $likfun ${MYINDUCTION_CURVE} ${INDUCTIONPARAMS}; fi
 done;done;done;done;done;done
 
+#-------------------------------------------------------------------------------#
+#-----------------RUN CONSTRAINED OPTIMIZATION ON BOOTSTRAPS DATA----------------
+#-------------------------------------------------------------------------------#
 
-#------------------------------------BOOTSTRAPS----------------------------------
 bootstraptype=stratifiedbootstraps
 for fixedinduction in 5;do #  90sec;do
 for MYDELAY in '';do 
@@ -83,7 +92,7 @@ done
 
 
 #########################################################################################
-################################### CALCULATE CI ########################################
+############################# CALCULATE CONFIDENCE INTERVALS#############################
 #########################################################################################
 
 #-------------------------------------SINGLE RUNS----------------------------------------
@@ -188,6 +197,7 @@ done;done;done;done;done;done
 #-------------------------------------BOOTSTRAPS----------------------------------------
 #/home/labs/alevy/fabrizio/workspace/daniela/resultsv4/stratifiedbootstraps/timecourse_RNP_PhyB2.2_allb/modelDSBs1i1_mini/results_modelDSBs1i1_mini_RNP_ind.c2_PhyB2.2_allb/
 
+#-----CALCULATE FOR INDIVIDUAL BOOTSTRAPS----
 
 fixedinduction=5
 TIMEFLOWS=$( echo 24 72 ) #24 48 72 )
@@ -236,6 +246,7 @@ echo ${OUTPUTFOLDER}/results.totall_${TIMEFLOW}h.plot.flow.tab
 done #timeflow
 done;done;done;done;done;done
 
+#----SUMMARISE INDIVIDUAL BOOTSTRAPS--------
 for mymodel in modelDSBs1i1_3x4 modelDSBs1i1_nok12;do 
 for mytarget in Psy1 CRTISO.nov2021.49and50 PhyB2.2.nov2021 Psy1.20231005.I72h CRTISO.49and50.20231005.I72h PhyB2.20231005.I72h Psy1.20230910 CRTISO.49and50.20230910 PhyB2.20231115 Psy1.20230909 CRTISO.49and50.20230909 PhyB2.20231117;do
 myfolder=~/workspace/daniela/FACS/5/results_${mymodel}_${MYINDUCTION}_ind.c${MYINDUCTION_CURVE}_${mytarget}
@@ -248,7 +259,7 @@ done
 done
 
 
-
+#-----FINAL PLOTS AND CALCULATIONS OF FLOW-----
 TIMEFLOWS=$( echo 24 72 ) #24 48 72 )
 TIMERESOLUTION=0.002
 #stratifiedbootstraps2 goes with all and modelDSBs1i1_mini.bytarget; stratifiedbootstraps with allb

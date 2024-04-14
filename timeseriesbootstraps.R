@@ -4,6 +4,7 @@
 #./timeseriesboootstraps.R -i timecourse_RNP_PhyB2.txt -o bs/ -n 100 -m 1
 #note that in current implementation the ME bootstrap cannot run when for 1 time point I have only 1 sample. add a nice warning
 
+#JACKNIFE CODE (OBSOLETE)
 #calculate jacknife CI following http://www.comparingpartitions.info/?link=Tut9
 #files_v<-dir()[grep("*.a",dir())]
 #library(tidyverse)
@@ -18,8 +19,9 @@
 #apply(pseudovalues_mat,MARGIN=2,FUN=function(x) 1.96*sqrt((sum((x-mean(x))^2/(length(x)-1)))/length(x)))
 #apply(mat,MARGIN=2,FUN=function(x) mean(x))
 
-#bootstrap with tsboot
-#library(tsboot)
+####################################################
+##########DEFINE INPUT FLAGS########################
+####################################################
 
 library(argparser, quietly=TRUE,warn.conflicts=FALSE)
 argv<- arg_parser("Parse arguments")
@@ -38,12 +40,10 @@ nreplicatesperpoint<-as.numeric(args$r)
 inputf<-args$i
 destination_path<-args$o
 type_of_resampling<-as.numeric(args$m) #default is stationary bootstrap
-#inputf="/home/labs/alevy/fabrizio/workspace/daniela/input_datasets/timecourse_RNP_PhyB2.3.txt"
-#destination_path<-"/home/labs/alevy/fabrizio/workspace/daniela/resultsv3/stationarybootstrap"
-#npermutations<-100
 df<-read.table(inputf,header=TRUE)
 
 stationary_bootstrap<-function(x,p=0.1,excess_n=100,minimum.ntimes=1){
+####MAIN FUNCTION FOR IMPLEMENTING STATIONARY BOOTSTRAP#####
 #x is a sorted vector with times
 #p is the probability of the geometric distribution controlling the average lenght of block as 1/p
 #excess_n is a hyperparameter that controls the excess of lenghts to be generated. Decrease from default to speed up. Increase if bugs because too low, potentially when very short series, very low ps and huge n of resamplings.
@@ -74,8 +74,6 @@ while(final.ntimes<minimum.ntimes){
 
 if ( type_of_resampling == 0 ){
 print("method of resampling: stationary bootstrap")
-#res<-tsboot(as.ts(data.frame(time=1:30,x=(1:30)^2)),lynx.fun,R=100,l = 20, sim = "geom");res$t[1,]
-#I can run a stationary bootstrap with mean 4 (p=1/4). To choose between those with same time, I could for each simulation, choose randomly order for those at same time.
 
 stationary.bootstraps<-sapply(1:npermutations,function(z) stationary_bootstrap(df$time,p=0.3,excess_n=10,minimum.ntimes=3))
 
@@ -113,6 +111,7 @@ write.table(df.new,file=paste0(destination_path,"/timecourse.bs",ip,".txt",sep="
 print("method of resampling: time-stratified bootstrap")
 
 stratified.bootstrap<-function(df){
+#CODE IMPLEMENTING TIME-STRATIFIED BOOTSTRAP
 times<-unique(sort(df$time))
 y<-c(unlist(sapply(times, function(x) { y<-which(df$time==x); y<-sample(y,length(y),replace=TRUE); return(y)})))
 return(df[y,])
@@ -121,7 +120,6 @@ return(df[y,])
 for (ip in 1:npermutations){
 df.new<-stratified.bootstrap(df)
 write.table(df.new,file=paste0(destination_path,"/timecourse.bs",ip,".txt",sep=""),quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
-#,quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
 }
 } else if ( type_of_resampling == 3 )
 {
@@ -143,7 +141,6 @@ for (ip in 1:npermutations){
 df.new.1<-stratified.bootstrap(mydata.1)
 df.new.2<-stratified.bootstrap(mydata.2)
 write.table(rbind(df.new.1,df.new.2),file=paste0(destination_path,"/timecourse.bs",ip,".txt",sep=""),quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
-#,quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
 }
 
 }
