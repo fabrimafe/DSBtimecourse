@@ -17,6 +17,7 @@ import_flowdata<-function(myfileflow)
     return(list(xdataAIC,xdataflow))
     }
 
+#tidy parser of tables for Ben Tov*,Mafessoni* et al.,2023, biorxiv
 parse_rate_tables<-function(x)
 {
 y<-x %>% 
@@ -84,7 +85,7 @@ return(y)
 }
 
 
-
+#parser of tables with point estimates
 parse_rates_mean<-function(xdatamean.all,orderforplotting=orderforplotting,minimum_exp=9)
 {
 xdatamean.all$rates<<-xdatamean.all$max
@@ -92,9 +93,9 @@ xdatamean.all$rates_trans<<-log(xdatamean.all$rates+10^(-minimum_exp),10)
 xdatamean.all<<-xdatamean.all %>% filter(rate!="r0",rate!="r2")
 xdatamean.all$rate<<-factor(xdatamean.all$rate,levels=orderforplotting)
 xdatamean.all$target<<-fct_inorder(as.factor(as.character(xdatamean.all$target)))
-#return(xdatamean.all)
 }
 
+#parser of tables, which log-transform estimates and reorder table entries according to rates and targets
 parse_rates_all<-function(x,orderforplotting=orderforplotting,mypalette=mypalette,induction_params=induction_params)
 {
 y<-x
@@ -108,10 +109,9 @@ temp<-y$rate %>% unique
 y$target<-fct_inorder(as.factor(as.character(y$target)))
 #mypalette_t<-mypalette[orderforplotting %in% (xdata.all$rate %>% unique) & !orderforplotting %in% induction_params]
 return(y)
-#return(list(xdata.all,mypalette_t))
 }
-#parse_rates_all(xdata.all)
 
+#function that sets tick marks and ranges for plots
 set_breaks<-function(minimum_exp=9)
 {
 xbreaks<-sapply(minimum_exp:(-1),function(x) 10^(-x))
@@ -122,15 +122,17 @@ xlabels[1]<-0 #
 return(list(xbreaks,xlabels))
 }
 
+#function that creates violin plots for bootstrap parameter estimates
 plot_violin_params<-function(xdata.all.temp,xdatamean.all.temp,induction_params=induction_params,outputfile="plot1.pdf")
 {
 p<-ggplot(xdata.all.temp, aes(x=rate, y=rates_trans, fill=rate)) + geom_violin(trim=TRUE, scale="width") + scale_fill_manual(values=mypalette_t) +
 theme(strip.background = element_rect(fill = "white"),axis.text.x = element_text(angle = 45, hjust=1), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.03),legend.position = "bottom",aspect.ratio=1) + ylab("rate ( event/hour )") +
 facet_wrap(~target) + scale_y_continuous(breaks=xbreaks,labels=xlabels,limits=c(min(xbreaks)-0.01,log(20,10)))+
-geom_point(data=xdatamean.all.temp,aes(rate, rates_trans),col = "black",size=0.8)+geom_jitter(alpha = 0.11, width = 0.15, size=0.2) #, size=1
+geom_point(data=xdatamean.all.temp,aes(rate, rates_trans),col = "black",size=0.8)+geom_jitter(alpha = 0.11, width = 0.15, size=0.2) 
 ggsave(p,file=outputfile)
 }
 
+#function that creates violin plots of the distributions of induction-curve parameter estimates
 plot_violin_induction<-function(xdata.all,xdatamean.all,induction_params=induction_params,outputfile="plot2.pdf")
 {
 #xdata.all.temp<-xdata.all %>% filter(rate %in% induction_params)
@@ -147,6 +149,7 @@ geom_point(data=xdatamean.all.temp,aes(rate, rates_trans),col = "black",size=0.8
 ggsave(p,file=outputfile)
 }
 
+#create violin plots describing the flow of molecules across different rates. Distribution represent bootstraps estimates
 plot_flow<-function(outputfile=paste0("violinflow_",summarytag,"_",mymodel,"_indc",ninduction,".pdf"))
 {
 pflow<-ggplot(xdataflow.all.temp, aes(x=rate, y=flow, fill=rate)) + geom_violin(trim=TRUE, scale="width") + scale_fill_manual(values=mypalette_t)+
@@ -157,6 +160,7 @@ geom_jitter(alpha = 0.11, width = 0.15, size=0.2)
 ggsave(pflow,file=outputfile)
 }
 
+#histogram of AIC values for bootstraps
 plots_AIC<-function(outputfile=paste0("histdeltaAIC_",summarytag,"_indc",ninduction,".pdf"))
 {
 AICnok12<-xdataAIC.all %>% filter(model=="modelDSBs1i1_nok12") %>% select(flow)
@@ -223,7 +227,8 @@ res6<-AIC_plot %>% filter(target=="CRTISO") %>% filter(deltaAIC>0) #0
 print(c(res1,res2,res3,res4,res5,res6))
 }
 
-
+#Function that defines the paths for data files used in Ben Tov*,Mafessoni* et al.,2023
+#For other works you need to edit this
 set_filenames<-function(beforejune2023=FALSE)
 {
     myfile<<-paste0("/home/labs/alevy/fabrizio/workspace/daniela/resultsv5/",bootstrap_type,"/timecourse_RNP_",mytarget,"/",mymodel,"/results_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"/results.tot")
@@ -239,6 +244,7 @@ set_filenames<-function(beforejune2023=FALSE)
       	}
 }
 
+#Function that defines the paths for data files using FACS induction curves in Ben Tov*,Mafessoni* et al.,2023
 set_filenames_FACS<-function(beforejune2023=FALSE)
 {
     myfile<<-paste0("/home/labs/alevy/fabrizio/workspace/daniela/FACS/5/results_",mymodel,"_RNP_ind.c",ninduction,"_",mytarget,"/results.tot")
@@ -254,14 +260,13 @@ set_filenames_FACS<-function(beforejune2023=FALSE)
       	}
 }
 
+#function that writes tables in the format of:
+#-typetable=1: BenTov*,Mafessoni* et al.,3 state model tables
+#-typetable=2: BenTov*,Mafessoni* et al.,4 state model tables
 write_table_flow<-function(outputfile="table1.tab",orderforplotting=orderforplotting,typetable=1)
 {
 print(orderforplotting)
 xdata.allall<-parse_rate_tables(xdata.allrates.all) %>% left_join(parse_rate_tables(xdata.allflows.all),by=c("model","target","rate","bootstrap"))
-#rate == "r11" & model == "4 states" ~ "Precise Repair (from direct DSB)",
-#  rate == "r12" & model == "4 states" ~ "Repair-error (from direct DSB)",
-#  rate == "r21" ~ "Precise Repair (from processed DSB)",
-#  rate == "r22" ~ "Repair-error (from processed DSB)",
 if (xdata.allall$model[1]=="4 states")
 	{
 	adata<-xdata.allall %>% group_by(model,target,rate) %>% filter(rate=="Precise Repair (from direct DSB)") 
@@ -294,10 +299,7 @@ xdata.allall.table<-xdata.allall %>% group_by(model,target,rate) %>% summarise(m
 xdata.allall.table$rate<-factor(xdata.allall.table$rate,levels=orderforplotting)
 xdata.allall.table<-xdata.allall.table %>% #group_by(model) %>% 
 arrange(factor(target,levels=c("Psy1","CRTISO","CRTISO(-4bp Processed DSB)","PhyB2")),
-#factor(rate,levels=c(orderforplotting)),
 rate) # %>% #,
-#factor(model,levels=c("3 states","4 states")),
-#.by_group = TRUE) %>% #ungroup %>% 
 if (typetable==1)
 	{
 	print("format of table is 1: only 1-99% CI displayed as CIlow-CI-high") #as for main text
@@ -329,6 +331,7 @@ xlabels_ind<-set_breaks()[[2]]
 
 mypalette=c("firebrick","darkorange","dodgerblue2","dodgerblue4","green4","darkgreen","burlywood4","darksalmon","deeppink3","deeppink4")
 
+#function to define colors and palettes
 set_model<-function(mymodel)
 {
 if (mymodel=="modelDSBs1i1_3x4") 

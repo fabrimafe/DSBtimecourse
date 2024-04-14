@@ -112,6 +112,7 @@ print("method of resampling: time-stratified bootstrap")
 
 stratified.bootstrap<-function(df){
 #CODE IMPLEMENTING TIME-STRATIFIED BOOTSTRAP
+#( i.e. simple bootstrapping scheme in which data points are resampled within each time point )
 times<-unique(sort(df$time))
 y<-c(unlist(sapply(times, function(x) { y<-which(df$time==x); y<-sample(y,length(y),replace=TRUE); return(y)})))
 return(df[y,])
@@ -125,6 +126,7 @@ write.table(df.new,file=paste0(destination_path,"/timecourse.bs",ip,".txt",sep="
 {
 print("method of resampling: time and batch-stratified bootstrap")
 
+#main function for resampling at each time point
 stratified.bootstrap<-function(df){
 times<-unique(sort(df$time))
 y<-c(unlist(sapply(times, function(x) { y<-which(df$time==x); y<-sample(y,length(y),replace=TRUE); return(y)})))
@@ -137,6 +139,7 @@ print(time_courses_begins)
 mydata.1<-df[1:(time_courses_begins[1]-1),]
 mydata.2<-df[time_courses_begins[1]:nrow(df),]
 
+#loop and do again for each permutation
 for (ip in 1:npermutations){
 df.new.1<-stratified.bootstrap(mydata.1)
 df.new.2<-stratified.bootstrap(mydata.2)
