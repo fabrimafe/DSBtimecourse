@@ -30,7 +30,13 @@ Error-matrix files are four-entries tab separated matrices specifying the probab
 |processed DSBs  |0                |0                   |1                   |0                  |
 |indels          |0                |0                   |0                   |1                  |
 
-indicates that intact molecules have a ~0.5% chance of being classified as indels. Such files can be prepared following prepare_data.R, and error matrices using calculate_error_matrix.R. If necessary create input bootstraps files with create_stbootstrap.R. If for your data stratified bootstrapping is not possible due to the absence of repeated measures, alternative bootstrapping procedures are implemented in timeseriesbootstraps.R.
+indicates that intact molecules have a ~0.5% chance of being classified as indels. Such files can be prepared following prepare_data.R, and error matrices using calculate_error_matrix.R. If necessary create input bootstraps files with create_bootstrap.R. If for your data stratified bootstrapping is not possible due to the absence of repeated measures, alternative bootstrapping procedures are implemented in timeseriesbootstraps.R.
+
+A possible way to create example data is to simulate them using the script DSBtimecourse_simulate.R. This script takes as input a set of parameters (specified in the format of file test/params_modelDSBs1i1_3x4_k0.05_r0.01_induction.CI and fed as input flag -p) and a set of times specifying total number of reads and time of sampling (example file test/timecourse_n2k_72h.txt), a model (with flag -m, as example a 3-state model "modelDSBs1i1_3x4") and an output file with flag -o.
+Example:
+./DSBtimecourse_simulate.R -T test/timecourse_n2k_72h.txt -p test/params_modelDSBs1i1_3x4_k0.05_r0.01_induction.CI -m modelDSBs1i1_3x4 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -o test/output.tsv
+Here test/output.tsv can be used for subsequent analyses.
+
 
 ### 2) optimization
 This is the core of the procedure, fitting the maximum likelihood parameters for the selected model. Use DSBtimecourse_optimizer.R on the original dataset and on the bootstrapped data. To run on the test dataset using the 4 state model in Ben Tov et al.,2023:
