@@ -3,7 +3,10 @@
 Repository for "Uncovering the Dynamics of Precise Repair at CRISPR/Cas9-induced Double-Strand Breaks", Ben Tov*, Mafessoni* et al., biorXiv (2023). 
 https://doi.org/10.1101/2023.01.10.523377 
 
-For documentation of the R scripts, just use the --help flag. In the folder **scripts** you can find shell wrappers to run the R commands on a IBM LSF cluster. In **logs**, you can find README*.txt files that document the development and testing stage for Ben Tov*, Mafessoni * et al. In **test** you can find files to simulate data and test the program.
+For documentation of the R scripts, you can just use the --help flag. To run the code it is adviced to have R v4.0.1 or higher installed. Here you can also find the folders:
+* **scripts**: shell wrappers to run the R commands on a IBM LSF cluster
+* **logs**: README*.txt files documenting the development and testing stage for Ben Tov*, Mafessoni * et al.
+* **test**: files used to simulate data and test the program.
 
 The procedure for the modeling follows this general scheme:
 
