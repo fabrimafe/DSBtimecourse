@@ -99,7 +99,7 @@ which will generate two files:
 
 Rates are referred to with the following nomenclature, with names in brackets corresponding to the terminology used in Ben Tov et al.,2023:
 - k11 (K<sub>cut</sub>): cutting rate from intact to precise DSBs (or any DSBs if no difference is made between precise DSBs and processed DSBs, i.e. 3 state model);
-- k12: cutting rate from intact to processed DSBs;
+- k12: cutting rate from intact to processed DSBs; this parameter is not used in Ben Tov*, Mafessoni* et al.,2023, but can be implemented if researchers are concerned about off-site CRISPR/Cas9 cutting;
 - rr12 (K<sub>processing</sub>): processing rate from precise DSBs to processed DSBs; 
 - r11 (P<sub>direct</sub>): repair from precise DSBs to intact molecules (or from any DSBs if no difference is made between precise DSBs and processed DSBs, i.e. 3 state model), i.e. *precise repair* or *precise repair from precise DSBs*;
 - r12 (E<sub>direct</sub>): repair from precise DSBs to indels, i.e. *repair-error from precised DSBs*;
@@ -111,7 +111,7 @@ Rates are referred to with the following nomenclature, with names in brackets co
 
 ### Other models
 
-The scripts can also be used to test additional models in respect to the 3-states and 4-states models used in Ben Tov et al.,2023, using the -m flag of DSBtimecourse_optimizer. Specifically:
+The scripts can also be used to test additional models in respect to the 3-states and 4-states models used in Ben Tov et al.,2023, using the -m flag of DSBtimecourse_optimizer. These are still experimental, but feel free to ask for help if you want help implementing a tailored model for your use case. Specifically:
 - *modelDSBs1i1_mini*: 4 state model with same degrees of freedom as the 3 states, in which indels are assumed to come from processed DSBs and precise repair through precise DSB, i.e. r12=0 and r21=0  
 - *modelDSBs1i1_fullimprecise*: identical to the 4-state model except that also processed DSBs are not assumed to come from processing, but also from imprecise cutting of intact moleculels, i.e. k12 is estimated and not fixed to 0.
 - We immplemented and tested other models, which are at the moment not used for Ben Tov*, Mafessoni et al.,2023. **If you have specific requests, let me know** and I'd be happy to help or add alternative models that could be useful for you.
