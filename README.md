@@ -11,7 +11,7 @@ For documentation of the R scripts, you can just use the --help flag. To run the
 To run estimates of Double Strand Breaks (DSB) repair dynamics on your data follow the procedure described below.
 
 ### 1) data preparation
-Prepare input files: a time-course-file with the abundance of the different types of molecules, and an error-matrix file, specifying the expected error rates. Example files can be found in test/. The files should be tab separated files. The time-course file has five columns, the first describing the time and the others the count of molecules for each type. For example:
+The necessary input files are a time-course-file with the abundance of the different types of molecules, and an error-matrix file, specifying the expected error rates. The latter can be estimated from control data, in which UMIDSB-seq is applied without any induced DSB, as described below. Example files can be found in test/. The files should be tab separated files. The time-course file has five columns, the first describing the time and the others the count of molecules for each type. For example:
 
 |time|    y1|      y2|      y3|      y4|
 |----|------|--------|--------|--------|
@@ -40,7 +40,6 @@ Example:
 ./DSBtimecourse_simulate.R -T test/timecourse_n2k_72h.txt -p test/params_modelDSBs1i1_3x4_k0.05_r0.01_induction.CI -m modelDSBs1i1_3x4 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -o test/simulateddata.tsv
 ```
 Here test/simulateddata.tsv can be used for subsequent analyses.
-
 
 ### 2) optimization
 This is the core of the procedure, fitting the maximum likelihood parameters for the selected model. Use DSBtimecourse_optimizer.R on the original dataset and on the bootstrapped data. To run on the test dataset using the 4 state model in Ben Tov et al.,2023:
