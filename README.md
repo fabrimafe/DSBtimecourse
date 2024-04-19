@@ -8,7 +8,7 @@ For documentation of the R scripts, you can just use the --help flag. To run the
 * **logs**: README*.txt files documenting the development and testing stage for Ben Tov*, Mafessoni * et al.
 * **test**: files used to simulate data and test the program.
 
-The procedure for the modeling follows this general scheme:
+To run estimates of Double Strand Breaks (DSB) repair dynamics on your data follow the procedure described below.
 
 ### 1) data preparation
 Prepare input files: a time-course-file with the abundance of the different types of molecules, and an error-matrix file, specifying the expected error rates. Example files can be found in test/. The files should be tab separated files. The time-course file has five columns, the first describing the time and the others the count of molecules for each type. For example:
