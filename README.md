@@ -42,7 +42,7 @@ Example:
 Here test/simulateddata.tsv can be used for subsequent analyses.
 
 ### 2) optimization
-This is the core of the procedure, fitting the maximum likelihood parameters for the selected model. Use DSBtimecourse_optimizer.R on the original dataset and on the bootstrapped data. To run on the test dataset using the 4 state model in Ben Tov et al.,2023:
+This is the core of the procedure, which consists in fitting the maximum likelihood parameters for the selected model. Use DSBtimecourse_optimizer.R on the original dataset and on the bootstrapped data. To run on the test dataset using the 4 state model in Ben Tov et al.,2023:
 ```
 ./DSBtimecourse_optimizer.R -T test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_nok12 -o test/output_4states.tsv -z 3 -n 20
 ```
@@ -50,7 +50,7 @@ This is the core of the procedure, fitting the maximum likelihood parameters for
 ```
 ./DSBtimecourse_optimizer.R -T test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_3states.tsv -z 3 -n 20
 ```
-where the arguments -z sets the shape of the induction curve to have 3 degrees of freedom, and n is the number of independent iterations. The default is 100 iterations, but more are recommended, especially for more complex models like the 4-states. In Ben Tov et al. (2023) we used 50000 iterations, though a smaller number is usually sufficient. 
+where the arguments -z sets the shape of the induction curve to have 3 degrees of freedom. Since the algorithm relies on a numerical optimization that does not guarantee to find the global maximum, it is advised to run it with different initial combinations of parameters. This can be set with the flag -n, which specifies the number of independent random starting points to ensure that a global maximum is found. The default is 100 iterations, but more are recommended for more complex models like the 4-states. In Ben Tov et al. (2023) we used 5000 iterations, though a smaller number is usually sufficient. 
 To run the optimization on the simulated data for the 3 state model, run
 ```
 ./DSBtimecourse_optimizer.R -T test/simulateddata.tsv -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_simulated_3states.tsv -z 3 -n 20
@@ -63,7 +63,7 @@ If an induction curve is estimated or known a priori, for example through FACS o
 where the file test/params_FACStable.5.txt describes an induction curve estimated for tomato protoplast one the basis of FACS data.
 
 ### 3) likelihood confidence intervals
-Particularly when boostrapping is not an option, one can calculate likelihood-ratio based confidence intervals with calculate_CI.v1.R. While this would not be necessary per se, the output of this file can be used to generates plots in step 4). Here, the output of the optimization step is given as an input with the flag -i, together with the original timecourse and the error matrix. 
+Two different strategies can be used to estimate confidence intervals. When boostrapping is not an option, one can calculate likelihood-ratio based confidence intervals with calculate_CI.v1.R. While this would not be necessary per se, the output of this file can be used to generates plots in step 4). Here, the output of the optimization step is given as an input with the flag -i, together with the original timecourse and the error matrix. 
 
 ```
 ./calculate_CI.R -i test/output_3states.tsv -d test/timecourse_RNP_Psy1.txt -z 3 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_3states_CI.tsv
