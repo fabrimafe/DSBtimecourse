@@ -73,7 +73,7 @@ If an induction curve is estimated or known a priori, for example through FACS o
 ```
 where the file test/params_FACStable.5.txt describes an induction curve estimated for tomato protoplast one the basis of FACS data.
 
-### 3) likelihood confidence intervals
+### 3) confidence intervals
 Two different strategies can be used to estimate confidence intervals. When boostrapping is not an option, one can calculate likelihood-ratio based confidence intervals with calculate_CI.v1.R. While this would not be necessary per se, the output of this file can be used to generates plots in step 4). Here, the output of the optimization step is given as an input with the flag -i, together with the original timecourse and the error matrix. 
 
 ```
