@@ -58,7 +58,7 @@ To run the optimization on the simulated data for the 3 state model, run
 
 If an induction curve is estimated or known a priori, for example through FACS or lucifase data, optimization can be constrained to the estimated curve. This can be done using the -u flag. With this flag, one can specify induction parameters in a file with the same format as the file used to simulate time-courses with known rate parameters. For example:
 ```
-./DSBtimecourse_optimizer.R -T test/simulateddata.tsv -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_simulated_3states.tsv -z 3 -n 20 -u test/params_FACStable.5.txt
+./DSBtimecourse_optimizer.R -T test/simulateddata.tsv -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_simulated_3states_constrained.tsv -z 3 -n 20 -u test/params_FACStable.5.txt
 ```
 where the file test/params_FACStable.5.txt describes an induction curve estimated for tomato protoplast one the basis of FACS data.
 
