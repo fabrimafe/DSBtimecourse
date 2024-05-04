@@ -51,9 +51,13 @@ This is the core of the procedure, which consists in fitting the maximum likelih
 ./DSBtimecourse_optimizer.R -T test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_3states.tsv -z 3 -n 20
 ```
 where the arguments -z sets the shape of the induction curve to have 3 degrees of freedom. Since the algorithm relies on a numerical optimization that does not guarantee to find the global maximum, it is advised to run it with different initial combinations of parameters. This can be set with the flag -n, which specifies the number of independent random starting points to ensure that a global maximum is found. The default is 100 iterations, but more are recommended for more complex models like the 4-states. In Ben Tov et al. (2023) we used 5000 iterations, though a smaller number is usually sufficient. 
-To run the optimization on the simulated data for the 3 state model, run
+To run the optimization on the simulated data for the 3-state model, run
 ```
 ./DSBtimecourse_optimizer.R -T test/simulateddata.tsv -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_simulated_3states.tsv -z 3 -n 20
+```
+while optimization for the 4-state model can be run as:
+```
+./DSBtimecourse_optimizer.R -T test/simulateddata.tsv -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_nok12 -o test/output_simulated_4states.tsv -z 3 -n 20
 ```
 
 If an induction curve is estimated or known a priori, for example through FACS or lucifase data, optimization can be constrained to the estimated curve. This can be done using the -u flag. With this flag, one can specify induction parameters in a file with the same format as the file used to simulate time-courses with known rate parameters. For example:
