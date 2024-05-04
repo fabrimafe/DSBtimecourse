@@ -11,7 +11,9 @@ For documentation of the R scripts, you can just use the --help flag. To run the
 To run estimates of Double Strand Breaks (DSB) repair dynamics on your data follow the procedure described below.
 
 ### 1) data preparation
-The necessary input files are a *time-course-file* with the abundance of the different types of molecules, and an *error-matrix-file*, specifying the expected error rates.  The time-course file has five columns, the first describing the time and the others the count of molecules for each type. For example:
+The necessary input files are a *time-course-file* with the abundance of the different types of molecules, and an *error-matrix-file*, specifying the expected error rates.  
+##### - Time-course file
+The time-course file has five columns, the first describing the time and the others the count of molecules for each type. For example:
 
 |time|    y1|      y2|      y3|      y4|
 |----|------|--------|--------|--------|
@@ -30,6 +32,7 @@ Example:
 ```
 Here test/simulateddata.tsv can be used for subsequent analyses.
 
+##### - Error-matrix file
 Error-matrix files are four-entries tab separated matrices specifying the probability that a molecule (in row) is observed as such or as other types. For example:
 
 |from\observed as|intact           |precise DSB         |processed DSB       |indels             |
@@ -96,7 +99,7 @@ The program plot_bootstraps.R print flows and plots trajectories and induction c
 ```
 for information on the usage. The flag -i specifies the input data. If this is a .RData, this is assumed to be a single raw confidence interval file computed with calculate_CI.R. Otherwise, a text file containing the path of individual bootstraps is expected, and formatted as described in the --help. In the former case, if run on the test data:
 ```
-./plot_bootstraps.R -i test/output_3states_CI.tsv.RData -d test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -n 100 -z 3 -o test/plot3states
+./plot_bootstraps.R -i test/output_simulated_3states_CI.tsv.RData -d test/simulateddata.tsv -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -n 100 -z 3 -o test/plot3states
 ```
 
 which will generate two files: 
