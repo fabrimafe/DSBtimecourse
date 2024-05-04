@@ -70,7 +70,7 @@ where the file test/params_FACStable.5.txt describes an induction curve estimate
 Two different strategies can be used to estimate confidence intervals. When boostrapping is not an option, one can calculate likelihood-ratio based confidence intervals with calculate_CI.v1.R. While this would not be necessary per se, the output of this file can be used to generates plots in step 4). Here, the output of the optimization step is given as an input with the flag -i, together with the original timecourse and the error matrix. 
 
 ```
-./calculate_CI.R -i test/output_simulated_3states.tsv -d test/timecourse_RNP_Psy1.txt -z 3 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_simulated_3states_CI.tsv 
+./calculate_CI.R -i test/output_simulated_3states.tsv -d test/simulateddata.tsv -z 3 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -o test/output_simulated_3states_CI.tsv 
 ```
 
 This provides two output files. An .RData file containing all the temporary object obtained during the confidence intervals computation; and a summary file, which takes the names provided in the -o flag, and which shows a table with 4 fields:
