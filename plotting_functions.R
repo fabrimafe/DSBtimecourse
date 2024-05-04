@@ -126,7 +126,8 @@ return(list(xbreaks,xlabels))
 plot_violin_params<-function(xdata.all.temp,xdatamean.all.temp,induction_params=induction_params,outputfile="plot1.pdf")
 {
 p<-ggplot(xdata.all.temp, aes(x=rate, y=rates_trans, fill=rate)) + geom_violin(trim=TRUE, scale="width") + scale_fill_manual(values=mypalette_t) +
-theme(strip.background = element_rect(fill = "white"),axis.text.x = element_text(angle = 45, hjust=1), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.03),legend.position = "bottom",aspect.ratio=1) + ylab("rate ( event/hour )") +
+theme(strip.background = element_rect(fill = "white"),axis.text.x = element_text(angle = 45, hjust=1), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.03),legend.position = "bottom",aspect.ratio=1,legend.text = element_text(size=14)) + 
+ylab("rate ( event/hour )") +
 facet_wrap(~target) + scale_y_continuous(breaks=xbreaks,labels=xlabels,limits=c(min(xbreaks)-0.01,log(20,10)))+
 geom_point(data=xdatamean.all.temp,aes(rate, rates_trans),col = "black",size=0.8)+geom_jitter(alpha = 0.11, width = 0.15, size=0.2) 
 ggsave(p,file=outputfile)

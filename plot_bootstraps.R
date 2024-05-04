@@ -334,7 +334,7 @@ xlim(0,finalTime+0.2) + scale_y_continuous("p", breaks=c(0,0.01,0.1,0.25,0.5,0.7
 scale_color_manual(values=mypalette_t)+scale_fill_manual(values=mypalette_t)+
 geom_ribbon(aes(ymin = lowCI, ymax = highCI,fill=types), alpha = 0.2,outline.type="both",linetype="blank")+ #,linetype="1F")+
 geom_line()+geom_point(data=tidy.mydata0.p)+
-theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank(),strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 16))+
+theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank(),strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 16),legend.text = element_text(size=12))+
 #theme_bw()+theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank())
 facet_wrap(~replicate)
 } else
@@ -347,7 +347,7 @@ scale_x_continuous("time (hours)", breaks=xbreaks, limits=c(0,finalTime+0.5))+
 scale_color_manual(values=mypalette_t)+scale_fill_manual(values=mypalette_t)+
 geom_ribbon(aes(ymin = lowCI, ymax = highCI,fill=types), alpha = 0.2,outline.type="both",linetype="blank")+
 geom_line()+geom_point(data=tidy.mydata0.p)+
-theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank(),strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 24))
+theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank(),strip.background = element_rect(fill = "white"), panel.background = element_rect(fill = 'white',color='black'),panel.grid.major = element_line(color = 'grey', linetype = 'longdash',size=0.01),legend.position = "bottom",aspect.ratio=1,text = element_text(size = 16),legend.text = element_text(size=12))
 #theme_bw()+theme(panel.grid.minor.x = element_blank(),panel.grid.minor.y = element_blank())
 }
 
