@@ -99,7 +99,7 @@ The program plot_bootstraps.R print flows and plots trajectories and induction c
 ```
 for information on the usage. The flag -i specifies the input data. If this is a .RData, this is assumed to be a single raw confidence interval file computed with calculate_CI.R. Otherwise, a text file containing the path of individual bootstraps is expected, and formatted as described in the --help. In the former case, if run on the test data:
 ```
-./plot_bootstraps.R -i test/output_3states_CI.tsv.RData -d test/timecourse_RNP_Psy1.txt -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -n 100 -z 3 -o test/plot3states
+./plot_bootstraps.R -i test/output_simulated_3states_CI.tsv.RData -d test/simulateddata.tsv -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -m modelDSBs1i1_3x4 -n 100 -z 3 -o test/plot3states
 ```
 
 which will generate two files: 
