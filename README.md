@@ -81,7 +81,7 @@ This provides two output files. An .RData file containing all the temporary obje
 
 The previous steps can be iterated for independent bootstraps of the data. Bootstraps of the data can be generated using timeseriesbootstraps.R. Use ./timeseriesbootstraps.R --help to see arguments and options, as different bootstrapping strategies are implemented (maximum entropy bootstrap, stationary bootstrap). To generate a stratified bootstrap (i.e. data points are resampled within a single time-point; possible only when repeated measures are available):
 ```
-./timeseriesbootstraps.R -i test/timecourse_RNP_Psy1.txt -o test -n 100
+./timeseriesbootstraps.R -i test/timecourse_RNP_Psy1.txt -o test/bootstraps -n 10
 ```
 
 ### 4) plotting and summarizing
