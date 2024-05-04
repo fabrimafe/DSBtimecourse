@@ -11,7 +11,7 @@ For documentation of the R scripts, you can just use the --help flag. To run the
 To run estimates of Double Strand Breaks (DSB) repair dynamics on your data follow the procedure described below.
 
 ### 1) data preparation
-The necessary input files are a time-course-file with the abundance of the different types of molecules, and an error-matrix file, specifying the expected error rates. The latter can be estimated from control data, in which UMIDSB-seq is applied without any induced DSB, as described below. Example files can be found in test/. The files should be tab separated files. The time-course file has five columns, the first describing the time and the others the count of molecules for each type. For example:
+The necessary input files are a *time-course-file* with the abundance of the different types of molecules, and an *error-matrix-file*, specifying the expected error rates.  The time-course file has five columns, the first describing the time and the others the count of molecules for each type. For example:
 
 |time|    y1|      y2|      y3|      y4|
 |----|------|--------|--------|--------|
@@ -23,6 +23,13 @@ The necessary input files are a time-course-file with the abundance of the diffe
 ....
 
 where y1 indicates the intact molecules, y2 the precise DSBs, y3 processed DSBs and y4 indels. Several replicates can be provided with a same time.
+A possible way to create example timecourse data is to **simulate** them using the script DSBtimecourse_simulate.R. This script takes as input a set of parameters (specified in the format of file test/params_modelDSBs1i1_3x4_k0.05_r0.01_induction.CI and fed as input flag -p) and a set of times specifying total number of reads and time of sampling (example file test/timecourse_n2k_72h.txt), a model (with flag -m, as example a 3-state model "modelDSBs1i1_3x4") and an output file with flag -o.
+Example:
+```
+./DSBtimecourse_simulate.R -T test/timecourse_n2k_72h.txt -p test/params_modelDSBs1i1_3x4_k0.05_r0.01_induction.CI -m modelDSBs1i1_3x4 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -o test/simulateddata.tsv
+```
+Here test/simulateddata.tsv can be used for subsequent analyses.
+
 Error-matrix files are four-entries tab separated matrices specifying the probability that a molecule (in row) is observed as such or as other types. For example:
 
 |from\observed as|intact           |precise DSB         |processed DSB       |indels             |
@@ -32,14 +39,15 @@ Error-matrix files are four-entries tab separated matrices specifying the probab
 |processed DSBs  |0                |0                   |1                   |0                  |
 |indels          |0                |0                   |0                   |1                  |
 
-indicates that intact molecules have a ~0.5% chance of being classified as indels. Such files can be prepared following prepare_data.R, and error matrices using calculate_error_matrix.R. If necessary create input bootstraps files with create_bootstrap.R. If for your data stratified bootstrapping is not possible due to the absence of repeated measures, alternative bootstrapping procedures are implemented in timeseriesbootstraps.R.
+indicates that intact molecules have a ~0.5% chance of being classified as indels. Example files can be found in test/. Such matrices can be estimated from control data, in which UMIDSB-seq is applied without any induced DSB, as described below.  To do this, you can use the script calculate_error_matrix.R, which takes as input a control file (in the same format as time-course-files), a parameter d indicating the number of states (the default is -d 4, which can be used for all models estimated in Ben Tov*,Mafessoni* et al) and a flag -f which specifies the format of the input file (-f 1 indicates a file in the format time-course-file). An example command for this script is:
+```
+./calculate_error_matrix.R -i test/Psy1_control72h.txt -d 4 -o test/error_matrix4_Psy1_ -f 1
+```
+This generates three different matrices following three different error models: an *errorsfromunbroken.tsv which assumes that processed unbroken molecules (intact and indel) can be sometimes ascribed erroneously as DSBs; *noerrors.tsv which assumes no errors; and *errorsfromintact.tsv, which assumes that only intact molecules give rise to errors. Note that as usually the majority of molecules are intact -especially at time 0 - the error model do not generally affect the results (in many tests, we could not detect any important effect).
 
-A possible way to create example data is to **simulate** them using the script DSBtimecourse_simulate.R. This script takes as input a set of parameters (specified in the format of file test/params_modelDSBs1i1_3x4_k0.05_r0.01_induction.CI and fed as input flag -p) and a set of times specifying total number of reads and time of sampling (example file test/timecourse_n2k_72h.txt), a model (with flag -m, as example a 3-state model "modelDSBs1i1_3x4") and an output file with flag -o.
-Example:
-```
-./DSBtimecourse_simulate.R -T test/timecourse_n2k_72h.txt -p test/params_modelDSBs1i1_3x4_k0.05_r0.01_induction.CI -m modelDSBs1i1_3x4 -E test/error_matrix4_Psy1_errorsfromunbroken.tsv -o test/simulateddata.tsv
-```
-Here test/simulateddata.tsv can be used for subsequent analyses.
+Such files can be prepared following prepare_data.R, and error matrices using calculate_error_matrix.R. If necessary create input bootstraps files with create_bootstrap.R. If for your data stratified bootstrapping is not possible due to the absence of repeated measures, alternative bootstrapping procedures are implemented in timeseriesbootstraps.R.
+
+
 
 ### 2) optimization
 This is the core of the procedure, which consists in fitting the maximum likelihood parameters for the selected model. Use DSBtimecourse_optimizer.R on the original dataset and on the bootstrapped data. To run on the test dataset using the 4 state model in Ben Tov et al.,2023:
