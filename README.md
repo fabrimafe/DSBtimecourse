@@ -101,6 +101,9 @@ which will generate two files:
 - plot3states_plot.induction.pdf: a plot of the induction curve
 - plot3states_plot.flow.tab: a table showing AIC values and the flow (in terms of proportion of initial molecules) for each rate. Note that proportions can be higher than 1 when molecules go through a given process more than once.
 
+For the simulated data:
+![trajectories for simulated data](test/plot3states_plot.trajectories.pdf)
+
 ### Notation
 
 Rates are referred to with the following nomenclature, with names in brackets corresponding to the terminology used in Ben Tov et al.,2023:
