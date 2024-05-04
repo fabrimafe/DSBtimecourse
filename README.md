@@ -45,10 +45,6 @@ indicates that intact molecules have a ~0.5% chance of being classified as indel
 ```
 This generates three different matrices following three different error models: an *errorsfromunbroken.tsv which assumes that processed unbroken molecules (intact and indel) can be sometimes ascribed erroneously as DSBs; *noerrors.tsv which assumes no errors; and *errorsfromintact.tsv, which assumes that only intact molecules give rise to errors. Note that as usually the majority of molecules are intact -especially at time 0 - the error model do not generally affect the results (in many tests, we could not detect any important effect).
 
-Such files can be prepared following prepare_data.R, and error matrices using calculate_error_matrix.R. If necessary create input bootstraps files with create_bootstrap.R. If for your data stratified bootstrapping is not possible due to the absence of repeated measures, alternative bootstrapping procedures are implemented in timeseriesbootstraps.R.
-
-
-
 ### 2) optimization
 This is the core of the procedure, which consists in fitting the maximum likelihood parameters for the selected model. Use DSBtimecourse_optimizer.R on the original dataset and on the bootstrapped data. To run on the test dataset using the 4 state model in Ben Tov et al.,2023:
 ```
