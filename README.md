@@ -83,6 +83,7 @@ The previous steps can be iterated for independent bootstraps of the data. Boots
 ```
 ./timeseriesbootstraps.R -i test/timecourse_RNP_Psy1.txt -o test/bootstraps -n 10
 ```
+Note that calculating uncertainty through a bootstrap is advisable as it accounts additional uncertainty that is not simply due to the random sampling of reads compared to the likelihood-based method, i.e. overdispersion in the binomial sampling of reads. Use --help to get information on additional bootstrapping procedures, which can be specified with flag -m.
 
 ### 4) plotting and summarizing
 The program plot_bootstraps.R print flows and plots trajectories and induction curves. It can be run individually on a single time course or bootstrap or on mean-data+boostraps. In the former case likelihood-ratio based confidence intervals are used, in the latter bootstrap based confidence intervals. Use
