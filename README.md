@@ -126,7 +126,7 @@ Rates are referred to with the following nomenclature, with names in brackets co
 
 ### Other models
 
-The scripts can also be used to test additional models in respect to the 3-states and 4-states models used in Ben Tov et al.,2023, using the -m flag of DSBtimecourse_optimizer. These are still experimental, but feel free to ask for help if you want help implementing a tailored model for your use case. Specifically:
+The scripts can also be used to test additional models in respect to the 3-states and 4-states models used in Ben Tov et al.,2023, using the -m flag of DSBtimecourse_optimizer. These are still experimental and were not used for the paper since they did not seem to provide a better fit, but feel free to ask for help if you want help implementing a tailored model for your use case. Specifically:
 - *modelDSBs1i1_mini*: 4 state model with same degrees of freedom as the 3 states, in which indels are assumed to come from processed DSBs and precise repair through precise DSB, i.e. r12=0 and r21=0  
 - *modelDSBs1i1_fullimprecise*: identical to the 4-state model except that also processed DSBs are not assumed to come from processing, but also from imprecise cutting of intact moleculels, i.e. k12 is estimated and not fixed to 0.
 - We immplemented and tested other models, which are at the moment not used for Ben Tov*, Mafessoni et al.,2023. **If you have specific requests, let me know** and I'd be happy to help or add alternative models that could be useful for you.
