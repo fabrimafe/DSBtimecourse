@@ -86,11 +86,11 @@ This provides two output files. An .RData file containing all the temporary obje
 - CIhigh: the highest 95% confidence interval obtained with a Monte-Carlo approximation of the asymptotic likelihood ratio based confidence interval.
 - rate: the rate for which the estimate is reported. These files CI can also be used to simulate new data (for example to generate parametric bootstraps).
 
-The previous steps can be iterated for independent bootstraps of the data. Bootstraps of the data can be generated using timeseriesbootstraps.R. Use ./timeseriesbootstraps.R --help to see arguments and options, as different bootstrapping strategies are implemented (maximum entropy bootstrap, stationary bootstrap). To generate a stratified bootstrap (i.e. data points are resampled within a single time-point; possible only when repeated measures are available):
+The previous steps can be iterated for independent bootstraps of the data. Bootstraps of the data can be generated using timeseriesbootstraps.R. Use ./timeseriesbootstraps.R --help to see arguments and options, as different bootstrapping strategies are implemented (maximum entropy bootstrap, stationary bootstrap). To generate 10 stratified bootstrap iterations (i.e. data points are resampled within a single time-point; possible only when repeated measures are available):
 ```
 ./timeseriesbootstraps.R -i test/timecourse_RNP_Psy1.txt -o test/bootstraps -n 10
 ```
-Note that calculating uncertainty through a bootstrap is advisable as it accounts additional uncertainty that is not simply due to the random sampling of reads compared to the likelihood-based method, i.e. overdispersion in the binomial sampling of reads. Use --help to get information on additional bootstrapping procedures, which can be specified with flag -m.
+where -i specifies the initial time-course-file and -o the output path. Note that calculating uncertainty through a bootstrap is advisable as it accounts additional uncertainty that is not simply due to the random sampling of reads compared to the likelihood-based method, i.e. overdispersion in the binomial sampling of reads. Use --help to get information on additional bootstrapping procedures, which can be specified with flag -m.
 
 ### 4) plotting and summarizing
 The program plot_bootstraps.R print flows and plots trajectories and induction curves. It can be run individually on a single time course or bootstrap or on mean-data+boostraps. In the former case likelihood-ratio based confidence intervals are used, in the latter bootstrap based confidence intervals. Use
